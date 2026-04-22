@@ -196,14 +196,8 @@
                 });
             }
 
-            // Initialize map centered on SF
-            const map = L.map("map").setView([37.755, -122.44], 13);
-
-            // OpenStreetMap tiles
-            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                maxZoom: 19,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            }).addTo(map);
+            // Map will be initialized after loading data to compute bounds
+            let map;
 
             // Load hill data from CSV
             fetch("sfhills.csv")
@@ -228,6 +222,32 @@
                     const honorable = allHills.filter(
                         (h) => h.prominence < MIN_PROMINENCE && h.name,
                     );
+
+                    // Compute bounding box center and initialize map
+                    const lats = allHills.filter(h => !isNaN(h.lat)).map(h => h.lat);
+                    const lngs = allHills.filter(h => !isNaN(h.lng)).map(h => h.lng);
+                    const minLat = Math.min(...lats);
+                    const maxLat = Math.max(...lats);
+                    const minLng = Math.min(...lngs);
+                    const maxLng = Math.max(...lngs);
+                    const centerLat = (minLat + maxLat) / 2;
+                    const centerLng = (minLng + maxLng) / 2;
+
+                    const bounds = L.latLngBounds(
+                        [minLat, minLng],
+                        [maxLat, maxLng]
+                    );
+
+                    map = L.map("map", {
+                        maxBounds: bounds.pad(0.3),
+                        maxBoundsViscosity: 1.0,
+                        minZoom: 12,
+                    }).setView([centerLat, centerLng], 12);
+
+                    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                        maxZoom: 19,
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    }).addTo(map);
 
                     // Sort by prominence descending, tiebreak by elevation descending
                     hills.sort(
