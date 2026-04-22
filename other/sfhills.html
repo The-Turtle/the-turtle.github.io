@@ -24,6 +24,25 @@
                 z-index: 0;
             }
 
+            .leaflet-popup-content-wrapper {
+                background: var(--turtle-green);
+                color: white;
+                border-radius: 4px;
+                padding: 0;
+                box-shadow: none;
+                font-size: 13px;
+                font-weight: bold;
+            }
+
+            .leaflet-popup-content {
+                margin: 4px 8px;
+                line-height: 1.4;
+            }
+
+            .leaflet-popup-tip {
+                background: var(--turtle-green);
+            }
+
             #hills-table,
             #honorable-table {
                 width: 100%;
@@ -288,6 +307,42 @@
                             offset: [0, -8],
                         });
 
+                        // Click handler for marker -> scroll to table row
+                        // On mobile (portrait or narrow): first click opens tooltip, second click jumps
+                        // On desktop: click jumps immediately (tooltip already visible from hover)
+                        marker._clickedOnce = false;
+
+                        marker.on("click", () => {
+                            const isMobile = window.matchMedia("(max-width: 550px) or (orientation: portrait)").matches;
+
+                            if (isMobile && !marker._clickedOnce) {
+                                // First click on mobile: show tooltip, mark as clicked
+                                marker.openTooltip();
+                                // Reset all other markers
+                                hills.forEach((h) => {
+                                    if (h.marker && h.marker !== marker) {
+                                        h.marker._clickedOnce = false;
+                                    }
+                                });
+                                marker._clickedOnce = true;
+                                return;
+                            }
+
+                            // Second click on mobile, or any click on desktop: jump to table
+                            marker._clickedOnce = false;
+                            const targetRow = document.getElementById("hill-row-" + i);
+                            if (targetRow) {
+                                targetRow.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "center",
+                                });
+                                targetRow.style.backgroundColor = "#e0f7fa";
+                                setTimeout(() => {
+                                    targetRow.style.backgroundColor = "";
+                                }, 2000);
+                            }
+                        });
+
                         // Store marker reference
                         hill.marker = marker;
 
@@ -311,22 +366,6 @@
                             "</td>";
                         tbody.appendChild(row);
 
-                        // Click handler for marker -> scroll to table row (desktop only)
-                        marker.on("click", () => {
-                            if (window.innerWidth <= 768) return;
-                            const targetRow = document.getElementById("hill-row-" + i);
-                            if (targetRow) {
-                                targetRow.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "center",
-                                });
-                                // Highlight the row briefly
-                                targetRow.style.backgroundColor = "#e0f7fa";
-                                setTimeout(() => {
-                                    targetRow.style.backgroundColor = "";
-                                }, 2000);
-                            }
-                        });
                     });
 
                     // Click handler for table names -> fly to marker on map
