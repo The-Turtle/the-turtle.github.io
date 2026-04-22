@@ -140,11 +140,12 @@
             <h1>SF Hills</h1>
             <p>
                 A complete set of hills in San Francisco with at least 30 feet
-                of prominence.
+                of prominence. Elevations and prominences were computed from
+                publicly available contour data and rounded to the nearest 5
+                feet.
             </p>
             <div id="map"></div>
             <h2>Hills by Prominence</h2>
-            <p class="hill-count" id="hill-count"></p>
             <table id="hills-table">
                 <thead>
                     <tr>
@@ -156,6 +157,8 @@
                 </thead>
                 <tbody id="hills-tbody"></tbody>
             </table>
+            <h2>Honorable Mentions</h2>
+            <p id="honorable-list"></p>
         </main>
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -187,8 +190,10 @@
                 .then((csvText) => {
                     const rows = parseCSV(csvText);
 
+                    const MIN_PROMINENCE = 40;
+
                     // Convert to hill objects
-                    const hills = rows.map((row) => ({
+                    const allHills = rows.map((row) => ({
                         name: row.name.trim() || null,
                         lat: parseFloat(row.latitude),
                         lng: parseFloat(row.longitude),
@@ -196,6 +201,12 @@
                         prominence: parseFloat(row.prominence_ft),
                         marker: null,
                     }));
+
+                    // Split into main hills and honorable mentions
+                    const hills = allHills.filter((h) => h.prominence >= MIN_PROMINENCE);
+                    const honorable = allHills.filter(
+                        (h) => h.prominence < MIN_PROMINENCE && h.name,
+                    );
 
                     // Sort by prominence descending, tiebreak by elevation descending
                     hills.sort(
@@ -212,10 +223,6 @@
                             hill.name = "Unnamed Hill " + unnamedCount;
                         }
                     });
-
-                    // Display count
-                    document.getElementById("hill-count").textContent =
-                        hills.length + " hills total";
 
                     // Add markers and build table
                     const tbody = document.getElementById("hills-tbody");
@@ -284,6 +291,25 @@
                             }, 400);
                         }
                     });
+
+                    // Build honorable mentions list
+                    honorable.sort(
+                        (a, b) =>
+                            b.prominence - a.prominence ||
+                            b.elevation - a.elevation,
+                    );
+                    document.getElementById("honorable-list").innerHTML =
+                        honorable
+                            .map(
+                                (h) =>
+                                    h.name +
+                                    " (" +
+                                    h.elevation +
+                                    " ft, " +
+                                    h.prominence +
+                                    " ft prominence)",
+                            )
+                            .join(", ") + ".";
                 });
 
             // Dropdown nav script
