@@ -180,6 +180,9 @@
                 </thead>
                 <tbody id="honorable-tbody"></tbody>
             </table>
+            <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
+                Reach out to <a href="mailto:hello@holdenmui.com">hello@holdenmui.com</a> for questions or corrections!
+            </p>
         </main>
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -308,8 +311,9 @@
                             "</td>";
                         tbody.appendChild(row);
 
-                        // Click handler for marker -> scroll to table row
+                        // Click handler for marker -> scroll to table row (desktop only)
                         marker.on("click", () => {
+                            if (window.innerWidth <= 768) return;
                             const targetRow = document.getElementById("hill-row-" + i);
                             if (targetRow) {
                                 targetRow.scrollIntoView({
