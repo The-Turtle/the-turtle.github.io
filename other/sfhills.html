@@ -427,11 +427,12 @@
                             b.elevation - a.elevation,
                     );
                     const htbody = document.getElementById("honorable-tbody");
+                    const hillsCount = hills.length;
                     honorable.forEach((h, i) => {
                         const row = document.createElement("tr");
                         row.innerHTML =
                             "<td>" +
-                            (i + 1) +
+                            (hillsCount + i + 1) +
                             "</td>" +
                             '<td><span class="hill-name-link honorable-link" data-lat="' +
                             h.lat +
