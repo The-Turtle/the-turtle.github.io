@@ -368,6 +368,33 @@
 
                     });
 
+                    // Show/hide permanent labels based on zoom level
+                    function updateLabels() {
+                        const zoom = map.getZoom();
+                        const showLabels = zoom >= 15;
+                        hills.forEach((hill) => {
+                            if (!hill.marker) return;
+                            if (showLabels && !hill.marker._permanentTooltip) {
+                                hill.marker.unbindTooltip();
+                                hill.marker.bindTooltip(hill.name, {
+                                    direction: "top",
+                                    offset: [0, -8],
+                                    permanent: true,
+                                });
+                                hill.marker._permanentTooltip = true;
+                            } else if (!showLabels && hill.marker._permanentTooltip) {
+                                hill.marker.unbindTooltip();
+                                hill.marker.bindTooltip(hill.name, {
+                                    direction: "top",
+                                    offset: [0, -8],
+                                    permanent: false,
+                                });
+                                hill.marker._permanentTooltip = false;
+                            }
+                        });
+                    }
+                    map.on("zoomend", updateLabels);
+
                     // Click handler for table names -> fly to marker on map
                     tbody.addEventListener("click", (e) => {
                         if (e.target.classList.contains("hill-name-link")) {
