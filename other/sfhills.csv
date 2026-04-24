@@ -1,90 +1,90 @@
-name,latitude,longitude,elevation_ft,prominence_ft
-Mt. Davidson,37.738232,-122.454832,915,625
-Noe Peak,37.751552,-122.447758,905,330
-Signal Point,37.809746,-122.366074,330,330
-Bayview Hill (Candlestick Hill),37.715102,-122.393452,450,320
-Forest Hill,37.748204,-122.467306,775,300
-Visitacion Knob (McLaren Ridge),37.719224,-122.421748,515,275
-Potrero Hill,37.756718,-122.399626,310,270
-Bernal Hill,37.743182,-122.415376,450,265
-Merced Heights,37.718108,-122.462644,525,230
-Mount Sutro,37.757978,-122.457226,895,210
-Lincoln Heights,37.782134,-122.500210,365,210
-Stony Hill (Hunters Point Ridge),37.734416,-122.384794,265,205
-Telegraph Hill,37.802186,-122.405656,285,200
-Strawberry Hill,37.768706,-122.475802,410,175
-Nob Hill,37.793672,-122.415196,355,175
-Edgehill Heights,37.742696,-122.459188,715,160
-Mount St. Joseph,37.734074,-122.397052,240,160
-Lone Mountain,37.779020,-122.452654,400,155
-Lafayette Heights,37.791836,-122.427580,365,130
-Gold Mine Hill,37.741400,-122.437930,650,125
-Presidio Hill,37.793312,-122.463940,380,115
-Buena Vista Heights,37.767698,-122.441620,560,110
-Corona Heights,37.764980,-122.439352,490,100
-Castro Hill,37.754738,-122.435590,400,95
-Cannon Hill,37.791800,-122.446354,365,90
-Rob Hill,37.795652,-122.476558,370,85
-Russian Hill,37.797992,-122.414602,345,85
-Rincon Hill,37.785500,-122.392300,105,85
-Mount Olympus,37.763198,-122.445436,540,80
-Eureka Peak,37.753316,-122.447452,900,75
-Clarendon Heights,37.755062,-122.453050,835,75
-Dolores Heights,37.755944,-122.431450,385,70
-Grand View Hill,37.756178,-122.471770,655,65
-Red Rock Hill,37.746134,-122.441656,640,60
-Fairmount Heights,37.738664,-122.432440,520,60
-,37.717550,-122.454454,485,60
-Anza Hill,37.780010,-122.444140,340,60
-Laurel Hill,37.784204,-122.448910,325,60
-Prayerbrook Cross Hill,37.771622,-122.478250,305,60
-Holly Hill,37.737152,-122.420092,290,60
-,37.715210,-122.484226,150,60
-La Portezuela,37.708082,-122.463976,455,55
-Madrid Hill,37.718576,-122.435662,310,55
-Alamo Heights (Hayes Hill),37.775240,-122.434168,260,55
-Macaroon Hill,37.736666,-122.456632,815,45
-Blue Tower Hill,37.722932,-122.424430,490,45
-Martha Hill,37.733642,-122.439388,385,45
-Crocker Amazon Hill,37.713950,-122.425456,315,45
-Horner's Hill,37.750670,-122.425618,210,45
-Pasadena Hill,37.709090,-122.419138,160,45
-Hunter's Point Shipyard Hill,37.727846,-122.368918,140,45
-Little Bayview Hill (Tubsinte Hill),37.709540,-122.398906,80,45
-Monterey Heights,37.733840,-122.460718,590,40
-City College Hill,37.725326,-122.450926,350,40
-,37.711862,-122.424610,315,40
-George Sterling Park,37.801250,-122.420362,310,40
-Battery Davis,37.718630,-122.503522,215,40
-Torpedo Point,37.813886,-122.359684,65,40
-Seal Rocks,37.778372,-122.516554,40,40
-Larsen Peak (Sunset Heights),37.749770,-122.469358,745,35
-,37.718468,-122.420614,500,35
-,37.717298,-122.466802,480,35
-,37.718612,-122.410138,405,35
-,37.716704,-122.426086,385,35
-,37.787588,-122.502532,225,35
-Irish Hill,37.758860,-122.386504,65,35
-,37.742318,-122.378044,40,35
-,37.780406,-122.517526,35,35
-,37.782602,-122.513980,35,35
-Grandview Hill,37.753226,-122.470096,740,30
-,37.750220,-122.456344,515,30
-,37.729538,-122.462248,485,30
-Mount Lick,37.773548,-122.455048,335,30
-Battery Dynamite,37.801610,-122.476324,310,30
-Chicken Point,37.770488,-122.462644,285,30
-Casino Hill,37.772648,-122.462464,275,30
-,37.722212,-122.505340,115,30
-Fort Mason Hill,37.806884,-122.427922,105,30
-Cathedral Hill,37.784230,-122.425370,210,0
-Kite Hill,37.758330,-122.441360,435,0
-Billy Goat Hill,37.741410,-122.433270,505,0
-Alcatraz Island,37.826250,-122.422167,135,135
-Sutro Heights,37.777940,-122.512120,195,25
-Tank Hill,37.759900,-122.447700,645,0
-Heidelberg Hill,37.768200,-122.469100,240,0
-Hermit Rock,37.785726,-122.509619,25,25
-Alta Plaza Park,37.791371,-122.437839,290,5
-Duncan Hill,37.745983,-122.433400,420,5
-Ignatius Heights,37.776319,-122.451083,350,5
+name,latitude,longitude,elevation_ft,prominence_ft,notes
+Mt. Davidson,37.738232,-122.454832,915,625,In Mt. Davidson Park. Mount Davidson Cross is at the top. 270 degree views close by at Mount Davidson Vista Point.
+Noe Peak,37.751552,-122.447758,905,330,South Twin Peak. 360 degree views.
+Signal Point,37.809746,-122.366074,330,330,
+Bayview Hill (Candlestick Hill),37.715102,-122.393452,450,320,
+Forest Hill,37.748204,-122.467306,775,300,
+Visitacion Knob (McLaren Ridge),37.719224,-122.421748,515,275,
+Potrero Hill,37.756718,-122.399626,310,270,Residential.
+Bernal Hill,37.743182,-122.415376,450,265,In Bernal Heights Park. Telecommunications tower equipment on top but can get 360 degree views by walking around it.
+Merced Heights,37.718108,-122.462644,525,230,
+Mount Sutro,37.757978,-122.457226,895,210,
+Lincoln Heights,37.782134,-122.500210,365,210,
+Stony Hill (Hunters Point Ridge),37.734416,-122.384794,265,205,Next to a preschool. Residential. Better views at Hilltop Park close by (which also has a large sundial).
+Telegraph Hill,37.802186,-122.405656,285,200,In Pioneer Park. Views partially obstructed by trees on all sides. For good views ascend Coit Tower for a fee.
+Strawberry Hill,37.768706,-122.475802,410,175,An island inside Blue Heron Lake in Golden Gate Park. Partially obstructed views.
+Nob Hill,37.793672,-122.415196,355,175,Hilltop is on the pedestrian-only Priest Street. No view as it is obstructed by buildings.
+Edgehill Heights,37.742696,-122.459188,715,160,
+Mount St. Joseph,37.734074,-122.397052,240,160,Residential. Small public area nearby between 290 and 300 Bayview Circle with 90 degree views.
+Lone Mountain,37.779020,-122.452654,400,155,
+Lafayette Heights,37.791836,-122.427580,365,130,In Lafayette Park. Mostly unobstructed views if you walk past the trees on the top.
+Gold Mine Hill,37.741400,-122.437930,650,125,Residential. Some partially obstructed views.
+Presidio Hill,37.793312,-122.463940,380,115,
+Buena Vista Heights,37.767698,-122.441620,560,110,In Buena Vista Park. View almost completely obstructed by trees.
+Corona Heights,37.764980,-122.439352,490,100,In Corona Heights Park. 360 degree views.
+Castro Hill,37.754738,-122.435590,400,95,Residential.
+Cannon Hill,37.791800,-122.446354,365,90,
+Rob Hill,37.795652,-122.476558,370,85,
+Russian Hill,37.797992,-122.414602,345,85,Right above Ina Coolbrith Park. 180 degree views.
+Rincon Hill,37.785500,-122.392300,105,85,
+Mount Olympus,37.763198,-122.445436,540,80,In the very small Mount Olympus Park. Pedestal of the former Triumph of Light statue on top. Some views but mostly surrounded by houses.
+Eureka Peak,37.753316,-122.447452,900,75,North Twin Peak. 360 degree views.
+Clarendon Heights,37.755062,-122.453050,835,75,
+Dolores Heights,37.755944,-122.431450,385,70,Residential.
+Grand View Hill,37.756178,-122.471770,655,65,In Grandview Park. 360 degree views with a few trees on top.
+Red Rock Hill,37.746134,-122.441656,640,60,Inside the Diamond Heights Village Association. No view.
+Fairmount Heights,37.738664,-122.432440,520,60,Residential. 180 degree views.
+,37.717550,-122.454454,485,60,
+Anza Hill,37.780010,-122.444140,340,60,
+Laurel Hill,37.784204,-122.448910,325,60,
+Prayerbrook Cross Hill,37.771622,-122.478250,305,60,
+Holly Hill,37.737152,-122.420092,290,60,Flat top but can get views from all directions by walking around it.
+,37.715210,-122.484226,150,60,
+La Portezuela,37.708082,-122.463976,455,55,
+Madrid Hill,37.718576,-122.435662,310,55,
+Alamo Heights (Hayes Hill),37.775240,-122.434168,260,55,Near Alamo Square and the Painted Ladies.
+Macaroon Hill,37.736666,-122.456632,815,45,Residential.
+Blue Tower Hill,37.722932,-122.424430,490,45,
+Martha Hill,37.733642,-122.439388,385,45,In Dorothy W. Erskine Park. 180 degree views.
+Crocker Amazon Hill,37.713950,-122.425456,315,45,
+Horner's Hill,37.750670,-122.425618,210,45,Residential.
+Pasadena Hill,37.709090,-122.419138,160,45,
+Hunter's Point Shipyard Hill,37.727846,-122.368918,140,45,
+Little Bayview Hill (Tubsinte Hill),37.709540,-122.398906,80,45,
+Monterey Heights,37.733840,-122.460718,590,40,Residential.
+City College Hill,37.725326,-122.450926,350,40,
+,37.711862,-122.424610,315,40,
+George Sterling Park,37.801250,-122.420362,310,40,By Lombard Street. Residential.
+Battery Davis,37.718630,-122.503522,215,40,
+Torpedo Point,37.813886,-122.359684,65,40,
+Seal Rocks,37.778372,-122.516554,40,40,An island. Inaccessible but can be viewed from Sutro Baths.
+Larsen Peak (Sunset Heights),37.749770,-122.469358,745,35,
+,37.718468,-122.420614,500,35,
+,37.717298,-122.466802,480,35,
+,37.718612,-122.410138,405,35,
+,37.716704,-122.426086,385,35,
+,37.787588,-122.502532,225,35,
+Irish Hill,37.758860,-122.386504,65,35,
+,37.742318,-122.378044,40,35,
+,37.780406,-122.517526,35,35,
+,37.782602,-122.513980,35,35,
+Grandview Hill,37.753226,-122.470096,740,30,
+,37.750220,-122.456344,515,30,
+,37.729538,-122.462248,485,30,
+Mount Lick,37.773548,-122.455048,335,30,
+Battery Dynamite,37.801610,-122.476324,310,30,
+Chicken Point,37.770488,-122.462644,285,30,
+Casino Hill,37.772648,-122.462464,275,30,
+,37.722212,-122.505340,115,30,
+Fort Mason Hill,37.806884,-122.427922,105,30,
+Cathedral Hill,37.784230,-122.425370,210,0,
+Kite Hill,37.758330,-122.441360,435,0,
+Billy Goat Hill,37.741410,-122.433270,505,0,In Billy Goat Hill. 180 degree views.
+Alcatraz Island,37.826250,-122.422167,135,135,
+Sutro Heights,37.777940,-122.512120,195,25,
+Tank Hill,37.759900,-122.447700,645,0,In Tank Hill Park. 270 degree views.
+Heidelberg Hill,37.768200,-122.469100,240,0,
+Hermit Rock,37.785726,-122.509619,25,25,
+Alta Plaza Park,37.791371,-122.437839,290,5,
+Duncan Hill,37.745983,-122.433400,420,5,
+Ignatius Heights,37.776319,-122.451083,350,5,

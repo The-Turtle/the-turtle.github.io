@@ -183,6 +183,7 @@
                         <th>Name</th>
                         <th>Elevation (ft)</th>
                         <th>Prominence (ft)</th>
+                        <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody id="hills-tbody"></tbody>
@@ -195,6 +196,7 @@
                         <th>Name</th>
                         <th>Elevation (ft)</th>
                         <th>Prominence (ft)</th>
+                        <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody id="honorable-tbody"></tbody>
@@ -236,6 +238,7 @@
                         lng: parseFloat(row.longitude),
                         elevation: parseFloat(row.elevation_ft),
                         prominence: parseFloat(row.prominence_ft),
+                        notes: row.notes ? row.notes.trim() : "",
                         marker: null,
                     }));
 
@@ -363,7 +366,8 @@
                             "</td>" +
                             "<td>" +
                             hill.prominence +
-                            "</td>";
+                            "</td>" +
+                            "<td>" + (hill.notes || "") + "</td>";
                         tbody.appendChild(row);
 
                     });
@@ -448,7 +452,8 @@
                             "</td>" +
                             "<td>" +
                             h.prominence +
-                            "</td>";
+                            "</td>" +
+                            "<td>" + (h.notes || "") + "</td>";
                         htbody.appendChild(row);
                     });
 
