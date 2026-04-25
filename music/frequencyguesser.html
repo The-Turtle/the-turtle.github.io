@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Test your ear by guessing frequencies from 10 BPM to 10 kHz. Track your accuracy on an interactive error graph."
+        />
+        <title>Frequency Guesser | Holden Mui</title>
+        <link
+            rel="icon"
+            href="../files/images/turtleicon.png"
+            type="image/x-icon"
+        />
+        <link rel="stylesheet" href="../style.css" />
+        <style>
+            main {
+                text-align: center;
+            }
+            main > p {
+                text-align: center;
+            }
+            .corner-controls {
+                position: fixed;
+                bottom: 14px;
+                right: 14px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+                color: #666;
+                z-index: 50;
+                background: rgba(255, 255, 255, 0.92);
+                padding: 6px 10px;
+                border-radius: 8px;
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+            }
+            #refA {
+                width: 52px;
+                text-align: center;
+                padding: 2px 4px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 13px;
+                -moz-appearance: textfield;
+            }
+            #refA::-webkit-inner-spin-button,
+            #refA::-webkit-outer-spin-button {
+                opacity: 1;
+            }
+            .help-icon {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: var(--dark-green);
+                color: white;
+                text-align: center;
+                line-height: 20px;
+                font-size: 12px;
+                font-weight: bold;
+                cursor: help;
+                position: relative;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            .help-icon .tooltip {
+                display: none;
+                position: absolute;
+                right: 0;
+                bottom: 30px;
+                background: #333;
+                color: white;
+                padding: 14px 16px;
+                border-radius: 8px;
+                font-size: 13px;
+                width: 270px;
+                text-align: left;
+                z-index: 100;
+                line-height: 1.7;
+                font-weight: normal;
+                white-space: pre-line;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+            }
+            .help-icon:hover .tooltip,
+            .help-icon.show-tooltip .tooltip {
+                display: block;
+            }
+            .game-btn {
+                background-color: var(--dark-green);
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
+                padding: 9px 20px;
+                font-size: 15px;
+                cursor: pointer;
+                border: 2px solid var(--turtle-green);
+                margin: 4px;
+                transition:
+                    transform 0.15s,
+                    box-shadow 0.15s;
+            }
+            .game-btn:hover {
+                transform: scale(1.04);
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+            }
+            .game-btn:disabled {
+                opacity: 0.5;
+                cursor: default;
+                transform: none;
+                box-shadow: none;
+            }
+            #toggleBtn {
+                min-width: 100px;
+                height: 40px;
+                line-height: 18px;
+                box-sizing: border-box;
+                position: relative;
+            }
+            #volumeHint {
+                position: absolute;
+                bottom: 48px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: white;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: normal;
+                white-space: nowrap;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.3s;
+                z-index: 10;
+            }
+            #volumeHint.show {
+                opacity: 1;
+            }
+            #guessInput {
+                border-radius: 8px;
+                padding: 9px 12px;
+                font-size: 15px;
+                border: 2px solid #ccc;
+                width: 230px;
+                text-align: center;
+            }
+            #guessInput:focus {
+                outline: none;
+                border-color: var(--turtle-green);
+            }
+            #guessInput:disabled {
+                opacity: 0.5;
+            }
+            #feedback {
+                margin: 14px 0 4px;
+                font-size: 15px;
+                min-height: 20px;
+                line-height: 1.6;
+            }
+            #graphContainer {
+                width: 100%;
+                max-width: 780px;
+                margin: 12px auto 0;
+            }
+            #graph {
+                width: 100%;
+            }
+            .audio-controls {
+                margin: 12px 0 6px;
+            }
+            .guess-row {
+                margin: 8px 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="top-left-name">
+                <img
+                    src="../files/images/turtleicon.png"
+                    alt="Turtle icon"
+                    class="name-icon"
+                />
+                <div style="display: inline-block">
+                    <div class="hide-name">
+                        <a class="namebtn" href="../index.html">Holden Mui</a>
+                    </div>
+                </div>
+            </div>
+            <nav>
+                <div class="dropdown">
+                    <a class="dropbtn" href="../index.html">Home</a>
+                </div>
+                <div class="dropdown">
+                    <a class="dropbtn">MIT</a>
+                    <div class="dropdown-content">
+                        <a href="../mit/coursework.html">Coursework</a>
+                        <a href="../mit/events.html">Events</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="dropbtn">Math</a>
+                    <div class="dropdown-content">
+                        <a href="../math/research.html">Research</a>
+                        <a href="../math/talks.html">Talks</a>
+                        <a href="../math/teaching.html">Teaching</a>
+                        <a href="../math/olympiad.html">Olympiad</a>
+                        <a href="../math/puzzles.html">Puzzles</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="dropbtn">Music</a>
+                    <div class="dropdown-content">
+                        <a href="../music/piano.html">Piano</a>
+                        <a href="../music/composition.html">Composition</a>
+                        <a href="../music/arrangements.html"
+                            >Arrangements</a
+                        >
+                        <a href="../music/musicguesser.html"
+                            >Music Guesser</a
+                        >
+                        <a href="../music/frequencyguesser.html"
+                            >Frequency Guesser</a
+                        >
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="dropbtn">Other</a>
+                    <div class="dropdown-content">
+                        <a href="../other/resume.html">Resume</a>
+                        <a href="../other/writing.html">Writing</a>
+                        <a href="../other/gallery.html">Gallery</a>
+                        <a href="../other/news.html">News</a>
+                        <a href="../other/links.html">Links</a>
+                        <a href="../other/sfhills.html">SF Hills</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <h1>Frequency Guesser</h1>
+
+            <div id="gameArea">
+                <div id="controls">
+                    <div class="audio-controls">
+                        <button class="game-btn" id="toggleBtn">
+                            ▶ Play
+                            <span id="volumeHint">🔊 Make sure your volume is on!</span>
+                        </button>
+                    </div>
+                    <div class="guess-row">
+                        <input
+                            type="text"
+                            id="guessInput"
+                            placeholder="e.g. 440 Hz, 120 BPM, C#4+25c"
+                            autocomplete="off"
+                        />
+                        <button class="game-btn" id="submitBtn">
+                            Submit
+                        </button>
+                        <button class="game-btn" id="nextBtn" style="display: none">
+                            Next
+                        </button>
+                    </div>
+                </div>
+                <p id="feedback"></p>
+            </div>
+
+
+            <div id="graphContainer">
+                <canvas id="graph"></canvas>
+            </div>
+        </main>
+
+        <div class="corner-controls">
+            <label>A4 =
+                <input
+                    type="number"
+                    id="refA"
+                    value="440"
+                    min="400"
+                    max="500"
+                    step="1"
+                    onkeydown="return false"
+                />
+                Hz</label>
+            <span class="help-icon" id="helpIcon"
+                >?<span class="tooltip"
+                    >Valid input formats:
+&#8226; <b>Hz</b>: 440 Hz
+&#8226; <b>BPM</b>: 120 BPM
+&#8226; <b>Note</b>: C#4, A4+25c, Bb3-10 cents
+
+Notes: C C#/Db D D#/Eb E F F#/Gb G G#/Ab A A#/Bb B
+Octave: 0–9
+Cents: optional, e.g.&nbsp;+50c or -30&nbsp;cents
+
+Range: 10 BPM – 10 kHz</span
+                ></span
+            >
+        </div>
+
+        <script src="frequencyguesser.js" defer></script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const dropdowns =
+                    document.querySelectorAll(".dropdown");
+
+                dropdowns.forEach((dropdown) => {
+                    const button =
+                        dropdown.querySelector(".dropbtn");
+                    button.addEventListener("click", () => {
+                        dropdown.classList.toggle("active");
+                    });
+                });
+
+                document.addEventListener("click", (e) => {
+                    dropdowns.forEach((dropdown) => {
+                        if (!dropdown.contains(e.target)) {
+                            dropdown.classList.remove("active");
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
