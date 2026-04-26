@@ -136,11 +136,11 @@ function buildToneBuffer(freq) {
     return buf;
 }
 
-function playTone() {
+async function playTone() {
     if (currentFreq == null) return;
     if (!audioCtx) initAudio();
     stopTone();
-    if (audioCtx.state === "suspended") audioCtx.resume();
+    if (audioCtx.state === "suspended") await audioCtx.resume();
 
     currentSrc = audioCtx.createBufferSource();
     currentSrc.buffer = buildToneBuffer(currentFreq);
@@ -160,11 +160,11 @@ function stopTone() {
     updateToggleBtn();
 }
 
-function toggleTone() {
+async function toggleTone() {
     if (currentSrc) {
         stopTone();
     } else {
-        playTone();
+        await playTone();
     }
 }
 
@@ -252,7 +252,7 @@ function parseGuess(raw) {
 /* ======================================================
    Game logic
    ====================================================== */
-function nextRound() {
+async function nextRound() {
     currentFreq = sampleFreq();
 
     const inp = document.getElementById("guessInput");
@@ -267,7 +267,7 @@ function nextRound() {
     document.getElementById("feedback").textContent = "";
 
     roundActive = true;
-    if (audioCtx) playTone();
+    if (audioCtx) await playTone();
 }
 
 function submitGuess() {
@@ -350,11 +350,13 @@ function drawGraph() {
     ctx.fillStyle = "#fafafa";
     ctx.fillRect(ml, mt, pw, ph);
 
-    /* --- X grid lines at octaves (powers of 2) --- */
+    /* --- X grid lines at octaves of the reference A --- */
     ctx.strokeStyle = "#e0e0e0";
     ctx.lineWidth = 1;
-    for (let exp = Math.ceil(xLo); exp <= Math.floor(xHi); exp++) {
-        const x = xPx(exp);
+    const refA = getRefA();
+    const refALog2 = Math.log2(refA);
+    for (let oct = Math.ceil(xLo - refALog2); oct <= Math.floor(xHi - refALog2); oct++) {
+        const x = xPx(refALog2 + oct);
         if (x < ml || x > ml + pw) continue;
         ctx.beginPath();
         ctx.moveTo(x, mt);
@@ -468,10 +470,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* Volume hint: show on first hover, hide after 2s, never again */
     const hint = document.getElementById("volumeHint");
-    document.getElementById("toggleBtn").addEventListener("mouseenter", () => {
+    const toggleBtn = document.getElementById("toggleBtn");
+    function showHintOnce() {
         hint.classList.add("show");
         setTimeout(() => hint.classList.remove("show"), 2000);
-    }, { once: true });
+        toggleBtn.removeEventListener("mouseenter", showHintOnce);
+        toggleBtn.removeEventListener("click", showHintOnce);
+    }
+    toggleBtn.addEventListener("mouseenter", showHintOnce);
+    toggleBtn.addEventListener("click", showHintOnce);
 
     /* Mobile-friendly tooltip toggle */
     document
