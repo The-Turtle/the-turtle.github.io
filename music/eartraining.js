@@ -250,7 +250,7 @@ function stopPlayback() {
  * Each note finds the nearest sample and pitch-shifts via playbackRate.
  */
 async function playNotes(notes) {
-    if (!notes.length) return;
+    if (!notes.length) { stopPlayback(); return; }
     if (!audioCtx) initAudio();
     if (audioCtx.state === 'suspended') await audioCtx.resume();
     if (!samplesLoaded) await loadSamples();
@@ -271,7 +271,7 @@ async function playNotes(notes) {
         src.playbackRate.value = rate;
 
         var noteGain = audioCtx.createGain();
-        noteGain.gain.value = noteVol;
+        noteGain.gain.value = noteVol / Math.sqrt(rate);
 
         src.connect(noteGain);
         noteGain.connect(masterGain);
@@ -594,10 +594,8 @@ function onKeyClick(midi) {
     updateKeyboard();
 
     /* Play all currently selected notes as a chord (if setting is on) */
-    if (hearGuess && selectedNotes.size > 0) {
+    if (hearGuess) {
         playNotes(Array.from(selectedNotes));
-    } else if (selectedNotes.size === 0) {
-        stopPlayback();
     }
 }
 
