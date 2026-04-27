@@ -11,6 +11,7 @@ const MAX_FREQ = 10000; // 10 kHz
     Transition around freq ≈ 0.3 / SIGMA.
     With SIGMA = 5e-4 the crossover is ~600 Hz. */
 const SIGMA = 5e-4;
+const FADE_TIME = 0.03; // 30 ms fade-in / fade-out to avoid clicks
 
 /* ======================================================
    State
@@ -139,21 +140,40 @@ function buildToneBuffer(freq) {
 async function playTone() {
     if (currentFreq == null) return;
     if (!audioCtx) initAudio();
-    stopTone();
+    stopTone(false);   // immediate stop – the fade-in masks any click
     if (audioCtx.state === "suspended") await audioCtx.resume();
 
     currentSrc = audioCtx.createBufferSource();
     currentSrc.buffer = buildToneBuffer(currentFreq);
     currentSrc.loop = true;
     currentSrc.connect(gainNode);
+
+    /* Fade in */
+    const now = audioCtx.currentTime;
+    gainNode.gain.cancelScheduledValues(now);
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.5, now + FADE_TIME);
+
     currentSrc.start();
     updateToggleBtn();
 }
 
-function stopTone() {
+/**
+ * @param {boolean} fade – true  → smooth 30 ms fade-out (user stop / submit)
+ *                         false → immediate stop (internal, before a new play)
+ */
+function stopTone(fade) {
     if (currentSrc) {
         try {
-            currentSrc.stop();
+            if (fade && audioCtx) {
+                const now = audioCtx.currentTime;
+                gainNode.gain.cancelScheduledValues(now);
+                gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + FADE_TIME);
+                currentSrc.stop(now + FADE_TIME);
+            } else {
+                currentSrc.stop();
+            }
         } catch (_) {}
         currentSrc = null;
     }
@@ -162,7 +182,7 @@ function stopTone() {
 
 async function toggleTone() {
     if (currentSrc) {
-        stopTone();
+        stopTone(true);  // user-initiated → fade out
     } else {
         await playTone();
     }
@@ -282,7 +302,7 @@ function submitGuess() {
     }
 
     roundActive = false;
-    stopTone();
+    stopTone(true);  // fade out on submit
 
     /* Error in octaves (log₂ ratio) */
     const err = Math.log2(hz / currentFreq);

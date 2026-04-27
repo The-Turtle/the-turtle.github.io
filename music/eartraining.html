@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Train your ear by identifying notes in a chord. Listen and pick the notes on an interactive piano keyboard."
+        />
+        <title>Ear Training | Holden Mui</title>
+        <link
+            rel="icon"
+            href="../files/images/turtleicon.png"
+            type="image/x-icon"
+        />
+        <link rel="stylesheet" href="../style.css" />
+        <style>
+            main {
+                text-align: center;
+                max-width: 960px;
+            }
+            .game-btn {
+                background-color: var(--dark-green);
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
+                padding: 9px 20px;
+                font-size: 15px;
+                cursor: pointer;
+                border: 2px solid var(--turtle-green);
+                margin: 4px;
+                transition:
+                    transform 0.15s,
+                    box-shadow 0.15s;
+            }
+            .game-btn:hover {
+                transform: scale(1.04);
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+            }
+            .game-btn:disabled {
+                opacity: 0.5;
+                cursor: default;
+                transform: none;
+                box-shadow: none;
+            }
+            .controls-row {
+                margin: 14px 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .difficulty-label {
+                font-size: 13px;
+                font-weight: bold;
+                color: #555;
+            }
+            .difficulty-btns {
+                display: flex;
+                gap: 4px;
+                flex-wrap: wrap;
+            }
+            .diff-btn {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                border: 2px solid #ccc;
+                background: white;
+                font-size: 12px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.15s;
+                color: #555;
+                padding: 0;
+            }
+            .diff-btn:hover {
+                border-color: var(--turtle-green);
+                color: var(--turtle-green);
+            }
+            .diff-btn.active {
+                background: var(--dark-green);
+                color: white;
+                border-color: var(--dark-green);
+            }
+            .notes-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .audio-controls {
+                margin: 12px 0 6px;
+                position: relative;
+                display: inline-block;
+            }
+            #playBtn {
+                min-width: 100px;
+                height: 40px;
+                line-height: 18px;
+                box-sizing: border-box;
+            }
+            #volumeHint {
+                position: absolute;
+                bottom: 48px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: white;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: normal;
+                white-space: nowrap;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.3s;
+                z-index: 10;
+            }
+            #volumeHint.show {
+                opacity: 1;
+            }
+            #keyboardWrapper {
+                overflow-x: auto;
+                margin: 20px auto;
+                max-width: 100%;
+                padding-bottom: 8px;
+            }
+            #keyboard {
+                position: relative;
+                margin: 0 auto;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            .piano-key {
+                position: absolute;
+                box-sizing: border-box;
+                cursor: pointer;
+            }
+            .white-key {
+                background: #fff;
+                border: 1px solid #999;
+                border-radius: 0 0 5px 5px;
+                z-index: 1;
+            }
+            .white-key:hover {
+                background: #f0f0f0;
+            }
+            .white-key.disabled {
+                cursor: default;
+            }
+            .white-key.disabled:hover {
+                background: #fff;
+            }
+            .black-key {
+                background: #333;
+                border: 1px solid #000;
+                border-radius: 0 0 3px 3px;
+                z-index: 2;
+            }
+            .black-key:hover {
+                background: #555;
+            }
+            .black-key.disabled {
+                cursor: default;
+            }
+            .black-key.disabled:hover {
+                background: #333;
+            }
+            .key-circle {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                position: absolute;
+                bottom: 12px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: none;
+                z-index: 3;
+                pointer-events: none;
+            }
+            .black-key .key-circle {
+                bottom: 8px;
+                width: 12px;
+                height: 12px;
+            }
+            .key-circle.selected {
+                display: block;
+                background: #7e57c2;
+            }
+            /* Answer-key highlights (entire key background) */
+            .white-key.answer {
+                background: #c8e6c9;
+            }
+            .white-key.answer.disabled:hover {
+                background: #c8e6c9;
+            }
+            .black-key.answer {
+                background: #388e3c;
+            }
+            .black-key.answer.disabled:hover {
+                background: #388e3c;
+            }
+            .octave-label {
+                position: absolute;
+                font-size: 11px;
+                color: #888;
+                z-index: 1;
+                text-align: center;
+                pointer-events: none;
+            }
+            #feedback {
+                margin: 8px 0;
+                font-size: 15px;
+                height: 24px;
+                line-height: 24px;
+                visibility: hidden;
+            }
+            #feedback.visible {
+                visibility: visible;
+            }
+            /* Preset splash screen */
+            #presetScreen {
+                text-align: center;
+                padding: 10px 0 20px;
+            }
+            #presetScreen p {
+                margin-bottom: 20px;
+            }
+            .preset-grid {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            .preset-card {
+                background: #f8f8f8;
+                border: 2px solid #ddd;
+                border-radius: 10px;
+                padding: 14px 18px;
+                width: 130px;
+                cursor: pointer;
+                transition: border-color 0.15s, box-shadow 0.15s;
+                text-align: center;
+            }
+            .preset-card:hover {
+                border-color: var(--turtle-green);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+            .preset-card h3 {
+                margin: 0;
+                font-size: 15px;
+                color: var(--dark-green);
+            }
+            #gameArea {
+                display: none;
+            }
+            #gameArea.active {
+                display: block;
+            }
+            .corner-controls {
+                position: fixed;
+                bottom: 14px;
+                right: 14px;
+                font-size: 13px;
+                color: #666;
+                z-index: 50;
+                background: rgba(255, 255, 255, 0.92);
+                border-radius: 8px;
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+            }
+            .settings-btn {
+                display: block;
+                width: 100%;
+                background: none;
+                border: none;
+                padding: 8px 14px;
+                font-size: 15px;
+                font-weight: bold;
+                color: #555;
+                cursor: pointer;
+                text-align: left;
+                border-radius: 8px;
+                transition: color 0.15s;
+            }
+            .settings-btn:hover {
+                color: var(--turtle-green);
+            }
+            .settings-panel {
+                display: none;
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px 14px;
+                position: relative;
+            }
+            .settings-panel.open {
+                display: flex;
+            }
+            .settings-panel.open ~ .settings-btn {
+                display: none;
+            }
+            .settings-close {
+                position: absolute;
+                top: 6px;
+                right: 6px;
+                background: none;
+                border: none;
+                font-size: 16px;
+                color: #999;
+                cursor: pointer;
+                padding: 2px 6px;
+                line-height: 1;
+                border-radius: 4px;
+            }
+            .settings-close:hover {
+                color: #555;
+            }
+            .settings-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 2px;
+            }
+            .settings-header > span {
+                font-size: 15px;
+                font-weight: bold;
+                color: #555;
+            }
+            .toggle-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            .toggle-switch {
+                position: relative;
+                width: 36px;
+                height: 20px;
+                flex-shrink: 0;
+            }
+            .toggle-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .toggle-slider {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #ccc;
+                border-radius: 20px;
+                transition: background 0.2s;
+                cursor: pointer;
+            }
+            .toggle-slider::before {
+                content: '';
+                position: absolute;
+                width: 16px;
+                height: 16px;
+                left: 2px;
+                bottom: 2px;
+                background: white;
+                border-radius: 50%;
+                transition: transform 0.2s;
+            }
+            .toggle-switch input:checked + .toggle-slider {
+                background: var(--dark-green);
+            }
+            .toggle-switch input:checked + .toggle-slider::before {
+                transform: translateX(16px);
+            }
+            .toggle-switch input:disabled + .toggle-slider {
+                background: #e0e0e0;
+                cursor: not-allowed;
+            }
+            .toggle-row:has(input:disabled) {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
+            .help-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: var(--dark-green);
+                color: white;
+                font-size: 12px;
+                font-weight: bold;
+                cursor: help;
+                position: relative;
+                user-select: none;
+                -webkit-user-select: none;
+                flex-shrink: 0;
+            }
+            .help-icon .tooltip {
+                display: none;
+                position: absolute;
+                right: 0;
+                bottom: 30px;
+                background: #333;
+                color: white;
+                padding: 14px 16px;
+                border-radius: 8px;
+                font-size: 13px;
+                width: 280px;
+                text-align: left;
+                z-index: 100;
+                line-height: 1.7;
+                font-weight: normal;
+                white-space: pre-line;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+            }
+            .help-icon:hover .tooltip {
+                display: block;
+            }
+            .corner-divider {
+                border: none;
+                border-top: 1px solid #ddd;
+                margin: 2px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="top-left-name">
+                <img
+                    src="../files/images/turtleicon.png"
+                    alt="Turtle icon"
+                    class="name-icon"
+                />
+                <div style="display: inline-block">
+                    <div class="hide-name">
+                        <a class="namebtn" href="../index.html">Holden Mui</a>
+                    </div>
+                </div>
+            </div>
+            <nav>
+                <div class="dropdown">
+                    <a class="dropbtn" href="../index.html">Home</a>
+                </div>
+                <div class="dropdown">
+                    <a class="dropbtn">MIT</a>
+                    <div class="dropdown-content">
+                        <a href="../mit/coursework.html">Coursework</a>
+                        <a href="../mit/events.html">Events</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="dropbtn">Math</a>
+                    <div class="dropdown-content">
+                        <a href="../math/research.html">Research</a>
+                        <a href="../math/talks.html">Talks</a>
+                        <a href="../math/teaching.html">Teaching</a>
+                        <a href="../math/olympiad.html">Olympiad</a>
+                        <a href="../math/puzzles.html">Puzzles</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="dropbtn">Music</a>
+                    <div class="dropdown-content">
+                        <a href="../music/piano.html">Piano</a>
+                        <a href="../music/composition.html"
+                            >Composition</a
+                        >
+                        <a href="../music/arrangements.html"
+                            >Arrangements</a
+                        >
+                        <a href="../music/musicguesser.html"
+                            >Music Guesser</a
+                        >
+                        <a href="../music/frequencyguesser.html"
+                            >Frequency Guesser</a
+                        >
+                        <a href="../music/eartraining.html"
+                            >Ear Training</a
+                        >
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="dropbtn">Other</a>
+                    <div class="dropdown-content">
+                        <a href="../other/resume.html">Resume</a>
+                        <a href="../other/writing.html">Writing</a>
+                        <a href="../other/gallery.html">Gallery</a>
+                        <a href="../other/news.html">News</a>
+                        <a href="../other/links.html">Links</a>
+                        <a href="../other/sfhills.html">SF Hills</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <h1>Ear Training</h1>
+
+            <div id="presetScreen">
+                <p>
+                    Listen to a chord, then pick the notes you hear on the
+                    keyboard. Choose a difficulty to begin.
+                </p>
+                <div class="preset-grid">
+                    <div class="preset-card" data-preset="1">
+                        <h3>Easy</h3>
+                    </div>
+                    <div class="preset-card" data-preset="2">
+                        <h3>Medium</h3>
+                    </div>
+                    <div class="preset-card" data-preset="3">
+                        <h3>Hard</h3>
+                    </div>
+                    <div class="preset-card" data-preset="4">
+                        <h3>Expert</h3>
+                    </div>
+                    <div class="preset-card" data-preset="5">
+                        <h3>Impossible</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div id="gameArea">
+                <div class="audio-controls">
+                    <button class="game-btn" id="playBtn">
+                        &#9654; Play
+                        <span id="volumeHint"
+                            >&#128266; Make sure your volume is on!</span
+                        >
+                    </button>
+                </div>
+
+                <div id="keyboardWrapper">
+                    <div id="keyboard"></div>
+                </div>
+
+                <p id="feedback"></p>
+
+                <div class="controls-row">
+                    <button class="game-btn" id="submitBtn">Submit</button>
+                    <button class="game-btn" id="nextBtn" style="display: none">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <div class="corner-controls">
+            <div class="settings-panel" id="settingsPanel">
+                <div class="settings-header">
+                    <span>⚙ Settings</span>
+                    <button class="settings-close" id="settingsClose">✕</button>
+                </div>
+                <div class="notes-row">
+                    <span class="difficulty-label">Notes:</span>
+                    <div class="difficulty-btns">
+                        <button class="diff-btn" data-val="2">2</button>
+                        <button class="diff-btn active" data-val="3">3</button>
+                        <button class="diff-btn" data-val="4">4</button>
+                        <button class="diff-btn" data-val="5">5</button>
+                        <button class="diff-btn" data-val="6">6</button>
+                    </div>
+                </div>
+                <hr class="corner-divider" />
+                <div class="toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="smallGapsToggle" checked />
+                        <span class="toggle-slider"></span>
+                    </label>
+                    Small gaps
+                </div>
+                <div class="toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="doublingsToggle" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                    Doublings
+                </div>
+                <div class="toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="chordsOnlyToggle" checked />
+                        <span class="toggle-slider"></span>
+                    </label>
+                    Chords only
+                </div>
+                <div class="toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="inversionsToggle" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                    Inversions
+                </div>
+                <hr class="corner-divider" />
+                <div class="toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="hearGuessToggle" checked />
+                        <span class="toggle-slider"></span>
+                    </label>
+                    Hear guess
+                </div>
+                <div class="toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoLowestToggle" checked />
+                        <span class="toggle-slider"></span>
+                    </label>
+                    Auto-select lowest
+                    <span class="help-icon" id="helpIcon" style="margin-left: auto"
+                    >?<span class="tooltip"
+                        ><b>Small gaps</b> – consecutive notes are always at most an octave apart.
+
+<b>Doublings</b> – allow the same note name in different octaves (e.g.&nbsp;C3 and C5).
+
+<b>Chords only</b> – notes are drawn from common tertian chord voicings.
+
+<b>Inversions</b> – allow inverted chord voicings. Turning this on also enables Chords only.
+
+<b>Hear guess</b> – play your selected notes each time you click a key.
+
+<b>Auto-select lowest</b> – pre-selects the lowest answer note each round.</span
+                    ></span>
+                </div>
+            </div>
+            <button class="settings-btn" id="settingsBtn">⚙ Settings</button>
+        </div>
+
+        <script src="eartraining.js" defer></script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const dropdowns =
+                    document.querySelectorAll(".dropdown");
+
+                dropdowns.forEach((dropdown) => {
+                    const button =
+                        dropdown.querySelector(".dropbtn");
+                    button.addEventListener("click", () => {
+                        dropdown.classList.toggle("active");
+                    });
+                });
+
+                document.addEventListener("click", (e) => {
+                    dropdowns.forEach((dropdown) => {
+                        if (!dropdown.contains(e.target)) {
+                            dropdown.classList.remove("active");
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
