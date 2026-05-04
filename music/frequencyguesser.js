@@ -46,6 +46,13 @@ function initAudio() {
     gainNode = audioCtx.createGain();
     gainNode.gain.value = 0.5;
     gainNode.connect(audioCtx.destination);
+
+    /* Safari unlock: send a silent buffer synchronously inside the
+       user gesture so the context isn't left muted. */
+    const silent = audioCtx.createBufferSource();
+    silent.buffer = audioCtx.createBuffer(1, 1, 22050);
+    silent.connect(audioCtx.destination);
+    silent.start(0);
 }
 
 /**

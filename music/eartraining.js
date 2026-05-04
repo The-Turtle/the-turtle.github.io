@@ -192,6 +192,14 @@ function initAudio() {
     masterGain = audioCtx.createGain();
     masterGain.gain.value = 0.75;
     masterGain.connect(audioCtx.destination);
+
+    /* Safari unlock: send a silent buffer synchronously inside the
+       user gesture so the context isn't left muted while loadSamples()
+       awaits the network. */
+    var silent = audioCtx.createBufferSource();
+    silent.buffer = audioCtx.createBuffer(1, 1, 22050);
+    silent.connect(audioCtx.destination);
+    silent.start(0);
 }
 
 /**
@@ -202,13 +210,19 @@ async function loadSamples() {
     if (samplesLoaded || samplesLoading) return;
     samplesLoading = true;
 
+    /* Safari-safe decodeAudioData: older Safari only supports the callback
+       form, so always pass callbacks and wrap in a Promise ourselves. */
+    function decode(buf) {
+        return new Promise(function (resolve, reject) {
+            audioCtx.decodeAudioData(buf, resolve, reject);
+        });
+    }
+
     var promises = SAMPLES.map(function (s) {
         return fetch(SAMPLE_PATH + s.name + '.mp3')
             .then(function (r) { return r.arrayBuffer(); })
-            .then(function (buf) { return audioCtx.decodeAudioData(buf); })
-            .then(function (decoded) {
-                sampleBuffers[s.midi] = decoded;
-            })
+            .then(decode)
+            .then(function (decoded) { sampleBuffers[s.midi] = decoded; })
             .catch(function (err) {
                 console.warn('Failed to load sample ' + s.name + ':', err);
             });
@@ -251,6 +265,7 @@ function stopPlayback() {
  */
 async function playNotes(notes) {
     if (!notes.length) { stopPlayback(); return; }
+    /* initAudio() must run synchronously inside the user gesture for Safari. */
     if (!audioCtx) initAudio();
     if (audioCtx.state === 'suspended') await audioCtx.resume();
     if (!samplesLoaded) await loadSamples();
