@@ -1,0 +1,107 @@
+/* Layout for the 0xPARC writing pages.
+   Layered on top of ../../style.css. */
+
+/* --- Landing & section pages --- */
+
+.section-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.section-list > li {
+    margin: 28px 0;
+}
+
+.section-list h2 {
+    margin: 0 0 6px;
+}
+
+.section-list h2 a {
+    text-decoration: none;
+}
+
+.section-list h2 a:hover {
+    text-decoration: underline;
+}
+
+.post-list {
+    list-style: none;
+    padding-left: 16px;
+    margin: 0;
+    border-left: 3px solid #cfeeee;
+}
+
+.post-list li {
+    margin: 10px 0;
+}
+
+.post-list .post-title {
+    font-weight: bold;
+}
+
+/* --- Per-post breadcrumb & nav --- */
+
+.post-breadcrumb {
+    font-size: 14px;
+    margin: 0 0 6px;
+    color: #666;
+}
+
+.post-breadcrumb a {
+    text-decoration: none;
+}
+
+.post-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.post-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 12px;
+    margin: 40px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid #ddd;
+}
+
+.post-nav a {
+    max-width: 45%;
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid #cfeeee;
+    border-radius: 6px;
+    background: #f4fbfb;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.post-nav a:hover {
+    background: #e0f7fa;
+    border-color: var(--turtle-green);
+    text-decoration: none;
+}
+
+.post-nav .label {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.post-nav .post-nav-title {
+    display: block;
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 1px;
+}
+
+.post-nav .next {
+    text-align: right;
+}
+
+/* Hide a missing prev/next slot but keep the layout. */
+.post-nav .placeholder {
+    visibility: hidden;
+}
