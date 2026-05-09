@@ -90,12 +90,7 @@
         if (!el) return;
         el.innerHTML = SECTIONS.map((s, i) => `
             <li>
-              <a class="section-link" href="${s.slug}/index.html">Part ${i + 1}. ${s.title}</a>
-              <ul class="post-list">
-                ${s.posts.map((p, j) => `
-                  <li><a class="post-title" href="${s.slug}/${p.slug}.html">${postLabel(i, j, p)}</a></li>
-                `).join('')}
-              </ul>
+              <a class="post-title" href="${s.slug}/index.html">Part ${i + 1}. ${s.title}</a>
             </li>`).join('');
     };
 

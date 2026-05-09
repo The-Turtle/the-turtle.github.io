@@ -45,7 +45,7 @@ main {
     background: var(--fhe-bg);
     box-shadow: none;
     border: none;
-    text-align: left;
+    text-align: justify;
     color: var(--fhe-fg);
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
@@ -66,9 +66,9 @@ main h4 {
     color: var(--fhe-fg);
 }
 main h2,
-main h3 { margin-top: 2.5em; }
+main h3 { margin-top: 2em; }
 main h4,
-main h5 { margin-top: 2em; }
+main h5 { margin-top: 1.5em; }
 main h1 { margin-top: 0; }
 
 /* Links: no underline by default, underline on hover. */
@@ -130,28 +130,6 @@ main .katex * {
 }
 
 /* --- Landing & section pages --- */
-
-.section-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.section-list > li {
-    margin: 20px 0;
-}
-
-.section-list .section-link {
-    display: inline-block;
-    font-weight: 700;
-    color: var(--fhe-fg);
-    text-decoration: none;
-    margin-bottom: 6px;
-}
-
-.section-list .section-link:hover {
-    text-decoration: underline;
-}
 
 .post-list {
     list-style: none;

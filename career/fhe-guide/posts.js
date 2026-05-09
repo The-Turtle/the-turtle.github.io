@@ -58,6 +58,19 @@ const SECTIONS = [
         ]
     },
     {
+        slug: 'implementation',
+        title: 'How is CKKS implemented?',
+        intro: `An engineering tour of the CKKS library: the computation
+                graph that programs are compiled into, the optimization
+                passes that rewrite it, and the GPU kernels that
+                ultimately run it.`,
+        posts: [
+            { slug: 'computation-graphs',  title: 'Computation graphs' },
+            { slug: 'optimization-passes', title: 'Optimization passes' },
+            { slug: 'gpu-kernels',         title: 'GPU kernel design' }
+        ]
+    },
+    {
         slug: 'security',
         title: 'How secure is CKKS?',
         intro: `What "secure" means in the CKKS world, what assumptions
