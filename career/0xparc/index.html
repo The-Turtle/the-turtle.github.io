@@ -15,39 +15,34 @@
     <main>
       <h1>0xPARC</h1>
       <p>
-        I spent one year at 0xPARC on a team of four building a
+        I've spent one year at 0xPARC on a team of four building a
         performant, production-grade fully homomorphic encryption
-        library from the ground up &mdash; no dependencies (except for
-        one GPU). Here's why we built it, how we built it, and what we
-        learned along the way.
+        (FHE) library from the ground up. As a way to wrap up my
+        time at 0xPARC and pass on what I learned to the next
+        generation of FHE builders, I made this guide. It's written
+        with a variety of archetypes in mind, from founders who want
+        to build on top of our system and engineers who want a deeper
+        understanding of the underlying mathematics, to interns,
+        researchers, and cryptographers who will work on the system
+        itself &mdash; or, more broadly, anyone curious about what
+        0xPARC does.
       </p>
       <p>
-        These posts are written for a wide audience. Depending on what
-        you're here for, different parts will be more useful:
+        Depending on what you're here for, different parts will be more useful:
       </p>
       <ul>
-        <li>
-          <b>If you just want to know what I've been up to</b> or what
-          FHE is at a high level, <a href="introduction/index.html">Part&nbsp;1</a>
-          is for you.
-        </li>
-        <li>
-          <b>If you want to use our system to build something</b>,
-          <a href="building/index.html">Part&nbsp;2</a> covers the
-          interface, cost model, and worked examples.
-        </li>
-        <li>
-          <b>If you want to know every last detail of how FHE works</b>
-          at a technical level, <a href="internals/index.html">Part&nbsp;3</a>
-          goes under the hood.
-        </li>
-        <li>
-          <b>If you're a security engineer wondering whether our system
-          is secure</b>, <a href="security/index.html">Part&nbsp;4</a>
-          covers the threat models and known attacks.
-        </li>
+        <li>If you want to know what I've been up to or what FHE is at a high level, read <a href="introduction/index.html">Part&nbsp;1</a>.</li>
+        <li>If you want to use our system to build something, read <a href="building/index.html">Part&nbsp;2</a>.</li>
+        <li>If you want to know every last detail of how FHE works at a technical level, read <a href="internals/index.html">Part&nbsp;3</a>.</li>
+        <li>If you're a security engineer wondering whether our system is secure, read <a href="security/index.html">Part&nbsp;4</a>.</li>
       </ul>
+      <p>
+        There are several FHE schemes in use today; the one we built is
+        <b>CKKS</b>, introduced by Cheon, Kim, Kim, and Song in 2017. Everything
+        in this guide is written with CKKS specifically in mind.
+      </p>
 
+      <h2>Contents</h2>
       <ol class="section-list" id="sections"></ol>
     </main>
 

@@ -10,18 +10,17 @@
 }
 
 .section-list > li {
-    margin: 28px 0;
+    margin: 16px 0;
 }
 
-.section-list h2 {
-    margin: 0 0 6px;
-}
-
-.section-list h2 a {
+.section-list .section-link {
+    display: inline-block;
+    font-weight: bold;
     text-decoration: none;
+    margin-bottom: 4px;
 }
 
-.section-list h2 a:hover {
+.section-list .section-link:hover {
     text-decoration: underline;
 }
 
