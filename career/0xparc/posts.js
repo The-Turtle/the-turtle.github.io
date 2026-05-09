@@ -66,5 +66,12 @@ const SECTIONS = [
             { slug: 'models',  title: 'Security models' },
             { slug: 'attacks', title: 'Attacks' }
         ]
+    },
+    {
+        slug: 'takeaways',
+        title: 'Takeaways',
+        /* This part has no sub-pages – the section page itself holds
+           the writing. Edit takeaways/index.html directly. */
+        posts: []
     }
 ];

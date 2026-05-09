@@ -50,6 +50,7 @@
     ];
 
     const partTitle = (s) => `Part ${SECTIONS.indexOf(s) + 1}. ${s.title}`;
+    const postLabel = (i, j, p) => `${i + 1}.${j + 1} ${p.title}`;
 
     /* ---- Site header ---- */
     const renderHeader = () => {
@@ -83,17 +84,20 @@
         });
     };
 
-    /* ---- Prev/next nav (used on section and post pages) ---- */
-    const navHtml = (prev, next, prevHref, nextHref, titleFn) => {
-        const slot = (item, dir, href) => item
-            ? `<a class="${dir}" href="${href(item)}">
+    /* ---- Prev/next nav (used on section and post pages) ----
+       Targets are { href, title } or null. The reading spine runs:
+         Section 1 page → Post 1.1 → … → last post of Section 1
+         → Section 2 page → Post 2.1 → … */
+    const navHtml = (prev, next) => {
+        const slot = (target, dir) => target
+            ? `<a class="${dir}" href="${target.href}">
                  <span class="label">${dir === 'prev' ? '&larr; Previous' : 'Next &rarr;'}</span>
-                 <span class="post-nav-title">${titleFn(item)}</span>
+                 <span class="post-nav-title">${target.title}</span>
                </a>`
             : `<span class="placeholder"></span>`;
         return `<nav class="post-nav">
-                  ${slot(prev, 'prev', prevHref)}
-                  ${slot(next, 'next', nextHref)}
+                  ${slot(prev, 'prev')}
+                  ${slot(next, 'next')}
                 </nav>`;
     };
 
@@ -105,67 +109,113 @@
             <li>
               <a class="section-link" href="${s.slug}/index.html">Part ${i + 1}. ${s.title}</a>
               <ul class="post-list">
-                ${s.posts.map((p) => `
-                  <li><a class="post-title" href="${s.slug}/${p.slug}.html">${p.title}</a></li>
+                ${s.posts.map((p, j) => `
+                  <li><a class="post-title" href="${s.slug}/${p.slug}.html">${postLabel(i, j, p)}</a></li>
                 `).join('')}
               </ul>
             </li>`).join('');
     };
 
-    /* ---- Section page ---- */
+    /* ---- Section page ----
+       Sections with posts auto-render their full body from posts.js.
+       Sections with no posts (e.g. "Takeaways") keep the page's
+       hand-written content; we only inject a breadcrumb and prev/next. */
     const renderSection = () => {
-        const el = document.getElementById('section-content');
-        if (!el) return;
         const i = SECTIONS.findIndex((s) => s.slug === window.PAGE.section);
         if (i === -1) return;
         const section = SECTIONS[i];
         const heading = partTitle(section);
         document.title = `${heading} | 0xPARC | Holden Mui`;
 
-        el.innerHTML = `
-            <p class="post-breadcrumb">
-              <a href="../index.html">All 0xPARC writing</a> &rsaquo;
-              <span>${heading}</span>
-            </p>
-            <h1>${heading}</h1>
-            <p>${section.intro}</p>
-            <ul class="post-list">
-              ${section.posts.map((p) =>
-                `<li><a class="post-title" href="${p.slug}.html">${p.title}</a></li>`
-              ).join('')}
-            </ul>
-            ${navHtml(
-                i > 0 ? SECTIONS[i - 1] : null,
-                i < SECTIONS.length - 1 ? SECTIONS[i + 1] : null,
-                (s) => `../${s.slug}/index.html`,
-                (s) => `../${s.slug}/index.html`,
-                partTitle
-            )}`;
+        /* Previous: last post of previous section, or that section itself if it
+           had no posts. On the very first section, point back to the landing. */
+        let prev;
+        if (i === 0) {
+            prev = { href: '../index.html', title: 'Contents' };
+        } else {
+            const ps = SECTIONS[i - 1].posts;
+            if (ps.length > 0) {
+                const last = ps[ps.length - 1];
+                prev = { href: `../${SECTIONS[i - 1].slug}/${last.slug}.html`,
+                         title: postLabel(i - 1, ps.length - 1, last) };
+            } else {
+                prev = { href: `../${SECTIONS[i - 1].slug}/index.html`,
+                         title: partTitle(SECTIONS[i - 1]) };
+            }
+        }
+
+        /* Next: first post of this section, or next section if this one's
+           empty. On the very last (empty) section, point back to landing. */
+        const next = section.posts.length > 0
+            ? { href: `${section.posts[0].slug}.html`,
+                title: postLabel(i, 0, section.posts[0]) }
+            : (i < SECTIONS.length - 1
+                ? { href: `../${SECTIONS[i + 1].slug}/index.html`,
+                    title: partTitle(SECTIONS[i + 1]) }
+                : { href: '../index.html', title: 'Contents' });
+
+        const auto = document.getElementById('section-content');
+        if (auto) {
+            /* Sections with posts: render the whole body. */
+            auto.innerHTML = `
+                <p class="post-breadcrumb">
+                  <a href="../index.html">Contents</a> &gt;
+                  <span>${heading}</span>
+                </p>
+                <h1>${heading}</h1>
+                <p>${section.intro}</p>
+                <ul class="post-list">
+                  ${section.posts.map((p, j) =>
+                    `<li><a class="post-title" href="${p.slug}.html">${postLabel(i, j, p)}</a></li>`
+                  ).join('')}
+                </ul>
+                ${navHtml(prev, next)}`;
+            return;
+        }
+
+        /* Hand-written section page: just inject crumb at top, nav at bottom. */
+        const crumb = document.getElementById('post-breadcrumb');
+        if (crumb) crumb.innerHTML = `
+            <a href="../index.html">Contents</a> &gt;
+            <span>${heading}</span>`;
+
+        const nav = document.getElementById('post-nav');
+        if (nav) nav.outerHTML = navHtml(prev, next);
     };
 
     /* ---- Post page ---- */
     const renderPost = () => {
-        const section = SECTIONS.find((s) => s.slug === window.PAGE.section);
-        if (!section) return;
-        const i = section.posts.findIndex((p) => p.slug === window.PAGE.slug);
-        if (i === -1) return;
-        const post = section.posts[i];
+        const sIdx = SECTIONS.findIndex((s) => s.slug === window.PAGE.section);
+        if (sIdx === -1) return;
+        const section = SECTIONS[sIdx];
+        const j = section.posts.findIndex((p) => p.slug === window.PAGE.slug);
+        if (j === -1) return;
+        const post = section.posts[j];
         document.title = `${post.title} | 0xPARC | Holden Mui`;
 
         const crumb = document.getElementById('post-breadcrumb');
         if (crumb) crumb.innerHTML = `
-            <a href="../index.html">All 0xPARC writing</a> &rsaquo;
-            <a href="index.html">${partTitle(section)}</a> &rsaquo;
+            <a href="../index.html">Contents</a> &gt;
+            <a href="index.html">${partTitle(section)}</a> &gt;
             <span>${post.title}</span>`;
 
+        /* Previous: previous post in this section, or this section's page. */
+        const prev = j > 0
+            ? { href: `${section.posts[j - 1].slug}.html`,
+                title: postLabel(sIdx, j - 1, section.posts[j - 1]) }
+            : { href: 'index.html', title: partTitle(section) };
+
+        /* Next: next post in this section, or the next section's page. */
+        const next = j < section.posts.length - 1
+            ? { href: `${section.posts[j + 1].slug}.html`,
+                title: postLabel(sIdx, j + 1, section.posts[j + 1]) }
+            : (sIdx < SECTIONS.length - 1
+                ? { href: `../${SECTIONS[sIdx + 1].slug}/index.html`,
+                    title: partTitle(SECTIONS[sIdx + 1]) }
+                : null);
+
         const nav = document.getElementById('post-nav');
-        if (nav) nav.outerHTML = navHtml(
-            i > 0 ? section.posts[i - 1] : null,
-            i < section.posts.length - 1 ? section.posts[i + 1] : null,
-            (p) => `${p.slug}.html`,
-            (p) => `${p.slug}.html`,
-            (p) => p.title
-        );
+        if (nav) nav.outerHTML = navHtml(prev, next);
     };
 
     const boot = () => {

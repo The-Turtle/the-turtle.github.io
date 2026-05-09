@@ -36,7 +36,29 @@
 }
 
 .post-list .post-title {
-    font-weight: bold;
+    text-decoration: none;
+}
+
+.post-list .post-title:hover {
+    text-decoration: underline;
+}
+
+/* On section pages, the post list is the main thing to click — give it
+   a flatter, more inviting feel without the left rail. */
+main > .post-list {
+    padding-left: 0;
+    border-left: none;
+}
+
+main > .post-list li {
+    padding: 6px 10px;
+    margin: 2px 0;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+main > .post-list li:hover {
+    background: #f4fbfb;
 }
 
 /* --- Per-post breadcrumb & nav --- */
