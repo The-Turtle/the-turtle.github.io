@@ -1,69 +1,58 @@
-/* Shared layout for the 0xPARC writing pages.
+/* Shared layout for the FHE guide pages.
    Each page sets `window.PAGE` before including this file:
 
      landing:   { kind: 'landing', depth: 2 }
      section:   { kind: 'section', section: '<slug>' }
      post:      { kind: 'post',    section: '<slug>', slug: '<slug>' }
 
-   The script renders the site header, breadcrumb, and prev/next nav
-   into placeholder elements with these IDs:
+   The script renders the site header, breadcrumb, prev/next nav, and
+   browser title into placeholder elements with these IDs:
      #site-header     always
      #sections        landing page
-     #section-content section page
-     #post-breadcrumb post page (top of <main>)
-     #post-nav        post page (bottom of <main>) */
+     #section-content section page (with posts)
+     #post-breadcrumb section page (no posts) / post page – top of <main>
+     #post-nav        section page (no posts) / post page – bottom of <main>
+
+   It also injects KaTeX (for $math$) and highlight.js (for code blocks)
+   on post pages, so individual post HTML files don't have to. */
 
 (() => {
     const depth = (window.PAGE && window.PAGE.depth) || 3;
     const root = '../'.repeat(depth);
 
-    const NAV = [
-        ['Home', root + 'index.html'],
-        ['Career', [
-            ['0xPARC',     root + 'career/0xparc.html'],
-            ['FHE Guide', root + 'career/fhe-guide/index.html'],
-            ['Coursework', root + 'career/coursework.html'],
-            ['Resume',     root + 'career/resume.html'],
-        ]],
-        ['Math', [
-            ['Research', root + 'math/research.html'],
-            ['Talks',    root + 'math/talks.html'],
-            ['Teaching', root + 'math/teaching.html'],
-            ['Olympiad', root + 'math/olympiad.html'],
-            ['Puzzles',  root + 'math/puzzles.html'],
-        ]],
-        ['Music', [
-            ['Piano',             root + 'music/piano.html'],
-            ['Composition',       root + 'music/composition.html'],
-            ['Arrangements',      root + 'music/arrangements.html'],
-            ['Music Guesser',     root + 'music/musicguesser.html'],
-            ['Frequency Guesser', root + 'music/frequencyguesser.html'],
-            ['Ear Training',      root + 'music/eartraining.html'],
-        ]],
-        ['Other', [
-            ['Events',   root + 'other/events.html'],
-            ['Writing',  root + 'other/writing.html'],
-            ['Gallery',  root + 'other/gallery.html'],
-            ['News',     root + 'other/news.html'],
-            ['Links',    root + 'other/links.html'],
-            ['SF Hills', root + 'other/sfhills.html'],
-        ]],
-    ];
-
     const partTitle = (s) => `Part ${SECTIONS.indexOf(s) + 1}. ${s.title}`;
     const postLabel = (i, j, p) => `${i + 1}.${j + 1} ${p.title}`;
 
-    /* ---- Site header ---- */
+    /* ---- KaTeX + highlight.js, injected for post pages only ----
+       Saves having to duplicate the same <head> boilerplate in every
+       post file. */
+    const injectMathAndCode = () => {
+        const head = document.head;
+        head.insertAdjacentHTML('beforeend', `
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+                    onload="renderMathInElement(document.body, {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '$',  right: '$',  display: false }
+                        ],
+                        throwOnError: false
+                    });"></script>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/tomorrow-night.min.css">
+            <script defer src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"
+                    onload="hljs.highlightAll();"></script>`);
+    };
+
+    /* ---- Site header ----
+       Inside the guide we drop the site-wide nav dropdowns and keep only
+       the identity (turtle + name), so the page chrome signals "you're in
+       a different section." The name still links back to the main site. */
     const renderHeader = () => {
         const el = document.getElementById('site-header');
         if (!el) return;
-        const dropdownHtml = ([label, val]) => Array.isArray(val)
-            ? `<div class="dropdown"><a class="dropbtn">${label}</a>
-                 <div class="dropdown-content">
-                   ${val.map(([t, h]) => `<a href="${h}">${t}</a>`).join('')}
-                 </div>
-               </div>`
-            : `<div class="dropdown"><a class="dropbtn" href="${val}">${label}</a></div>`;
+        /* The invisible <nav> with one dropdown reserves the exact same
+           height a normal page header has, so the bar doesn't shrink. */
         el.innerHTML = `
             <div class="top-left-name">
               <img src="${root}files/images/turtleicon.png" alt="Turtle icon" class="name-icon" />
@@ -73,16 +62,9 @@
                 </div>
               </div>
             </div>
-            <nav>${NAV.map(dropdownHtml).join('')}</nav>`;
-
-        const dropdowns = el.querySelectorAll('.dropdown');
-        dropdowns.forEach((d) => {
-            const btn = d.querySelector('.dropbtn');
-            btn?.addEventListener('click', () => d.classList.toggle('active'));
-        });
-        document.addEventListener('click', (e) => {
-            dropdowns.forEach((d) => { if (!d.contains(e.target)) d.classList.remove('active'); });
-        });
+            <nav style="visibility: hidden" aria-hidden="true">
+              <div class="dropdown"><a class="dropbtn">&nbsp;</a></div>
+            </nav>`;
     };
 
     /* ---- Prev/next nav (used on section and post pages) ----
@@ -126,7 +108,7 @@
         if (i === -1) return;
         const section = SECTIONS[i];
         const heading = partTitle(section);
-        document.title = `${heading} | 0xPARC | Holden Mui`;
+        document.title = `${heading} | FHE Guide | Holden Mui`;
 
         /* Previous: last post of previous section, or that section itself if it
            had no posts. On the very first section, point back to the landing. */
@@ -192,7 +174,7 @@
         const j = section.posts.findIndex((p) => p.slug === window.PAGE.slug);
         if (j === -1) return;
         const post = section.posts[j];
-        document.title = `${post.title} | 0xPARC | Holden Mui`;
+        document.title = `${post.title} | FHE Guide | Holden Mui`;
 
         const crumb = document.getElementById('post-breadcrumb');
         if (crumb) crumb.innerHTML = `
@@ -224,6 +206,9 @@
         if (window.PAGE?.kind === 'landing') renderLanding();
         if (window.PAGE?.kind === 'section') renderSection();
         if (window.PAGE?.kind === 'post')    renderPost();
+        if (window.PAGE?.kind === 'section' || window.PAGE?.kind === 'post') {
+            injectMathAndCode();
+        }
     };
 
     if (document.readyState === 'loading') {

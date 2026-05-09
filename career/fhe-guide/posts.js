@@ -49,7 +49,8 @@ const SECTIONS = [
                 ciphertext, and the optimizations that make the whole
                 thing fast.`,
         posts: [
-            { slug: 'rlwe',          title: 'Polynomials and RLWE' },
+            { slug: 'polynomials',   title: 'Polynomials' },
+            { slug: 'encryption',    title: 'Encryption and decryption' },
             { slug: 'operations',    title: 'Ciphertext operations' },
             { slug: 'bootstrapping', title: 'Bootstrapping' },
             { slug: 'optimizations', title: 'Optimizations' },
