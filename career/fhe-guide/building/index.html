@@ -10,7 +10,37 @@
   </head>
   <body>
     <header id="site-header"></header>
-    <main id="section-content"></main>
+
+    <main>
+      <p class="post-breadcrumb" id="post-breadcrumb"></p>
+      <h1>Part 2. How do you build with CKKS?</h1>
+
+      <p>
+        As described in <a href="../introduction/history.html">Section 1.1</a>,
+        there are many different fully homomorphic encryption schemes.
+        At 0xPARC, we chose to build the CKKS fully homomorphic
+        encryption scheme because it handles large amounts of data in
+        parallel and operates natively over real numbers, making it
+        well-suited to real-world workloads.
+      </p>
+      <p>
+        By the end of this section, founders, builders, and engineers
+        should have a clear sense of what kinds of computations are
+        realistic with CKKS and what kind of performance to expect from our platform.
+      </p>
+      <p>In this section, we'll cover:</p>
+      <ul>
+        <li>the interface: how to generate keys, encrypt and decrypt data, and the five fundamental operations on ciphertexts (<a href="interface.html">2.1</a>),</li>
+        <li>the cost model that determines what computations are faster and what computations are slower (<a href="cost.html">2.2</a>),</li>
+        <li>the tweakable parameters available during setup and how they affect runtime, precision, and security (<a href="parameters.html">2.3</a>), and</li>
+        <li>how the demos from <a href="../introduction/use-cases.html">Section 1.2</a> are built using these primitives (<a href="examples.html">2.4</a>).</li>
+      </ul>
+
+      <h3>Quick links</h3>
+      <ul class="post-list" id="post-list"></ul>
+
+      <nav class="post-nav" id="post-nav"></nav>
+    </main>
 
     <script>window.PAGE = { kind: 'section', section: 'building' };</script>
     <script src="../posts.js"></script>

@@ -1,6 +1,10 @@
-/* Single source of truth for the 0xPARC writing.
-   The landing page, each section page, and per-post prev/next nav
-   all read from this file.
+/* Single source of truth for the FHE guide's structure.
+   The landing page, section pages, and per-post prev/next nav all
+   read from this file.
+
+   Each section's intro prose lives in its own index.html, not here.
+   This file is purely structural: which sections exist, what posts
+   they contain, and the order of both.
 
    To add a post: add a { slug, title } entry to the right section
    here, then copy any existing post .html as a starting point and
@@ -14,11 +18,6 @@ const SECTIONS = [
     {
         slug: 'introduction',
         title: 'What is FHE?',
-        intro: `Fully homomorphic encryption (FHE) lets you compute on
-                encrypted data without ever decrypting it. The result of
-                the computation, when decrypted, is the same as if it had
-                been performed on the plaintext &mdash; but the server
-                doing the work never sees the inputs or the output.`,
         posts: [
             { slug: 'history',      title: 'A brief history of FHE' },
             { slug: 'use-cases',    title: 'What can you do with FHE?' },
@@ -29,10 +28,6 @@ const SECTIONS = [
     {
         slug: 'building',
         title: 'How do you build with CKKS?',
-        intro: `This section covers the practical side: the CKKS API
-                surface we expose, the cost model that determines what's
-                cheap and what's expensive, how to pick parameters, and
-                worked examples drawn from real demos.`,
         posts: [
             { slug: 'interface',  title: 'Interface' },
             { slug: 'cost',       title: 'Cost model' },
@@ -43,11 +38,6 @@ const SECTIONS = [
     {
         slug: 'internals',
         title: 'How does CKKS work?',
-        intro: `An under-the-hood look at CKKS: the polynomial ring it
-                lives in, how ciphertext operations are actually
-                implemented, how bootstrapping refreshes a tired
-                ciphertext, and the optimizations that make the whole
-                thing fast.`,
         posts: [
             { slug: 'polynomials',   title: 'Polynomials' },
             { slug: 'encryption',    title: 'Encryption and decryption' },
@@ -60,22 +50,15 @@ const SECTIONS = [
     {
         slug: 'implementation',
         title: 'How is CKKS implemented?',
-        intro: `An engineering tour of the CKKS library: the computation
-                graph that programs are compiled into, the optimization
-                passes that rewrite it, and the GPU kernels that
-                ultimately run it.`,
         posts: [
             { slug: 'computation-graphs',  title: 'Computation graphs' },
             { slug: 'optimization-passes', title: 'Optimization passes' },
-            { slug: 'gpu-kernels',         title: 'GPU kernel design' }
+            { slug: 'data-layout',         title: 'Data layout' }
         ]
     },
     {
         slug: 'security',
         title: 'How secure is CKKS?',
-        intro: `What "secure" means in the CKKS world, what assumptions
-                that security rests on, and what attacks the scheme is
-                designed (or not designed) to resist.`,
         posts: [
             { slug: 'models',  title: 'Security models' },
             { slug: 'attacks', title: 'Attacks' }

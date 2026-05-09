@@ -7,11 +7,11 @@
 
    The script renders the site header, breadcrumb, prev/next nav, and
    browser title into placeholder elements with these IDs:
-     #site-header     always
-     #sections        landing page
-     #section-content section page (with posts)
-     #post-breadcrumb section page (no posts) / post page – top of <main>
-     #post-nav        section page (no posts) / post page – bottom of <main>
+     #site-header      always
+     #sections         landing page (auto-list of all 6 parts)
+     #post-breadcrumb  section / post page – top of <main>
+     #post-list        section page – auto-list of posts in this section
+     #post-nav         section / post page – bottom of <main>
 
    It also injects KaTeX (for $math$) and highlight.js (for code blocks)
    on post pages, so individual post HTML files don't have to. */
@@ -23,25 +23,48 @@
     const partTitle = (s) => `Part ${SECTIONS.indexOf(s) + 1}. ${s.title}`;
     const postLabel = (i, j, p) => `${i + 1}.${j + 1} ${p.title}`;
 
-    /* ---- KaTeX + highlight.js, injected for post pages only ----
-       Saves having to duplicate the same <head> boilerplate in every
-       post file. */
+    /* ---- KaTeX + highlight.js, injected for section / post pages only ----
+       Saves having to duplicate the same <head> boilerplate in every file.
+
+       Note: <script> tags inserted via innerHTML/insertAdjacentHTML are
+       NOT executed by the browser, so we have to programmatically create
+       and append each script element. <link> tags work either way. */
     const injectMathAndCode = () => {
-        const head = document.head;
-        head.insertAdjacentHTML('beforeend', `
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
-                    onload="renderMathInElement(document.body, {
-                        delimiters: [
-                            { left: '$$', right: '$$', display: true },
-                            { left: '$',  right: '$',  display: false }
-                        ],
-                        throwOnError: false
-                    });"></script>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/tomorrow-night.min.css">
-            <script defer src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"
-                    onload="hljs.highlightAll();"></script>`);
+        const link = (href) => {
+            const el = document.createElement('link');
+            el.rel = 'stylesheet';
+            el.href = href;
+            document.head.appendChild(el);
+        };
+        const script = (src, onload) => {
+            const el = document.createElement('script');
+            el.src = src;
+            if (onload) el.onload = onload;
+            document.head.appendChild(el);
+        };
+
+        /* KaTeX: load core, then auto-render on load. */
+        link('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css');
+        const katexCore = document.createElement('script');
+        katexCore.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js';
+        katexCore.onload = () => {
+            script('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js', () => {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$',  right: '$',  display: false },
+                    ],
+                    throwOnError: false,
+                });
+            });
+        };
+        document.head.appendChild(katexCore);
+
+        /* highlight.js: dark theme + auto-highlight on load. */
+        link('https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/tomorrow-night.min.css');
+        script('https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js', () => {
+            hljs.highlightAll();
+        });
     };
 
     /* ---- Site header ----
@@ -95,15 +118,28 @@
     };
 
     /* ---- Section page ----
-       Sections with posts auto-render their full body from posts.js.
-       Sections with no posts (e.g. "Takeaways") keep the page's
-       hand-written content; we only inject a breadcrumb and prev/next. */
+       The body (h1, intro, post list) is hand-written in each
+       section's index.html. We only inject the breadcrumb at the
+       top, the auto-generated post list (if it has a #post-list
+       placeholder), and the prev/next nav at the bottom. */
     const renderSection = () => {
         const i = SECTIONS.findIndex((s) => s.slug === window.PAGE.section);
         if (i === -1) return;
         const section = SECTIONS[i];
         const heading = partTitle(section);
         document.title = `${heading} | FHE Guide | Holden Mui`;
+
+        /* Breadcrumb at top of <main>. */
+        const crumb = document.getElementById('post-breadcrumb');
+        if (crumb) crumb.innerHTML = `
+            <a href="../index.html">Contents</a> &gt;
+            <span>${heading}</span>`;
+
+        /* Auto-rendered post list (if the page has a #post-list placeholder). */
+        const list = document.getElementById('post-list');
+        if (list) list.innerHTML = section.posts.map((p, j) =>
+            `<li><a class="post-title" href="${p.slug}.html">${postLabel(i, j, p)}</a></li>`
+        ).join('');
 
         /* Previous: last post of previous section, or that section itself if it
            had no posts. On the very first section, point back to the landing. */
@@ -131,31 +167,6 @@
                 ? { href: `../${SECTIONS[i + 1].slug}/index.html`,
                     title: partTitle(SECTIONS[i + 1]) }
                 : { href: '../index.html', title: 'Contents' });
-
-        const auto = document.getElementById('section-content');
-        if (auto) {
-            /* Sections with posts: render the whole body. */
-            auto.innerHTML = `
-                <p class="post-breadcrumb">
-                  <a href="../index.html">Contents</a> &gt;
-                  <span>${heading}</span>
-                </p>
-                <h1>${heading}</h1>
-                <p>${section.intro}</p>
-                <ul class="post-list">
-                  ${section.posts.map((p, j) =>
-                    `<li><a class="post-title" href="${p.slug}.html">${postLabel(i, j, p)}</a></li>`
-                  ).join('')}
-                </ul>
-                ${navHtml(prev, next)}`;
-            return;
-        }
-
-        /* Hand-written section page: just inject crumb at top, nav at bottom. */
-        const crumb = document.getElementById('post-breadcrumb');
-        if (crumb) crumb.innerHTML = `
-            <a href="../index.html">Contents</a> &gt;
-            <span>${heading}</span>`;
 
         const nav = document.getElementById('post-nav');
         if (nav) nav.outerHTML = navHtml(prev, next);
