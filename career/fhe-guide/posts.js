@@ -28,11 +28,11 @@ const SECTIONS = [
     },
     {
         slug: 'building',
-        title: 'How do you build with FHE?',
-        intro: `This section covers the practical side: the API surface
-                we expose, the cost model that determines what's cheap
-                and what's expensive, how to pick parameters, and worked
-                examples drawn from real demos.`,
+        title: 'How do you build with CKKS?',
+        intro: `This section covers the practical side: the CKKS API
+                surface we expose, the cost model that determines what's
+                cheap and what's expensive, how to pick parameters, and
+                worked examples drawn from real demos.`,
         posts: [
             { slug: 'interface',  title: 'Interface' },
             { slug: 'cost',       title: 'Cost model' },
@@ -42,7 +42,7 @@ const SECTIONS = [
     },
     {
         slug: 'internals',
-        title: 'How does FHE work?',
+        title: 'How does CKKS work?',
         intro: `An under-the-hood look at CKKS: the polynomial ring it
                 lives in, how ciphertext operations are actually
                 implemented, how bootstrapping refreshes a tired
@@ -58,9 +58,9 @@ const SECTIONS = [
     },
     {
         slug: 'security',
-        title: 'How secure is FHE?',
-        intro: `What "secure" means in the FHE world, what assumptions
-                that security rests on, and what attacks the schemes are
+        title: 'How secure is CKKS?',
+        intro: `What "secure" means in the CKKS world, what assumptions
+                that security rests on, and what attacks the scheme is
                 designed (or not designed) to resist.`,
         posts: [
             { slug: 'models',  title: 'Security models' },

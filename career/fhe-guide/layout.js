@@ -20,7 +20,8 @@
     const NAV = [
         ['Home', root + 'index.html'],
         ['Career', [
-            ['0xPARC',     root + 'career/0xparc/index.html'],
+            ['0xPARC',     root + 'career/0xparc.html'],
+            ['FHE Guide', root + 'career/fhe-guide/index.html'],
             ['Coursework', root + 'career/coursework.html'],
             ['Resume',     root + 'career/resume.html'],
         ]],
