@@ -22,7 +22,7 @@
         ['Career', [
             ['0xPARC',     root + 'career/0xparc/index.html'],
             ['Coursework', root + 'career/coursework.html'],
-            ['Resume',     root + 'other/resume.html'],
+            ['Resume',     root + 'career/resume.html'],
         ]],
         ['Math', [
             ['Research', root + 'math/research.html'],
