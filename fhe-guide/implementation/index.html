@@ -16,11 +16,43 @@
       <h1>Part 4. How is CKKS implemented?</h1>
 
       <p>
-        An engineering tour of the CKKS library: the computation graph
-        that programs are compiled into, the optimization passes that
-        rewrite it, and the data layouts that make it all fit on a GPU.
+        <a href="../internals/index.html">Part 3</a> explained how
+        CKKS works. But a description of <i>what</i> CKKS is doesn't
+        translate directly into fast, easy-to-use, and flexible code.
+        There are two questions our system answers.
       </p>
+      <p>
+        First: when a user writes a sequence of ciphertext operations,
+        what's the best sequence of polynomial operations to actually
+        run? When should ciphertext levels be dropped? Where should
+        NTTs and inverse NTTs be inserted? We want the compiler to
+        make these decisions automatically.
+      </p>
+      <p>
+        Second: how should polynomials be stored in GPU memory? GPU
+        architecture rewards certain data layouts and punishes
+        others, and the right choice can be the difference between an
+        order of magnitude in performance.
+      </p>
+      <p>
+        Our system addresses both questions. Developers express their
+        computations as Python programs on ciphertexts. The compiler
+        turns that into a graph, rewrites it through a series of
+        optimization passes, decides on the data layout, and compiles
+        the result into CUDA kernels.
+      </p>
+      <p>
+        By the end of this section, you should have a clear sense of
+        how a CKKS program goes from a high-level computation graph
+        to fast GPU code. We'll cover:
+      </p>
+      <ul>
+        <li>the IR our system uses to represent CKKS programs (<a href="computation-graphs.html">4.1</a>),</li>
+        <li>the optimization passes we apply to it (<a href="optimization-passes.html">4.2</a>), and</li>
+        <li>how polynomials are laid out in GPU memory and why it matters (<a href="data-layout.html">4.3</a>).</li>
+      </ul>
 
+      <h3>Quick links</h3>
       <ul class="post-list" id="post-list"></ul>
 
       <nav class="post-nav" id="post-nav"></nav>

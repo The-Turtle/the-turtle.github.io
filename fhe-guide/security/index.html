@@ -16,11 +16,42 @@
       <h1>Part 5. How secure is CKKS?</h1>
 
       <p>
-        What "secure" means in the CKKS world, what assumptions that
-        security rests on, and what attacks the scheme is designed (or
-        not designed) to resist.
+        The current FHE standard is <i>128-bit security</i>. The
+        choice of 128 is partly a historical convention and partly
+        a practical compromise:
       </p>
+      <ul>
+        <li>128 is a power of two and thus a round, familiar number,</li>
+        <li>using 256-bit security is much more computationally expensive, because it forces the ring dimension up to $2^{17}$, and</li>
+        <li>at 128 bits, the best known attacks would still take billions of years even if all the world's current computing power were thrown at them.</li>
+      </ul>
+      <p>
+        Whether CKKS hits this target, and what needs to be done to
+        ensure it does, depends on the use case. In the outsourced
+        computation setting (described in <a href="../introduction/use-cases.html">Section&nbsp;1.2</a>),
+        the scheme without any modifications (as given in
+        <a href="../internals/index.html">Part&nbsp;3</a>) already
+        meets the standard target. But in any model where
+        decryptions are revealed back to the computation server,
+        the scheme has to incorporate a mitigation called
+        <i>noise flooding</i>, which adds nontrivial computational
+        overhead to every workload that needs it.
+      </p>
+      <p>
+        It is important to remember that FHE is still a young
+        field, and the picture isn't static. The security of any
+        system changes whenever a new attack is published on an
+        underlying hardness assumption, typically forcing a
+        parameter change and a corresponding slowdown in
+        computation.
+      </p>
+      <p>In this section, we'll cover:</p>
+      <ul>
+        <li>the security models CKKS is analyzed under and which use cases they apply to (<a href="models.html">5.1</a>), and</li>
+        <li>the hardness assumptions CKKS rests on and the attacks against them (<a href="attacks.html">5.2</a>).</li>
+      </ul>
 
+      <h3>Quick links</h3>
       <ul class="post-list" id="post-list"></ul>
 
       <nav class="post-nav" id="post-nav"></nav>

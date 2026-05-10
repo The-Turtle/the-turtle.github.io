@@ -15,34 +15,42 @@
     <main>
       <h1>A Guide to Fully Homomorphic Encryption</h1>
       <p>
-        I've spent one year at <a href="https://0xparc.org/" target="_blank">0xPARC</a> building a
-        performant, production-grade <a href="https://en.wikipedia.org/wiki/Homomorphic_encryption" target="_blank">fully homomorphic encryption</a>
-        (FHE) library from the ground up. As a way to wrap up my
-        time at 0xPARC and pass on what I've learned to the next
-        generation of FHE builders, I made this guide. It's written
-        with a variety of archetypes in mind, from founders who want
-        to build with our library and engineers who want a deeper
-        understanding of the underlying mathematics, to interns,
-        researchers, and cryptographers who will work on the system
-        itself &mdash; or, more broadly, anyone curious about what
-        0xPARC does.
+        I've spent one year at
+        <a href="https://0xparc.org/" target="_blank">0xPARC</a>
+        building a performant, production-grade
+        <a href="https://en.wikipedia.org/wiki/Homomorphic_encryption" target="_blank">fully homomorphic encryption</a>
+        (FHE) library from the ground up. As a way to wrap up my time
+        at 0xPARC and pass on what I've learned to the next generation
+        of FHE builders (LLMs included!), I made this guide. It's
+        written with a variety of archetypes in mind, from founders
+        who want to build with our library and engineers who want a
+        deeper understanding of the underlying mathematics, to
+        interns, researchers, and cryptographers who will work on the
+        system itself &mdash; or, more broadly, anyone curious about
+        what 0xPARC does.
       </p>
       <p>
-        Depending on what you're here for, different parts will be more useful:
+        Depending on what you're here for, different parts will be
+        more useful:
       </p>
       <ul>
         <li>If you want to know what 0xPARC is about or what FHE is at a high level, read <a href="introduction/index.html">Part&nbsp;1</a>.</li>
         <li>If you want to use our system to build something, read <a href="building/index.html">Part&nbsp;2</a>.</li>
         <li>If you want to know every last detail of how CKKS works at a technical level, read <a href="internals/index.html">Part&nbsp;3</a>.</li>
-        <li>If you like compilers or data layout, read <a href="implementation/index.html">Part&nbsp;4</a>.</li>
+        <li>If you like compilers or GPU engineering, read <a href="implementation/index.html">Part&nbsp;4</a>.</li>
         <li>If you're a security engineer wondering whether our system is secure, read <a href="security/index.html">Part&nbsp;5</a>.</li>
         <li>If you want to know how 0xPARC is thinking about FHE, read <a href="takeaways/index.html">Part&nbsp;6</a>.</li>
       </ul>
       <p>
-        There are several FHE schemes in use today; the one we built is
-        <a href="https://eprint.iacr.org/2016/421" target="_blank"><b>CKKS</b></a>,
-        introduced by Cheon, Kim, Kim, and Song in 2016. Everything in
-        this guide is written with CKKS specifically in mind.
+        Today, the technical content on FHE is scattered across a
+        sprawling web of ePrint papers and GitHub codebases. What
+        writing exists tends toward two extremes: high-level
+        surveys that don't explain any details, or deep dives into
+        a single optimization. This guide aims to fill the gap: it
+        is the first full-stack explanation of how FHE works
+        end-to-end, and how the resulting system manages to be
+        genuinely fast. I hope it plays some part in bringing
+        more people into the FHE world.
       </p>
 
       <h2>Contents</h2>
