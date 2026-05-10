@@ -3,18 +3,18 @@ Mt. Davidson,37.738232,-122.454832,915,625,In Mt. Davidson Park. Mount Davidson 
 Noe Peak,37.751552,-122.447758,905,330,South Twin Peak. 360 degree views.
 Signal Point,37.809746,-122.366074,330,330,
 Bayview Hill (Candlestick Hill),37.715102,-122.393452,450,320,
-Forest Hill,37.748204,-122.467306,775,300,
+Forest Hill,37.748204,-122.467306,775,300,Residential. Off-limits water tank at the top.
 Visitacion Knob (McLaren Ridge),37.719224,-122.421748,515,275,
 Potrero Hill,37.756718,-122.399626,310,270,Residential.
 Bernal Hill,37.743182,-122.415376,450,265,In Bernal Heights Park. Telecommunications tower equipment on top but can get 360 degree views by walking around it.
 Merced Heights,37.718108,-122.462644,525,230,
-Mount Sutro,37.757978,-122.457226,895,210,
+Mount Sutro,37.757978,-122.457226,895,210,In the Mount Sutro Open Space Reserve. Forested.
 Lincoln Heights,37.782134,-122.500210,365,210,
 Stony Hill (Hunters Point Ridge),37.734416,-122.384794,265,205,Next to a preschool. Residential. Better views at Hilltop Park close by (which also has a large sundial).
 Telegraph Hill,37.802186,-122.405656,285,200,In Pioneer Park. Views partially obstructed by trees on all sides. For good views ascend Coit Tower for a fee.
 Strawberry Hill,37.768706,-122.475802,410,175,An island inside Blue Heron Lake in Golden Gate Park. Partially obstructed views.
 Nob Hill,37.793672,-122.415196,355,175,Hilltop is on the pedestrian-only Priest Street. No view as it is obstructed by buildings.
-Edgehill Heights,37.742696,-122.459188,715,160,
+Edgehill Heights,37.742696,-122.459188,715,160,Residential.
 Mount St. Joseph,37.734074,-122.397052,240,160,Residential. Small public area nearby between 290 and 300 Bayview Circle with 90 degree views.
 Lone Mountain,37.779020,-122.452654,400,155,
 Lafayette Heights,37.791836,-122.427580,365,130,In Lafayette Park. Mostly unobstructed views if you walk past the trees on the top.
@@ -29,9 +29,9 @@ Russian Hill,37.797992,-122.414602,345,85,Right above Ina Coolbrith Park. 180 de
 Rincon Hill,37.785500,-122.392300,105,85,Urban. Located at the entrance of the One Rincon Hill condominium complex. Next to Interstate 80.
 Mount Olympus,37.763198,-122.445436,540,80,In the very small Mount Olympus Park. Pedestal of the former Triumph of Light statue on top. Some views but mostly surrounded by houses.
 Eureka Peak,37.753316,-122.447452,900,75,North Twin Peak. 360 degree views.
-Clarendon Heights,37.755062,-122.453050,835,75,
+Clarendon Heights,37.755062,-122.453050,835,75,Sutro Tower at the top is off-limits. Closest access is from the Sutro Tower Trail.
 Dolores Heights,37.755944,-122.431450,385,70,Residential.
-Grand View Hill,37.756178,-122.471770,655,65,In Grandview Park. 360 degree views with a few trees on top.
+Grand View Hill,37.756178,-122.471770,655,65,In Grandview Park. 360 degree views with few trees.
 Red Rock Hill,37.746134,-122.441656,640,60,Inside the Diamond Heights Village Association. No view.
 Fairmount Heights,37.738664,-122.432440,520,60,Residential. 180 degree views.
 ,37.717550,-122.454454,485,60,
@@ -58,7 +58,7 @@ George Sterling Park,37.801250,-122.420362,310,40,By Lombard Street. Residential
 Battery Davis,37.718630,-122.503522,215,40,
 Torpedo Point,37.813886,-122.359684,65,40,
 Seal Rocks,37.778372,-122.516554,40,40,An island. Inaccessible but can be viewed from Sutro Baths.
-Larsen Peak (Sunset Heights),37.749770,-122.469358,745,35,
+Larsen Peak (Sunset Heights),37.749770,-122.469358,745,35,In Golden Gate Heights Park. Views partially obstructed by trees on all sides.
 ,37.718468,-122.420614,500,35,
 ,37.717298,-122.466802,480,35,
 ,37.718612,-122.410138,405,35,
@@ -68,7 +68,7 @@ Irish Hill,37.758860,-122.386504,65,35,
 ,37.742318,-122.378044,40,35,
 ,37.780406,-122.517526,35,35,
 ,37.782602,-122.513980,35,35,
-Pacheco Peak,37.753226,-122.470096,740,30,
+Pacheco Peak,37.753226,-122.470096,740,30,Residential.
 ,37.750220,-122.456344,515,30,
 ,37.729538,-122.462248,485,30,
 Mount Lick,37.773548,-122.455048,335,30,
@@ -78,7 +78,7 @@ Casino Hill,37.772648,-122.462464,275,30,
 ,37.722212,-122.505340,115,30,
 Fort Mason Hill,37.806884,-122.427922,105,30,
 Cathedral Hill,37.784230,-122.425370,210,0,
-Kite Hill,37.758330,-122.441360,435,0,
+Kite Hill,37.758330,-122.441360,435,0,In Kite Hill. 180 degree views.
 Billy Goat Hill,37.741410,-122.433270,505,0,In Billy Goat Hill. 180 degree views.
 Alcatraz Island,37.826250,-122.422167,135,135,
 Sutro Heights,37.777940,-122.512120,195,25,
