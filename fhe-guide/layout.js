@@ -222,6 +222,44 @@
         });
     };
 
+    /* ---- Page TOC ----
+       Build a wiki-style sticky sidebar on the left listing each
+       <h2> on the current page. Each h2 is auto-assigned an id
+       (derived from its text) so the sidebar links act as in-page
+       anchors. Skipped on pages with fewer than two h2s. */
+    const renderPageToc = () => {
+        const headings = document.querySelectorAll('main h2');
+        if (headings.length < 2) return;
+
+        const slugify = (s) => s
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .substring(0, 60) || 'section';
+
+        const used = new Set();
+        headings.forEach((h) => {
+            if (h.id) { used.add(h.id); return; }
+            let base = slugify(h.textContent);
+            let id = base;
+            let n = 1;
+            while (used.has(id)) id = `${base}-${n++}`;
+            used.add(id);
+            h.id = id;
+        });
+
+        const items = [...headings].map((h) =>
+            `<li><a href="#${h.id}">${h.textContent}</a></li>`
+        ).join('');
+        const nav = document.createElement('nav');
+        nav.className = 'page-toc';
+        nav.innerHTML = `
+            <div class="page-toc-label">On this page</div>
+            <ul>${items}</ul>`;
+        document.body.appendChild(nav);
+    };
+
     /* ---- Exercise reveals ----
        Clicking a .exercise span toggles the .exercise-open class
        on the element whose id matches the trigger's data-target. */
@@ -246,6 +284,8 @@
         }
         enableLiePopovers();
         enableExercises();
+        renderPageToc();
+        document.documentElement.style.scrollBehavior = 'smooth';
     };
 
     if (document.readyState === 'loading') {

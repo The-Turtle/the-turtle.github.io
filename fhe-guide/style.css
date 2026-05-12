@@ -306,6 +306,58 @@ main > .post-list li:hover {
     display: block;
 }
 
+/* --- Page table of contents ---
+   A wiki-style sticky sidebar on the left listing the h2 headings
+   of the current page. Built by renderPageToc() in layout.js,
+   which scans <main> for h2 elements, auto-assigns ids, and
+   appends this nav. Hidden on narrow viewports where there's no
+   room next to the centered main content. */
+.page-toc {
+    position: fixed;
+    top: 96px;
+    left: calc(50vw - 620px);
+    width: 180px;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.4;
+    z-index: 5;
+}
+.page-toc-label {
+    color: var(--fhe-fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 11px;
+    margin-bottom: 8px;
+    padding-left: 14px;
+}
+.page-toc ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    border-left: 2px solid var(--fhe-rule);
+}
+.page-toc li {
+    padding: 0;
+    margin: 0;
+}
+.page-toc a {
+    display: block;
+    padding: 4px 12px;
+    margin-left: -2px;
+    color: var(--fhe-fg-muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+}
+.page-toc a:hover {
+    color: var(--fhe-fg);
+    border-left-color: var(--fhe-link);
+    text-decoration: none;
+}
+@media (max-width: 1240px) {
+    .page-toc { display: none; }
+}
+
 /* --- Pipeline diagram: a vertical stack of stages connected by
    labeled down-arrows. Used in Part 3 for the client/server data
    flow. Each child is either a .stage (a noun phrase) or an

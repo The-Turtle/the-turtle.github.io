@@ -44,8 +44,18 @@
           not vectors. Plaintext polynomials carry two pieces of
           metadata: a <em>level</em>
           $\ell \in \{0, 1, \ldots, 15\}$ and a <em>scale
-          factor</em> $\Delta = 2^{40}$. The polynomial itself is
-          an element $m(X) \in R_\ell$, where the modulus is
+          factor</em> $\Delta_\ell$ that depends on the level
+          but is always very close to $2^{40}$. The scale factor
+          is determined by the recurrence
+        </p>
+        $$
+          \Delta_{15} = 2^{40}, \qquad
+          \Delta_{\ell - 1} = \frac{\Delta_\ell^{\,2}}{q_\ell}
+          \quad\text{for } \ell \in \{1, \ldots, 15\}.
+        $$
+        <p>
+          The polynomial itself is an element $m(X) \in R_\ell$,
+          where the modulus is
           $q = q_0 q_1 \cdots q_\ell \approx 2^{55 + 40\ell}$.
         </p>
         <p>
@@ -80,7 +90,7 @@
           </li>
           <li>
             Multiply every coefficient of $P(X)$ by
-            $\Delta = 2^{40}$ and round to the nearest integer.
+            $\Delta_\ell$ and round to the nearest integer.
           </li>
           <li>
             Reinterpret the resulting integer coefficients modulo
@@ -94,7 +104,7 @@
           $\left\{ -\frac{q-1}{2}, \ldots, \frac{q-1}{2} \right\}$,
           evaluate the resulting polynomial at
           $\zeta, \zeta^5, \zeta^{25}, \ldots, \zeta^{5^{32767}}$,
-          and divide by $\Delta$.
+          and divide by $\Delta_\ell$.
         </p>
         <p>Three things to keep in mind:</p>
         <ol>
@@ -102,22 +112,22 @@
             <strong>The encoding introduces noise.</strong> The
             rounding step means every entry of the recovered
             vector picks up an error on the order of
-            $\Delta^{-1} = 2^{-40}$.
+            $\Delta_\ell^{-1} \approx 2^{-40}$.
           </li>
           <li>
             <strong>Vector entries can't be arbitrarily large.</strong>
-            If any coefficient of $\Delta \cdot P(X)$ exceeds
+            If any coefficient of $\Delta_\ell \cdot P(X)$ exceeds
             $q/2$ in magnitude, the reduction modulo $q$ can no
             longer be inverted, and the original $P(X)$ is
             unrecoverable. A
             <span class="exercise" data-target="ex-bound">safe bound</span>
             that guarantees no overflow is
-            $|v_i| \le \frac{1}{2} \cdot \frac{2^{55}}{2^{40}} = 2^{14} = 8192$
+            $|v_i| \le \frac{1}{2} \cdot \frac{2^{55}}{\Delta_\ell} \approx 2^{14} = 16384$
             for every $i$.
             <div id="ex-bound" class="exercise-body">
               <b>Exercise:</b> why is
-              $\frac{1}{2} \cdot \frac{2^{55}}{2^{40}}$ a safe
-              bound?
+              $\frac{1}{2} \cdot \frac{2^{55}}{\Delta_\ell}$ a
+              safe bound?
             </div>
           </li>
           <li>
@@ -170,7 +180,7 @@
         <p>
           Ciphertexts, like plaintexts, carry
           <span class="lie" data-truth="There are a few more &mdash; for instance, an auxiliary modulus used during certain operations. They're introduced later.">two pieces of metadata</span>:
-          a level $\ell$ and a scale factor $\Delta$. Both are
+          a level $\ell$ and a scale factor $\Delta_\ell$. Both are
           preserved by encryption and decryption, and they
           always match the level and scale factor of the
           underlying plaintext polynomial.
@@ -215,7 +225,7 @@
         <p>
           The residual term $v\, e + e_0 + e_1\, s$ contributes
           only an $O(1)$ error to each coefficient of $m(X)$,
-          small enough that dividing by $\Delta$ during decoding
+          small enough that dividing by $\Delta_\ell$ during decoding
           wipes it out.
         </p>
 
