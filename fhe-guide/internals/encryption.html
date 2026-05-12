@@ -29,8 +29,11 @@
 
         <p>
           As a reminder from <a href="polynomials.html">Section&nbsp;3.1</a>,
-          we've fixed a ring dimension of $65536$, a chain of primes
-          $q_0, q_1, \ldots, q_{15}$, and the polynomial rings
+          we've fixed a ring dimension of $65536$, a chain of
+          primes $q_0, q_1, \ldots, q_{15}$ with
+          $q_0 \approx 2^{55}$ and
+          $q_1 \approx \cdots \approx q_{15} \approx 2^{40}$, and
+          the polynomial rings
           $R_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}\bigr)[X]/(X^{65536} + 1)$
           and $R_\infty = \mathbb{Z}[X]/(X^{65536} + 1)$.
         </p>
@@ -122,21 +125,28 @@
             unrecoverable. A
             <span class="exercise" data-target="ex-bound">safe bound</span>
             that guarantees no overflow is
-            $|v_i| \le \frac{1}{2} \cdot \frac{2^{55}}{\Delta_\ell} \approx 2^{14} = 16384$
+            $|v_i| \le \frac{1}{2} \cdot \frac{q_0}{\Delta_0} \approx 2^{14} = 16384$
             for every $i$.
             <div id="ex-bound" class="exercise-body">
               <b>Exercise:</b> why is
-              $\frac{1}{2} \cdot \frac{2^{55}}{\Delta_\ell}$ a
-              safe bound?
+              $\frac{1}{2} \cdot \frac{q_0}{\Delta_0}$ a safe
+              bound?
             </div>
           </li>
           <li>
             <strong>The lifted coefficients of $m(X)$ should be small.</strong>
-            Even though $q$ is huge, the balanced representatives
-            of $m(X)$'s coefficients should sit in a tiny range
-            around $0$. A plaintext polynomial whose lifted
-            coefficients fail this check at decode time is
-            <em>corrupted</em> and cannot be meaningfully decoded.
+            This is another way to think about point 2 above:
+            corruption happens when encrypted computations lead
+            to overflow of the underlying plaintext polynomial coefficients.
+            Specifically, the lifted coefficients of $m(X)$
+            should not exceed $q_0 / 2$ in magnitude; a
+            plaintext polynomial whose coefficients fail this
+            check at decode time is <em>corrupted</em> and
+            cannot be meaningfully decoded. (It's possible for a
+            plaintext polynomial to pass this check and still be
+            corrupted; e.g., a level-0 plaintext polynomial that
+            was the encryption of a vector with very large
+            entries.)
           </li>
         </ol>
 
@@ -263,7 +273,7 @@
           The RLWE assumption says that Distribution A and
           Distribution B are
           <em>computationally indistinguishable</em>: no efficient
-          algorithm can tell, given $(a(X), b(X))$, which
+          algorithm can tell, given a set of $(a(X), b(X))$, which
           procedure produced it. From this,
           <span class="exercise" data-target="ex-rlwe">it follows</span>
           that the secret key cannot be recovered from the public
