@@ -207,6 +207,35 @@
         if (nav) nav.outerHTML = navHtml(prev, next);
     };
 
+    /* ---- "Lies" popovers ----
+       On desktop, a .lie span shows its truth on :hover via CSS.
+       On touch devices where hover isn't a thing, tapping a .lie
+       toggles the popover; tapping anywhere else closes any open
+       popover. */
+    const enableLiePopovers = () => {
+        document.addEventListener('click', (e) => {
+            const lie = e.target.closest('.lie');
+            document.querySelectorAll('.lie.lie-open').forEach((el) => {
+                if (el !== lie) el.classList.remove('lie-open');
+            });
+            if (lie) lie.classList.toggle('lie-open');
+        });
+    };
+
+    /* ---- Exercise reveals ----
+       Clicking a .exercise span toggles the .exercise-open class
+       on the element whose id matches the trigger's data-target. */
+    const enableExercises = () => {
+        document.addEventListener('click', (e) => {
+            const trig = e.target.closest('.exercise');
+            if (!trig) return;
+            const targetId = trig.dataset.target;
+            if (!targetId) return;
+            const body = document.getElementById(targetId);
+            if (body) body.classList.toggle('exercise-open');
+        });
+    };
+
     const boot = () => {
         renderHeader();
         if (window.PAGE?.kind === 'landing') renderLanding();
@@ -215,6 +244,8 @@
         if (window.PAGE?.kind === 'section' || window.PAGE?.kind === 'post') {
             injectMathAndCode();
         }
+        enableLiePopovers();
+        enableExercises();
     };
 
     if (document.readyState === 'loading') {

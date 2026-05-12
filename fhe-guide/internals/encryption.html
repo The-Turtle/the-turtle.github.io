@@ -13,10 +13,261 @@
     <main>
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
-        <h1>Encryption and decryption</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
+        <h1>Key generation, encryption, and decryption</h1>
 
-        <p>How CKKS encodes plaintexts as RLWE samples, how decryption inverts the process, and the noise budget that makes it all work.</p>
+        <p>
+          Behind the scenes, the CKKS pipeline has more pieces
+          than just encrypt, compute, and decrypt. Because
+          encryption operates on polynomials rather than vectors,
+          the client also runs <em>encoding</em> and
+          <em>decoding</em> steps that bracket the standard
+          encrypt/decrypt loop. After a one-time key generation
+          step, the end-to-end pipeline looks like this:
+        </p>
+
+        <p><b>[insert diagram here]</b></p>
+
+        <p>
+          As a reminder from <a href="polynomials.html">Section&nbsp;3.1</a>,
+          we've fixed a ring dimension of $65536$, a chain of primes
+          $q_0, q_1, \ldots, q_{15}$, and the polynomial rings
+          $R_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}\bigr)[X]/(X^{65536} + 1)$
+          and $R_\infty = \mathbb{Z}[X]/(X^{65536} + 1)$.
+        </p>
+
+        <h2>Encoding vectors as plaintext polynomials</h2>
+
+        <p>
+          The <em>encoding</em> step converts a plaintext vector
+          in $\mathbb{C}^{32768}$ into a <em>plaintext polynomial</em>
+          in $R_\ell$, since encryption operates on polynomials,
+          not vectors. Plaintext polynomials carry two pieces of
+          metadata: a <em>level</em>
+          $\ell \in \{0, 1, \ldots, 15\}$ and a <em>scale
+          factor</em> $\Delta = 2^{40}$. The polynomial itself is
+          an element $m(X) \in R_\ell$, where the modulus is
+          $q = q_0 q_1 \cdots q_\ell \approx 2^{55 + 40\ell}$.
+        </p>
+        <p>
+          To encode a vector
+          $\mathbf{v} = (v_0, v_1, \ldots, v_{32767}) \in \mathbb{C}^{32768}$
+          as a plaintext polynomial:
+        </p>
+        <ol>
+          <li>
+            Find the
+            <span class="exercise" data-target="ex-encoding-unique">unique</span>
+            real polynomial $P(X) \in \mathbb{R}[X]/(X^{65536} + 1)$
+            such that
+            $$
+              P(\zeta) = v_0, \quad
+              P(\zeta^5) = v_1, \quad
+              P(\zeta^{25}) = v_2, \quad
+              \ldots, \quad
+              P(\zeta^{5^{32767}}) = v_{32767},
+            $$
+            where $\zeta = e^{2\pi i / 131072}$ is a primitive
+            $131072$-th root of unity.
+            <div id="ex-encoding-unique" class="exercise-body">
+              <b>Exercise:</b> convince yourself such a $P$
+              exists and is unique. (You'll need the fact that
+              $\{-1, 5\}$ generates
+              $(\mathbb{Z}/131072\mathbb{Z})^\times$.) Then show
+              how to compute the coefficients of $P$ efficiently
+              using a modification of the inverse Fast Fourier
+              Transform.
+            </div>
+          </li>
+          <li>
+            Multiply every coefficient of $P(X)$ by
+            $\Delta = 2^{40}$ and round to the nearest integer.
+          </li>
+          <li>
+            Reinterpret the resulting integer coefficients modulo
+            $q$ to obtain $m(X) \in R_\ell$.
+          </li>
+        </ol>
+        <p>
+          To decode a plaintext polynomial $m(X)$, lift each
+          coefficient from $\mathbb{Z}/q\mathbb{Z}$ to its balanced
+          representative in
+          $\left\{ -\frac{q-1}{2}, \ldots, \frac{q-1}{2} \right\}$,
+          evaluate the resulting polynomial at
+          $\zeta, \zeta^5, \zeta^{25}, \ldots, \zeta^{5^{32767}}$,
+          and divide by $\Delta$.
+        </p>
+        <p>Three things to keep in mind:</p>
+        <ol>
+          <li>
+            <strong>The encoding introduces noise.</strong> The
+            rounding step means every entry of the recovered
+            vector picks up an error on the order of
+            $\Delta^{-1} = 2^{-40}$.
+          </li>
+          <li>
+            <strong>Vector entries can't be arbitrarily large.</strong>
+            If any coefficient of $\Delta \cdot P(X)$ exceeds
+            $q/2$ in magnitude, the reduction modulo $q$ can no
+            longer be inverted, and the original $P(X)$ is
+            unrecoverable. A
+            <span class="exercise" data-target="ex-bound">safe bound</span>
+            that guarantees no overflow is
+            $|v_i| \le \frac{1}{2} \cdot \frac{2^{55}}{2^{40}} = 2^{14} = 8192$
+            for every $i$.
+            <div id="ex-bound" class="exercise-body">
+              <b>Exercise:</b> why is
+              $\frac{1}{2} \cdot \frac{2^{55}}{2^{40}}$ a safe
+              bound?
+            </div>
+          </li>
+          <li>
+            <strong>The lifted coefficients of $m(X)$ should be small.</strong>
+            Even though $q$ is huge, the balanced representatives
+            of $m(X)$'s coefficients should sit in a tiny range
+            around $0$. A plaintext polynomial whose lifted
+            coefficients fail this check at decode time is
+            <em>corrupted</em> and cannot be meaningfully decoded.
+          </li>
+        </ol>
+
+        <h2>Key generation</h2>
+
+        <p>
+          Before encrypting anything, we need to generate a key
+          set, which consists of a secret key and
+          <span class="lie" data-truth="There are several other keys &mdash; an evaluation key for ciphertext-ciphertext multiplication, rotation keys for cyclically shifting vector entries, and others. They're introduced later.">a public key</span>.
+        </p>
+        <p>
+          The <em>secret key</em> is a polynomial
+          $s(X) \in R_\infty$ with coefficients in
+          $\{-1, 0, 1\}$. It is chosen uniformly at random from
+          the set of all such polynomials with exactly $96$
+          coefficients equal to $+1$ and exactly $96$ equal to
+          $-1$ (the remaining $65344$ coefficients are zero).
+          Such a key is called a <em>sparse secret key</em>
+          with <em>Hamming weight</em> $192$.
+        </p>
+        <p>
+          The <em>public key</em> is a pair of polynomials
+          $(p_0(X), p_1(X)) \in R_{15} \times R_{15}$, generated
+          from $s(X)$ as follows:
+        </p>
+        <ol>
+          <li>Sample $p_1(X)$ uniformly at random from $R_{15}$.</li>
+          <li>
+            Sample an <em>error polynomial</em>
+            $e(X) \in R_\infty$ whose coefficients are drawn
+            independently from a discrete Gaussian with standard
+            deviation $3.2$.
+          </li>
+          <li>
+            Set $p_0(X) = -p_1(X)\, s(X) + e(X)$.
+          </li>
+        </ol>
+
+        <h2>Encrypting plaintext polynomials as ciphertexts</h2>
+
+        <p>
+          Ciphertexts, like plaintexts, carry
+          <span class="lie" data-truth="There are a few more &mdash; for instance, an auxiliary modulus used during certain operations. They're introduced later.">two pieces of metadata</span>:
+          a level $\ell$ and a scale factor $\Delta$. Both are
+          preserved by encryption and decryption, and they
+          always match the level and scale factor of the
+          underlying plaintext polynomial.
+        </p>
+        <p>
+          A level-$\ell$ ciphertext is a pair of polynomials
+          $(c_0(X), c_1(X)) \in R_\ell \times R_\ell$. To encrypt
+          a level-$\ell$ plaintext polynomial $m(X)$:
+        </p>
+        <ol>
+          <li>
+            Sample a small <em>mask</em> $v(X) \in R_\infty$ and
+            two error polynomials
+            $e_0(X), e_1(X) \in R_\infty$, all with coefficients
+            drawn independently from a discrete Gaussian of
+            standard deviation $3.2$.
+          </li>
+          <li>
+            Compute
+            $$
+              \begin{aligned}
+                c_0(X) &= v(X)\, p_0(X) + m(X) + e_0(X), \\
+                c_1(X) &= v(X)\, p_1(X) + e_1(X).
+              \end{aligned}
+            $$
+          </li>
+        </ol>
+        <p>
+          To decrypt a ciphertext $(c_0(X), c_1(X))$ using the
+          secret key $s(X)$, simply compute
+          $c_0(X) + c_1(X)\, s(X)$. Substituting the definitions:
+        </p>
+        $$
+          \begin{aligned}
+            c_0 + c_1\, s
+            &= v\, p_0 + m + e_0 + v\, p_1\, s + e_1\, s \\
+            &= v\bigl(-p_1\, s + e\bigr) + m + e_0 + v\, p_1\, s + e_1\, s \\
+            &= m + \bigl(v\, e + e_0 + e_1\, s\bigr) \\
+            &\approx m.
+          \end{aligned}
+        $$
+        <p>
+          The residual term $v\, e + e_0 + e_1\, s$ contributes
+          only an $O(1)$ error to each coefficient of $m(X)$,
+          small enough that dividing by $\Delta$ during decoding
+          wipes it out.
+        </p>
+
+        <h2>The RLWE assumption</h2>
+
+        <p>
+          The security of CKKS rests on a
+          <span class="lie" data-truth="Strictly, CKKS also relies on a circular security assumption used in key-switching &mdash; namely, that encryptions of (functions of) the secret key under itself stay indistinguishable from random.">single</span>
+          hardness assumption, the
+          <em>Ring Learning With Errors</em> (RLWE) assumption.
+          It's what makes recovering the secret key from the
+          public key, or the plaintext from a ciphertext,
+          computationally infeasible.
+        </p>
+        <p>
+          Roughly stated: fix a level $\ell$ and a secret
+          polynomial $s(X) \in R_\infty$. Consider two ways of
+          producing a pair $(a(X), b(X)) \in R_\ell \times R_\ell$:
+        </p>
+        <ul>
+          <li>
+            <strong>Distribution A.</strong> Sample $a(X)$
+            uniformly at random from $R_\ell$. Sample
+            $e(X) \in R_\infty$ from a discrete Gaussian with
+            standard deviation $3.2$. Set
+            $b(X) = a(X)\, s(X) + e(X)$.
+          </li>
+          <li>
+            <strong>Distribution B.</strong> Sample $a(X)$ and
+            $b(X)$ independently and uniformly at random from
+            $R_\ell$.
+          </li>
+        </ul>
+        <p>
+          The RLWE assumption says that Distribution A and
+          Distribution B are
+          <em>computationally indistinguishable</em>: no efficient
+          algorithm can tell, given $(a(X), b(X))$, which
+          procedure produced it. From this,
+          <span class="exercise" data-target="ex-rlwe">it follows</span>
+          that the secret key cannot be recovered from the public
+          key, and the plaintext cannot be recovered from a
+          ciphertext.
+        </p>
+        <div id="ex-rlwe" class="exercise-body">
+          <b>Exercise:</b> convince yourself of these implications.
+        </div>
+        <p>
+          For more on this assumption and the attacks against
+          it, see <a href="../security/index.html">Part 5</a>.
+        </p>
+
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>

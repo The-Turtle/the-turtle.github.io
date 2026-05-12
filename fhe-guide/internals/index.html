@@ -18,7 +18,7 @@
       <p>
         The mathematical machinery behind CKKS is, surprisingly, a
         single type of object: the polynomial. The secret key is a
-        polynomial, and every public key and ciphertext is a pair of
+        polynomial, and the public key and every ciphertext is a pair of
         polynomials. The five fundamental ciphertext operations from
         <a href="../building/index.html">Part 2</a> &mdash; along with
         bootstrapping, key generation, and everything else &mdash; are
@@ -36,14 +36,20 @@
         picture of how CKKS works, end to end. We'll cover:
       </p>
       <ul>
-        <li>the seven base operations on polynomials (<a href="polynomials.html">3.1</a>),</li>
-        <li>how vectors of complex numbers are encoded as a polynomial and then encrypted as a pair of polynomials (<a href="encryption.html">3.2</a>),</li>
-        <li>how the five fundamental ciphertext operations are built from the seven polynomial operations (<a href="operations.html">3.3</a>),</li>
+        <li>the nine base operations on polynomials (<a href="polynomials.html">3.1</a>),</li>
+        <li>how keys are generated, how vectors of complex numbers are encoded as a polynomial, and how that polynomial is encrypted as a pair of polynomials (<a href="encryption.html">3.2</a>),</li>
+        <li>how the five fundamental ciphertext operations are built from the nine polynomial operations (<a href="operations.html">3.3</a>),</li>
         <li>how to refresh a “used up” (level 0) ciphertext so more computation can be done on it (<a href="bootstrapping.html">3.4</a>),</li>
         <li>various optimizations that make the scheme faster (<a href="optimizations.html">3.5</a>), and</li>
         <li>the protocol that lets multiple parties jointly generate the public keys for a shared secret key without any one of them ever knowing the secret (<a href="multiparty.html">3.6</a>).</li>
       </ul>
 
+      <p>
+        <b>Note:</b> throughout this section, specific numerical
+        parameters will be chosen for concreteness. Most of these
+        are adjustable in practice; see <a href="../building/parameters.html">Section&nbsp;2.3</a>
+        for what the tradeoffs are.
+      </p>
       <h3>Quick links</h3>
       <ul class="post-list" id="post-list"></ul>
 

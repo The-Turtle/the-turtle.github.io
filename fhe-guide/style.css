@@ -235,3 +235,93 @@ main > .post-list li:hover {
 .post-nav .placeholder {
     visibility: hidden;
 }
+
+/* --- "Lies": inline simplifications whose truth is revealed on
+   hover (desktop) or tap (touch). Markup is:
+     <span class="lie" data-truth="the real story">lie text</span>
+   The .lie-open class is toggled by a small handler in layout.js
+   so taps work on devices without :hover. */
+.lie {
+    text-decoration: underline dotted;
+    text-decoration-color: var(--fhe-link);
+    text-underline-offset: 3px;
+    cursor: help;
+    position: relative;
+}
+.lie::after {
+    content: attr(data-truth);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: min(340px, 80vw);
+    background: var(--fhe-tint-hov);
+    color: var(--fhe-fg);
+    border: 1px solid var(--fhe-rule);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1.45;
+    text-align: left;
+    white-space: normal;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.lie:hover::after,
+.lie:focus::after,
+.lie.lie-open::after {
+    opacity: 1;
+}
+
+/* --- Exercises: any inline word becomes a clickable trigger
+   that reveals a sibling block of exercise text. Markup is:
+     ... text <span class="exercise" data-target="ex-id">word</span> more text
+     <div id="ex-id" class="exercise-body">exercise content</div>
+   The trigger toggles the .exercise-open class on the target
+   via a small handler in layout.js. */
+.exercise {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--fhe-fg-muted);
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+.exercise-body {
+    display: none;
+    background: var(--fhe-tint);
+    border-left: 3px solid var(--fhe-link);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-style: normal;
+    color: var(--fhe-fg);
+}
+.exercise-body.exercise-open {
+    display: block;
+}
+
+/* --- Pipeline diagram: a vertical stack of stages connected by
+   labeled down-arrows. Used in Part 3 for the client/server data
+   flow. Each child is either a .stage (a noun phrase) or an
+   .arrow (the transition label). */
+.pipeline {
+    margin: 24px auto;
+    text-align: center;
+    font-family: 'Source Code Pro', Consolas, 'Ubuntu Mono', Menlo, monospace;
+    font-size: 14px;
+}
+.pipeline .stage {
+    color: var(--fhe-fg);
+    padding: 4px 0;
+}
+.pipeline .arrow {
+    color: var(--fhe-fg-muted);
+    font-size: 13px;
+    padding: 2px 0;
+}

@@ -40,7 +40,7 @@ const SECTIONS = [
         title: 'How does CKKS work?',
         posts: [
             { slug: 'polynomials',   title: 'Polynomials' },
-            { slug: 'encryption',    title: 'Encryption and decryption' },
+            { slug: 'encryption',    title: 'Key generation, encryption, and decryption' },
             { slug: 'operations',    title: 'Ciphertext operations' },
             { slug: 'bootstrapping', title: 'Bootstrapping' },
             { slug: 'optimizations', title: 'Optimizations' },
