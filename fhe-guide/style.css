@@ -249,7 +249,7 @@ main > .post-list li:hover {
     position: relative;
 }
 .lie::after {
-    content: attr(data-truth);
+    content: "This is a lie: " attr(data-truth);
     position: absolute;
     bottom: calc(100% + 8px);
     left: 50%;
@@ -279,21 +279,11 @@ main > .post-list li:hover {
     opacity: 1;
 }
 
-/* --- Exercises: any inline word becomes a clickable trigger
-   that reveals a sibling block of exercise text. Markup is:
-     ... text <span class="exercise" data-target="ex-id">word</span> more text
-     <div id="ex-id" class="exercise-body">exercise content</div>
-   The trigger toggles the .exercise-open class on the target
-   via a small handler in layout.js. */
-.exercise {
-    color: inherit;
-    text-decoration: underline;
-    text-decoration-color: var(--fhe-fg-muted);
-    text-underline-offset: 3px;
-    cursor: pointer;
-}
+/* --- Exercises: short callouts rendered as a tinted box flush
+   against the surrounding prose. Markup is just:
+     <div class="exercise-body">exercise content</div>
+   inserted directly after the paragraph it relates to. */
 .exercise-body {
-    display: none;
     background: var(--fhe-tint);
     border-left: 3px solid var(--fhe-link);
     border-radius: 4px;
@@ -301,9 +291,6 @@ main > .post-list li:hover {
     margin: 12px 0;
     font-style: normal;
     color: var(--fhe-fg);
-}
-.exercise-body.exercise-open {
-    display: block;
 }
 
 /* --- Page table of contents ---
@@ -315,10 +302,11 @@ main > .post-list li:hover {
 .page-toc {
     position: fixed;
     top: 96px;
-    left: calc(50vw - 620px);
-    width: 180px;
+    left: calc(50vw - 680px);
+    width: 240px;
     max-height: calc(100vh - 140px);
     overflow-y: auto;
+    overflow-x: hidden;
     font-size: 13px;
     line-height: 1.4;
     z-index: 5;
@@ -348,13 +336,16 @@ main > .post-list li:hover {
     color: var(--fhe-fg-muted);
     text-decoration: none;
     border-left: 2px solid transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .page-toc a:hover {
     color: var(--fhe-fg);
     border-left-color: var(--fhe-link);
     text-decoration: none;
 }
-@media (max-width: 1240px) {
+@media (max-width: 1360px) {
     .page-toc { display: none; }
 }
 

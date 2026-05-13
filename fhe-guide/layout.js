@@ -260,20 +260,6 @@
         document.body.appendChild(nav);
     };
 
-    /* ---- Exercise reveals ----
-       Clicking a .exercise span toggles the .exercise-open class
-       on the element whose id matches the trigger's data-target. */
-    const enableExercises = () => {
-        document.addEventListener('click', (e) => {
-            const trig = e.target.closest('.exercise');
-            if (!trig) return;
-            const targetId = trig.dataset.target;
-            if (!targetId) return;
-            const body = document.getElementById(targetId);
-            if (body) body.classList.toggle('exercise-open');
-        });
-    };
-
     const boot = () => {
         renderHeader();
         if (window.PAGE?.kind === 'landing') renderLanding();
@@ -283,7 +269,6 @@
             injectMathAndCode();
         }
         enableLiePopovers();
-        enableExercises();
         renderPageToc();
         document.documentElement.style.scrollBehavior = 'smooth';
     };
