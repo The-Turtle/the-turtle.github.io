@@ -157,9 +157,10 @@
           ciphertext.
         </p>
         <p>
-          The error on the result grows by at most a factor of the
-          largest magnitude of the plaintext, and the ciphertext's
-          level drops by one,
+          The error on the result grows by at most a factor of
+          $\|\mathbf{u}\|_\infty$, the largest-magnitude entry of
+          the vector $\mathbf{u}$ encoded by $m$, and the
+          ciphertext's level drops by one,
           <span class="lie" data-truth="the level drop can be skipped any time the plaintext's negacyclic Fourier transform has integer coefficients, of which the scalar integer case is just one example.">except</span>
           when the plaintext is a scalar integer $k$. In that
           case, no rescale is needed: the result is simply
@@ -199,6 +200,114 @@
           instead of $2k$ rescales.
         </p>
 
+        <h2>Interlude: key-switching</h2>
+        <p>
+          The remaining ciphertext operations &mdash;
+          multiplication, rotation, and conjugation &mdash; share
+          a common subroutine: <em>key-switching</em>. Given a
+          secret $s'$, a public <em>key-switching key</em>
+          $\mathrm{ksk}_{s'}$ lets us take any polynomial
+          $p \in R_\ell$ and produce a level-$\ell$ ciphertext
+          $(k_0, k_1)$ that decrypts to $p\, s'$. All of the key-switching keys are generated
+          at the same time as the secret key and public key from
+          <a href="encryption.html">Section&nbsp;3.2</a>.
+        </p>
+
+        <h3>The key-switching key</h3>
+        <p>
+          Pick a <em>decomposition parameter</em> $d = 2$ and two
+          auxiliary primes $p_0, p_1 \approx 2^{60}$ that are
+          $1$ modulo $2^{17}$. Define the extended ring
+        </p>
+        $$
+          \tilde{R}_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell\, p_0 p_1)\mathbb{Z}\bigr)[X]/(X^{65536} + 1).
+        $$
+        <p>
+          Group the prime chain into $\lceil 16 / d \rceil = 8$
+          consecutive blocks of size $d = 2$:
+          $G_0 = \{q_0, q_1\},\, G_1 = \{q_2, q_3\},\, \ldots,\, G_7 = \{q_{14}, q_{15}\}$.
+          For each block, let $u_i \in \mathbb{Z}/(q_0 \cdots q_{15})\mathbb{Z}$
+          be the element that is $1$ modulo each prime in $G_i$
+          and $0$ modulo each prime outside $G_i$. The key
+          $\mathrm{ksk}_{s'}$
+          <span class="lie" data-truth="during bootstrapping, key-switching is performed at levels higher than 15, where the prime chain is extended and the decomposition needs correspondingly more (a_i, b_i) pairs.">consists</span>
+          of $8$ pairs of polynomials
+          $(a_0, b_0), (a_1, b_1), \ldots, (a_7, b_7) \in \tilde{R}_{15} \times \tilde{R}_{15}$,
+          generated as follows:
+        </p>
+        <ol>
+          <li>Sample each $b_i$ uniformly at random from $\tilde{R}_{15}$.</li>
+          <li>
+            Sample error polynomials $e_0, \ldots, e_7 \in R_\infty$
+            with coefficients drawn independently from a discrete
+            Gaussian of standard deviation $3.2$.
+          </li>
+          <li>
+            Set $a_i = -b_i\, s + e_i + p_0 p_1\, s'\, u_i$ for
+            $i = 0, 1, \ldots, 7$.
+          </li>
+        </ol>
+        <p>
+          Intuitively, $(a_i, b_i)$ is an RLWE-style encryption of
+          $p_0 p_1\, s'\, u_i$.
+        </p>
+
+        <h3>The key-switch</h3>
+        <p>
+          Given the key $\mathrm{ksk}_{s'}$ and an input
+          polynomial $p \in R_\ell$, the key-switch produces a
+          level-$\ell$ ciphertext encrypting $p\, s'$ in three
+          steps. First, for each
+          $i \in \{0, 1, \ldots, \lceil(\ell - 1)/2\rceil\}$,
+          compute the <em>lift</em>
+        </p>
+        $$
+          p^{(i)} = \underset{q_{2i} q_{2i+1} \,\to\, q_0 \cdots q_\ell\, p_0 p_1}{\mathrm{modraise}}\!\bigl(p \bmod q_{2i} q_{2i+1}\bigr),
+        $$
+        <p>
+          which lives in $\tilde{R}_\ell$. Then define
+        </p>
+        $$
+          \begin{aligned}
+            \tilde k_0 &= \displaystyle\sum_{i=0}^{\lceil(\ell - 1)/2\rceil} p^{(i)}\, (a_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell, \\
+            \tilde k_1 &= \displaystyle\sum_{i=0}^{\lceil(\ell - 1)/2\rceil} p^{(i)}\, (b_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell.
+          \end{aligned}
+        $$
+        <p>
+          The pair $(\tilde k_0, \tilde k_1)$ is an encryption of
+          $p_0 p_1\, p\, s'$ in $\tilde{R}_\ell$:
+        </p>
+        $$
+          \begin{aligned}
+            \tilde k_0 + \tilde k_1\, s
+            &= \textstyle\sum_i p^{(i)} (a_i + b_i\, s) \\
+            &= \textstyle\sum_i p^{(i)} \bigl(e_i + p_0 p_1\, s'\, u_i\bigr) \\
+            &= \textstyle\sum_i p^{(i)}\, e_i \;+\; p_0 p_1\, s' \textstyle\sum_i p^{(i)}\, u_i \\
+            &\approx p_0 p_1\, p\, s',
+          \end{aligned}
+        $$
+        <p>
+          where the last step uses
+          $\sum_i p^{(i)}\, u_i \equiv p \pmod{q_0 \cdots q_\ell}$.
+          Finally, rescale away the auxiliary primes to drop the
+          factor of $p_0 p_1$:
+        </p>
+        $$
+          \begin{aligned}
+            k_0 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}}(\tilde k_0), \\
+            k_1 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}}(\tilde k_1).
+          \end{aligned}
+        $$
+        <p>
+          Then $(k_0, k_1)$ is a level-$\ell$ encryption of
+          $p\, s'$.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> there is a lot of flexibility in the
+          choice of $p_0$ and $p_1$. However, $p_0 p_1$ should
+          always be at least $2^{40 d}$; explain why.
+        </div>
+
         <h2>Ciphertext&ndash;ciphertext multiplication</h2>
         <p>
           To multiply two ciphertexts $(c_0, c_1)$ and $(d_0, d_1)$
@@ -227,13 +336,12 @@
         <p>
           which is an approximation of $mn$ with relative error
           $O(2^{-40})$. And if $m$ encodes $\mathbf{u}$ and $n$
-          encodes $\mathbf{v}$,
-          then $m n$ encodes
+          encodes $\mathbf{v}$, then $m n$ encodes
           $\Delta_\ell\, \mathbf{u} \odot \mathbf{v}$ with $O(1)$
           coefficient error, so rescaling away one prime produces
-          a plaintext at
-          level $\ell - 1$ encoding $\mathbf{u} \odot \mathbf{v}$
-          with error on the order of $2^{-40}$.
+          a plaintext at level $\ell - 1$ encoding
+          $\mathbf{u} \odot \mathbf{v}$ with error on the order of
+          $2^{-40}$.
         </p>
         <div class="exercise-body">
           <b>Exercise:</b> show that if $m, n \in R_\ell$ encode
@@ -243,125 +351,23 @@
         </div>
         <p>
           However, the triple $(c_0', c_1', c_2')$ isn't a
-          ciphertext, so the rest of this subsection is devoted
-          to turning the triple back into a pair. The key idea is
-          that if we had
-          an encryption of $s^2$ under $s$, we could use it to
-          fold the $c_2'\, s^2$ term into $(c_0', c_1')$. This is
-          exactly what the relinearization key provides.
+          ciphertext. To turn this into a ciphertext, the key
+          idea is to fold the $c_2'\, s^2$ term into
+          $(c_0', c_1')$ using the key-switching key
+          $\mathrm{rlk} = \mathrm{ksk}_{s^2}$; this key is
+          called the <em>relinearization key</em>.
         </p>
-
-        <h3>The relinearization key</h3>
         <p>
-          The relinearization key is generated as follows. Pick a
-          <em>decomposition parameter</em> $d = 2$ and two
-          auxiliary primes $p_0, p_1 \approx 2^{60}$ that are
-          $1$ modulo $2^{17}$. Define the extended ring
-        </p>
-        $$
-          \tilde{R}_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell\, p_0 p_1)\mathbb{Z}\bigr)[X]/(X^{65536} + 1).
-        $$
-        <p>
-          Group the prime chain into $\lceil 16 / d \rceil = 8$
-          consecutive blocks of size $d = 2$:
-          $G_0 = \{q_0, q_1\},\, G_1 = \{q_2, q_3\},\, \ldots,\, G_7 = \{q_{14}, q_{15}\}$.
-          For each block, let $u_i \in \mathbb{Z}/(q_0 \cdots q_{15})\mathbb{Z}$
-          be the element that is $1$ modulo each prime in $G_i$ and
-          $0$ modulo each prime outside $G_i$.
-          The relinearization key
-          <span class="lie" data-truth="during bootstrapping, key-switching is performed at levels higher than 15, where the prime chain is extended and the decomposition needs correspondingly more (a_i, b_i) pairs.">consists</span>
-          of $8$ pairs of polynomials
-          $(a_0, b_0), (a_1, b_1), \ldots, (a_7, b_7)$ in
-          $\tilde{R}_{15} \times \tilde{R}_{15}$, generated as
-          follows:
-        </p>
-        <ol>
-          <li>Sample each $b_i$ uniformly at random from $\tilde{R}_{15}$.</li>
-          <li>
-            Sample error polynomials $e_0, \ldots, e_7 \in R_\infty$
-            with coefficients drawn independently from a discrete
-            Gaussian of standard deviation $3.2$.
-          </li>
-          <li>
-            Set $a_i = -b_i\, s + e_i + p_0 p_1\, s^2\, u_i$ for
-            $i = 0, 1, \ldots, 7$.
-          </li>
-        </ol>
-        <p>
-          Intuitively, $(a_i, b_i)$ is an RLWE-style encryption of
-          $p_0 p_1\, s^2\, u_i$ under $s$.
-        </p>
-
-        <h3>The key-switch</h3>
-        <p>
-          Now back to multiplying $(c_0, c_1)$ and $(d_0, d_1)$ at
-          level $\ell$, with $(c_0', c_1', c_2')$ defined as
-          above; the goal of key-switching is to get a ciphertext
-          encrypting $c_2'\, s^2$. For each
-          $i \in \{0, 1, \ldots, \lceil(\ell - 1)/2\rceil\}$,
-          compute the <em>lift</em>
-        </p>
-        $$
-          c_2^{(i)} = \underset{q_{2i} q_{2i+1} \,\to\, q_0 \cdots q_\ell\, p_0 p_1}{\mathrm{modraise}}\!\bigl(c_2' \bmod q_{2i} q_{2i+1}\bigr),
-        $$
-        <p>
-          which lives in $\tilde{R}_\ell$. Then define
+          Applying the key-switch to $c_2'$ with $\mathrm{rlk}$
+          yields a level-$\ell$ encryption $(k_0, k_1)$ of
+          $c_2'\, s^2$. Adding this back into the pair
+          $(c_0', c_1')$ and rescaling once more produces the
+          final ciphertext:
         </p>
         $$
           \begin{aligned}
-            \mathrm{ks}_a &= \displaystyle\sum_{i=0}^{\lceil(\ell - 1)/2\rceil} c_2^{(i)}\, (a_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell, \\
-            \mathrm{ks}_b &= \displaystyle\sum_{i=0}^{\lceil(\ell - 1)/2\rceil} c_2^{(i)}\, (b_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell.
-          \end{aligned}
-        $$
-        <p>
-          The pair $(\mathrm{ks}_a,\, \mathrm{ks}_b)$ is an
-          encryption of $p_0 p_1\, c_2'\, s^2$ under $s$ in
-          $\tilde{R}_\ell$:
-        </p>
-        $$
-          \begin{aligned}
-            \mathrm{ks}_a + \mathrm{ks}_b\, s
-            &= \textstyle\sum_i c_2^{(i)} (a_i + b_i\, s) \\
-            &= \textstyle\sum_i c_2^{(i)} \bigl(e_i + p_0 p_1\, s^2\, u_i\bigr) \\
-            &= \textstyle\sum_i c_2^{(i)}\, e_i \;+\; p_0 p_1\, s^2 \textstyle\sum_i c_2^{(i)}\, u_i \\
-            &\approx p_0 p_1\, c_2'\, s^2,
-          \end{aligned}
-        $$
-        <p>
-          where the last step uses
-          $\sum_i c_2^{(i)}\, u_i \equiv c_2' \pmod{q_0 \cdots q_\ell\, p_0 p_1}$.
-          Now rescale away the auxiliary primes to drop the
-          factor of $p_0 p_1$:
-        </p>
-        $$
-          \begin{aligned}
-            \mathrm{ks}_a' &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}}(\mathrm{ks}_a), \\
-            \mathrm{ks}_b' &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}}(\mathrm{ks}_b).
-          \end{aligned}
-        $$
-        <p>
-          Then $(\mathrm{ks}_a',\, \mathrm{ks}_b')$ is a level-$\ell$
-          encryption of $c_2'\, s^2$ under $s$. This entire
-          procedure &mdash; lift, dot-product with the key,
-          rescale &mdash; is called a <em>key-switch</em>.
-        </p>
-        <div class="exercise-body">
-          <b>Exercise:</b> there is a lot of flexibility in the
-          choice of $p_0$ and $p_1$. However, $p_0 p_1$ should
-          always be at least $2^{40 d}$; explain why.
-        </div>
-
-        <h3>Reassembling the ciphertext</h3>
-        <p>
-          Adding the key-switched encryption
-          $(\mathrm{ks}_a',\, \mathrm{ks}_b')$ of $c_2'\, s^2$
-          back into the pair $(c_0', c_1')$ and rescaling once
-          more produces the final ciphertext:
-        </p>
-        $$
-          \begin{aligned}
-            c_0'' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}(c_0' + \mathrm{ks}_a'), \\
-            c_1'' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}(c_1' + \mathrm{ks}_b').
+            c_0'' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}(c_0' + k_0), \\
+            c_1'' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}(c_1' + k_1).
           \end{aligned}
         $$
         <p>
@@ -397,22 +403,83 @@
           $c_0' + c_1'\, s + c_2'\, s^2$ approximates
           $\sum_{i=1}^{k} m^{(i)} n^{(i)}$ to relative error
           $O(2^{-40})$, where $m^{(i)}, n^{(i)}$ are the plaintexts
-          encrypted by the $i$th ciphertexts. Similar to before,
-          applying a key-switch to $(c_0', c_1', c_2')$ and
-          rescaling down by one prime gives a ciphertext encrypting
+          encrypted by the $i$th ciphertexts. Then, applying a
+          key-switch to $c_2'$ with $\mathrm{rlk}$ and rescaling
+          down by one prime gives a ciphertext encrypting
           $\sum_{i=1}^{k} \mathbf{u}^{(i)} \odot \mathbf{v}^{(i)}$.
-          Similar to the plaintext&ndash;ciphertext dot product,
-          the reason this operation is exposed separately is that
+          The reason this operation is exposed separately is that
           key-switching is expensive: fusing the $k$
-          multiplications into a single accumulation uses only one
-          key-switch instead of $k$ key-switches.
+          multiplications into a single accumulation saves
+          $k - 1$ key-switches.
+        </p>
+
+        <h2>Rotation</h2>
+        <p>
+          To rotate a ciphertext $(c_0, c_1)$ encrypting a
+          plaintext polynomial $m \in R_\ell$ by $i$ slots, it
+          suffices to obtain a ciphertext encrypting
+          $\sigma^i(m)$, where $\sigma: R_\ell \to R_\ell$ is
+          the automorphism mapping $X \mapsto X^5$.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> show that if $m$ encodes the vector
+          $(v_0, v_1, \ldots, v_{32767}) \in \mathbb{C}^{32768}$,
+          then $\sigma^i(m)$ encodes the cyclic shift
+          $(v_i, v_{i+1}, \ldots, v_{32767}, v_0, v_1, \ldots, v_{i-1})$.
+        </div>
+        <p>
+          Define $c_0' = \sigma^i(c_0)$ and
+          $c_1' = \sigma^i(c_1)$. Given the secret key $s$, a
+          decryptor could recover $\sigma^i(m)$ from the pair
+          $(c_0', c_1')$ by computing
+        </p>
+        $$
+          c_0' + c_1'\, \sigma^i(s) = \sigma^i(c_0 + c_1\, s) \approx \sigma^i(m).
+        $$
+        <p>
+          However, the pair $(c_0', c_1')$ isn't a standard
+          ciphertext under $s$. To turn it into one, the key idea
+          is to fold the $c_1'\, \sigma^i(s)$ term into $c_0'$
+          using the key-switching key
+          $\mathrm{rot}_i = \mathrm{ksk}_{\sigma^i(s)}$; this key
+          is called a <em>rotation key</em>.
+        </p>
+        <p>
+          Applying the key-switch to $c_1'$ with $\mathrm{rot}_i$
+          yields a level-$\ell$ encryption $(k_0, k_1)$ of
+          $c_1'\, \sigma^i(s)$, and the ciphertext
+        </p>
+        $$
+          c_0'' = c_0' + k_0, \qquad c_1'' = k_1
+        $$
+        <p>
+          encrypts $\sigma^i(m)$.
+        </p>
+        <p>
+          <b>Remark:</b> storing $\mathrm{rot}_i$ for every
+          $i \in \{1, 2, \ldots, 32767\}$ would consume too much
+          memory, so in practice only a small set of <em>base</em>
+          rotation keys is generated &mdash; typically
+          $\mathrm{rot}_{2^k}$ for $k = 0, 1, \ldots, 14$.
         </p>
 
         <h2>Conjugation</h2>
-        <p><b>[WORK IN PROGRESS]</b></p>
-
-        <h2>Rotation</h2>
-        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Pointwise conjugation follows the same pattern as
+          rotation, but with the automorphism
+          $\tau: R_\ell \to R_\ell$ mapping $X \mapsto X^{-1}$.
+          The corresponding key-switching key
+          $\mathrm{conj} = \mathrm{ksk}_{\tau(s)}$ is called the
+          <em>conjugation key</em>, and applying it to $\tau(c_1)$
+          yields $(k_0, k_1)$ such that the ciphertext
+          $\bigl(\tau(c_0) + k_0,\; k_1\bigr)$ encrypts $\tau(m)$.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> show that if $m$ encodes the vector
+          $\mathbf{v} \in \mathbb{C}^{32768}$, then $\tau(m)$
+          encodes its pointwise complex conjugate
+          $\overline{\mathbf{v}}$.
+        </div>
 
       </article>
       <nav class="post-nav" id="post-nav"></nav>
