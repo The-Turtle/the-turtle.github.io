@@ -23,8 +23,11 @@
           multiplication, dot products, conjugation, and rotation
           &mdash; is a combination of the ten polynomial operations
           from <a href="polynomials.html">Section&nbsp;3.1</a>.
-          Bootstrapping, the one remaining ciphertext operation,
-          gets its own treatment in
+          Several of these operations share two internal
+          subroutines, <em>level dropping</em> and <em>key
+          switching</em>, which are introduced in their own
+          subsections below. Bootstrapping, the one remaining
+          ciphertext operation, gets its own treatment in
           <a href="bootstrapping.html">Section&nbsp;3.4</a>.
         </p>
         <p>
@@ -65,6 +68,12 @@
           very close to $1$, errors can compound across many
           operations.
         </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> it seems like reducing $c_0$ and $c_1$
+          modulo the smaller modulus $q'$ should destroy
+          information about the underlying plaintext. Why does it
+          not?
+        </div>
         <p>
           One fix is to first multiply $c_0$ and $c_1$ by
           $\mathrm{round}\bigl(q_{\ell'+1} \cdots q_\ell \cdot \Delta_{\ell'} / \Delta_\ell\bigr) \approx 2^{40(\ell - \ell')}$,
@@ -217,7 +226,7 @@
         <p>
           Pick a <em>decomposition parameter</em> $d = 2$ and two
           auxiliary primes $p_0, p_1 \approx 2^{60}$ that are
-          $1$ modulo $2^{17}$. Define the extended ring
+          $1$ modulo $131072$. Define the extended ring
         </p>
         $$
           \tilde{R}_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell\, p_0 p_1)\mathbb{Z}\bigr)[X]/(X^{65536} + 1).
@@ -258,7 +267,7 @@
           polynomial $p \in R_\ell$, the key-switch produces a
           level-$\ell$ ciphertext encrypting $p\, s'$ in three
           steps. First, for each
-          $i \in \{0, 1, \ldots, \lceil(\ell - 1)/2\rceil\}$,
+          $i \in \{0, 1, \ldots, \lfloor \ell/2 \rfloor\}$,
           compute the <em>lift</em>
         </p>
         $$
@@ -269,8 +278,8 @@
         </p>
         $$
           \begin{aligned}
-            \tilde k_0 &= \displaystyle\sum_{i=0}^{\lceil(\ell - 1)/2\rceil} p^{(i)}\, (a_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell, \\
-            \tilde k_1 &= \displaystyle\sum_{i=0}^{\lceil(\ell - 1)/2\rceil} p^{(i)}\, (b_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell.
+            \tilde k_0 &= \displaystyle\sum_{i=0}^{\lfloor \ell/2 \rfloor} p^{(i)}\, (a_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell, \\
+            \tilde k_1 &= \displaystyle\sum_{i=0}^{\lfloor \ell/2 \rfloor} p^{(i)}\, (b_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell.
           \end{aligned}
         $$
         <p>
@@ -303,9 +312,12 @@
           $p\, s'$.
         </p>
         <div class="exercise-body">
+          <b>Exercise:</b> what changes if $d = 3$?
+        </div>
+        <div class="exercise-body">
           <b>Exercise:</b> there is a lot of flexibility in the
-          choice of $p_0$ and $p_1$. However, $p_0 p_1$ should
-          always be at least $2^{40 d}$; explain why.
+          choice of $p_0, \ldots, p_{d-1}$. However, their product
+          should always be at least $2^{40 d}$; explain why.
         </div>
 
         <h2>Ciphertext&ndash;ciphertext multiplication</h2>
@@ -416,10 +428,11 @@
         <h2>Rotation</h2>
         <p>
           To rotate a ciphertext $(c_0, c_1)$ encrypting a
-          plaintext polynomial $m \in R_\ell$ by $i$ slots, it
-          suffices to obtain a ciphertext encrypting
-          $\sigma^i(m)$, where $\sigma: R_\ell \to R_\ell$ is
-          the automorphism mapping $X \mapsto X^5$.
+          plaintext polynomial $m \in R_\ell$ by
+          $i \in \{1, 2, \ldots, 32767\}$ slots, it suffices to
+          obtain a ciphertext encrypting $\sigma^i(m)$, where
+          $\sigma: R_\ell \to R_\ell$ is the automorphism mapping
+          $X \mapsto X^5$.
         </p>
         <div class="exercise-body">
           <b>Exercise:</b> show that if $m$ encodes the vector
