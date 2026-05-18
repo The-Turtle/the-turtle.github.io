@@ -20,7 +20,7 @@
           from <a href="../building/interface.html">Section&nbsp;2.1</a>
           &mdash; addition, subtraction, plaintext&ndash;ciphertext
           multiplication, ciphertext&ndash;ciphertext
-          multiplication, dot products, conjugation, and rotation
+          multiplication, rotation, conjugation, and dot products
           &mdash; is a combination of the ten polynomial operations
           from <a href="polynomials.html">Section&nbsp;3.1</a>.
           Several of these operations share two internal
@@ -175,38 +175,6 @@
           case, no rescale is needed: the result is simply
           $(k c_0,\, k c_1)$ at the original level, with error
           scaled by at most $|k|$.
-        </p>
-
-        <h2>Plaintext&ndash;ciphertext dot product</h2>
-        <p>
-          To compute a plaintext&ndash;ciphertext dot product of
-          $k$ summands, first level-match the plaintexts and
-          ciphertexts at a common level $\ell$ by re-encoding the
-          plaintexts and level-dropping the ciphertexts
-          <span class="lie" data-truth="in fact, if the target level is l, it's more efficient to simply reinterpret the ciphertext in the smaller ring R_l and push the Delta_l'/Delta_l factor into the plaintext to avoid the rescales.">as needed</span>.
-          Then, given level-$\ell$ plaintexts
-          $m^{(1)}, \ldots, m^{(k)}$ encoding vectors
-          $\mathbf{u}^{(1)}, \ldots, \mathbf{u}^{(k)} \in \mathbb{C}^{32768}$
-          and level-$\ell$ ciphertexts
-          $(c_0^{(1)}, c_1^{(1)}), \ldots, (c_0^{(k)}, c_1^{(k)})$
-          encrypting vectors
-          $\mathbf{v}^{(1)}, \ldots, \mathbf{v}^{(k)} \in \mathbb{C}^{32768}$,
-          compute
-        </p>
-        $$
-          \begin{aligned}
-            c_0' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}\!\Bigl(\textstyle\sum_{i=1}^{k} m^{(i)}\, c_0^{(i)}\Bigr), \\
-            c_1' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}\!\Bigl(\textstyle\sum_{i=1}^{k} m^{(i)}\, c_1^{(i)}\Bigr).
-          \end{aligned}
-        $$
-        <p>
-          The pair $(c_0', c_1')$ encrypts
-          $\sum_{i=1}^{k} \mathbf{u}^{(i)} \odot \mathbf{v}^{(i)}$,
-          where $\odot$ denotes the pointwise (Hadamard) product.
-          The reason this operation is exposed separately is that
-          rescaling is expensive: fusing the $k$ multiplications
-          into a single accumulation uses only two rescales
-          instead of $2k$ rescales.
         </p>
 
         <h2>Interlude: key-switching</h2>
@@ -390,41 +358,6 @@
           $\ell - 1$.
         </p>
 
-        <h2>Ciphertext&ndash;ciphertext dot product</h2>
-        <p>
-          To compute a ciphertext&ndash;ciphertext dot product of
-          $k$ summands, first level-drop all $2k$ input ciphertexts
-          to a common level $\ell$. Then, given level-$\ell$
-          ciphertexts
-          $(c_0^{(1)}, c_1^{(1)}), \ldots, (c_0^{(k)}, c_1^{(k)})$,
-          $(d_0^{(1)}, d_1^{(1)}), \ldots, (d_0^{(k)}, d_1^{(k)})$
-          encrypting vectors
-          $\mathbf{u}^{(1)}, \ldots, \mathbf{u}^{(k)} \in \mathbb{C}^{32768}$,
-          $\mathbf{v}^{(1)}, \ldots, \mathbf{v}^{(k)} \in \mathbb{C}^{32768}$
-          respectively, form the triple
-        </p>
-        $$
-          \begin{aligned}
-            c_0' &= \textstyle\sum_{i=1}^{k} c_0^{(i)}\, d_0^{(i)}, \\
-            c_1' &= \textstyle\sum_{i=1}^{k} \bigl(c_0^{(i)}\, d_1^{(i)} + c_1^{(i)}\, d_0^{(i)}\bigr), \\
-            c_2' &= \textstyle\sum_{i=1}^{k} c_1^{(i)}\, d_1^{(i)}.
-          \end{aligned}
-        $$
-        <p>
-          The same expansion as before shows that
-          $c_0' + c_1'\, s + c_2'\, s^2$ approximates
-          $\sum_{i=1}^{k} m^{(i)} n^{(i)}$ to relative error
-          $O(2^{-40})$, where $m^{(i)}, n^{(i)}$ are the plaintexts
-          encrypted by the $i$th ciphertexts. Then, applying a
-          key-switch to $c_2'$ with $\mathrm{rlk}$ and rescaling
-          down by one prime gives a ciphertext encrypting
-          $\sum_{i=1}^{k} \mathbf{u}^{(i)} \odot \mathbf{v}^{(i)}$.
-          The reason this operation is exposed separately is that
-          key-switching is expensive: fusing the $k$
-          multiplications into a single accumulation saves
-          $k - 1$ key-switches.
-        </p>
-
         <h2>Rotation</h2>
         <p>
           To rotate a ciphertext $(c_0, c_1)$ encrypting a
@@ -492,6 +425,90 @@
           $\mathbf{v} \in \mathbb{C}^{32768}$, then $\tau(m)$
           encodes its pointwise complex conjugate
           $\overline{\mathbf{v}}$.
+        </div>
+
+        <h2>Dot product</h2>
+        <p>
+          The dot product operation efficiently evaluates the
+          pointwise dot product of two lists, where each list
+          element is either a plaintext or a ciphertext.
+          Internally, it is
+          <span class="lie" data-truth="the final rescale step in each part can be combined into one pair of rescales.">delegated</span>
+          into two parts: the plaintext&ndash;ciphertext part
+          (covering the index pairs where one side is a
+          plaintext) and the ciphertext&ndash;ciphertext part
+          (covering the index pairs where both sides are
+          ciphertexts). The dot product is exposed as its own
+          operation because fusing the $k$ summands into a single
+          accumulation is strictly cheaper than performing $k$
+          separate multiplications and adding the results.
+        </p>
+        <p>
+          To compute a plaintext&ndash;ciphertext dot product of
+          $k$ summands, first level-match the plaintexts and
+          ciphertexts at a common level $\ell$ by re-encoding the
+          plaintexts and level-dropping the ciphertexts
+          <span class="lie" data-truth="in fact, if the target level is l, it's more efficient to simply reinterpret the ciphertext in the smaller ring R_l and push the Delta_l'/Delta_l factor into the plaintext to avoid the rescales.">as needed</span>.
+          Then, given level-$\ell$ plaintexts
+          $m^{(1)}, \ldots, m^{(k)}$ encoding vectors
+          $\mathbf{u}^{(1)}, \ldots, \mathbf{u}^{(k)} \in \mathbb{C}^{32768}$
+          and level-$\ell$ ciphertexts
+          $(c_0^{(1)}, c_1^{(1)}), \ldots, (c_0^{(k)}, c_1^{(k)})$
+          encrypting vectors
+          $\mathbf{v}^{(1)}, \ldots, \mathbf{v}^{(k)} \in \mathbb{C}^{32768}$,
+          compute
+        </p>
+        $$
+          \begin{aligned}
+            c_0' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}\!\Bigl(\textstyle\sum_{i=1}^{k} m^{(i)}\, c_0^{(i)}\Bigr), \\
+            c_1' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}\!\Bigl(\textstyle\sum_{i=1}^{k} m^{(i)}\, c_1^{(i)}\Bigr).
+          \end{aligned}
+        $$
+        <p>
+          The pair $(c_0', c_1')$ encrypts
+          $\sum_{i=1}^{k} \mathbf{u}^{(i)} \odot \mathbf{v}^{(i)}$,
+          where $\odot$ denotes the pointwise (Hadamard) product.
+          Fusing the $k$ multiplications into a single
+          accumulation uses only two rescales instead of $2k$
+          rescales.
+        </p>
+        <p>
+          To compute a ciphertext&ndash;ciphertext dot product of
+          $k$ summands, first
+          <span class="lie" data-truth="see the exercise.">level-drop</span>
+          all $2k$ input ciphertexts to a common level $\ell$.
+          Then, given level-$\ell$
+          ciphertexts
+          $(c_0^{(1)}, c_1^{(1)}), \ldots, (c_0^{(k)}, c_1^{(k)})$,
+          $(d_0^{(1)}, d_1^{(1)}), \ldots, (d_0^{(k)}, d_1^{(k)})$
+          encrypting vectors
+          $\mathbf{u}^{(1)}, \ldots, \mathbf{u}^{(k)} \in \mathbb{C}^{32768}$,
+          $\mathbf{v}^{(1)}, \ldots, \mathbf{v}^{(k)} \in \mathbb{C}^{32768}$
+          respectively, form the triple
+        </p>
+        $$
+          \begin{aligned}
+            c_0' &= \textstyle\sum_{i=1}^{k} c_0^{(i)}\, d_0^{(i)}, \\
+            c_1' &= \textstyle\sum_{i=1}^{k} \bigl(c_0^{(i)}\, d_1^{(i)} + c_1^{(i)}\, d_0^{(i)}\bigr), \\
+            c_2' &= \textstyle\sum_{i=1}^{k} c_1^{(i)}\, d_1^{(i)}.
+          \end{aligned}
+        $$
+        <p>
+          The same expansion as before shows that
+          $c_0' + c_1'\, s + c_2'\, s^2$ approximates
+          $\sum_{i=1}^{k} m^{(i)} n^{(i)}$ to relative error
+          $O(2^{-40})$, where $m^{(i)}, n^{(i)}$ are the plaintexts
+          encrypted by the $i$th ciphertexts. Then, applying a
+          key-switch to $c_2'$ with $\mathrm{rlk}$ and rescaling
+          down by one prime gives a ciphertext encrypting
+          $\sum_{i=1}^{k} \mathbf{u}^{(i)} \odot \mathbf{v}^{(i)}$.
+          Fusing the $k$ multiplications into a single
+          accumulation saves $k - 1$ key-switches.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> this is not the most optimal way to
+          evaluate a general dot product. Optimize it by
+          carefully combining level drops.
         </div>
 
       </article>
