@@ -41,7 +41,8 @@ const SECTIONS = [
         posts: [
             { slug: 'polynomials',   title: 'Polynomials' },
             { slug: 'encryption',    title: 'Key generation, encryption, and decryption' },
-            { slug: 'operations',    title: 'Ciphertext operations' },
+            { slug: 'fundamental',   title: 'Fundamental operations' },
+            { slug: 'composite',     title: 'Composite operations' },
             { slug: 'bootstrapping', title: 'Bootstrapping' },
             { slug: 'optimizations', title: 'Optimizations' },
             { slug: 'multiparty',    title: 'Multiparty key generation' }

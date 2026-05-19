@@ -226,14 +226,16 @@
         $$
         <p>
           with each
-          $p(\zeta^{2k+1}) \in \mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}$
+          $p(\zeta^{2i+1}) \in \mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}$
           represented in RNS form. The evaluation
-          $p(\zeta^{2k+1})$ is well-defined because
-          $\zeta^{2k+1}$ is itself a root of $X^{65536} + 1$, so
+          $p(\zeta^{2i+1})$ is well-defined because
+          $\zeta^{2i+1}$ is itself a root of $X^{65536} + 1$, so
           the value doesn't depend on which representative of
           $p(X)$ in
           $\bigl(\mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}\bigr)[X]$
-          we plug in.
+          we plug in. (When evaluating $p \in R_\ell$, $\zeta$
+          is implicitly reduced modulo $q_0 \cdots q_\ell$
+          first.)
         </p>
         <div class="exercise-body">
           <b>Exercise:</b> show that if two polynomials in
@@ -432,7 +434,12 @@
         <p>and the cross-residues</p>
         $$
           (q / q_i) \bmod q_j,
-          \qquad i \in \{0, 1, \ldots, \ell\},\; j \in \{\ell + 1, \ldots, \ell'\}.
+          \qquad i \in \{0, 1, \ldots, \ell\},\; j \in \{\ell + 1, \ldots, \ell'\},
+        $$
+        <p>along with</p>
+        $$
+          q \bmod q_j,
+          \qquad j \in \{\ell + 1, \ldots, \ell'\}.
         $$
         <p>
           Then, given $(r_0, \ldots, r_\ell)$, compute
@@ -453,13 +460,13 @@
           so the centered representative of $r$ is
         </p>
         $$
-          \sum_{i=0}^{\ell} t_i\, (q / q_i) - v\, q \in \mathbb{Z}.
+          -v\, q + \sum_{i=0}^{\ell} t_i\, (q / q_i) \in \mathbb{Z}.
         $$
         <p>
           Therefore, for each new prime $q_j$ with $j > \ell$,
         </p>
         $$
-          \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{modraise}}(r) \bmod q_j \;=\; \left[\sum_{i=0}^{\ell} t_i\, \bigl((q / q_i) \bmod q_j\bigr) \;-\; v\, q\right] \bmod q_j.
+          \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{modraise}}(r) \bmod q_j \;=\; \left[-v\, (q \bmod q_j) + \sum_{i=0}^{\ell} t_i\, \bigl((q / q_i) \bmod q_j\bigr)\right] \bmod q_j.
         $$
         <p>
           The RNS form of
@@ -507,6 +514,12 @@
           the true rescaling operation; the result differs from
           the exact rescaling by an integer of magnitude at most
           $\lfloor(\ell - \ell')/2\rfloor$ per coefficient.
+        </p>
+        <p>
+          <b>Remark:</b> exact rescaling is also possible, using
+          a carry computation analogous to the one in modulus
+          raising, but it is not needed for CKKS: at every place
+          rescaling is used, the approximate version suffices.
         </p>
         <p>
           Like modulus raising, rescaling is not a ring
