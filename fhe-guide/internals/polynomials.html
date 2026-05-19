@@ -16,16 +16,18 @@
         <h1>Polynomials</h1>
 
         <p>
-          The CKKS scheme works over polynomials in rings of the
-          form $\bigl(\mathbb{Z}/q\mathbb{Z}\bigr)[X]/(X^N + 1)$.
-          To make everything concrete, we'll pin down specific
-          numbers throughout this part. Let
-          $N = 2^{16} = 65536$ be the ring dimension, and we fix a
-          chain of distinct primes $q_0, q_1, \ldots, q_{15}$, all
-          congruent to $1$ modulo $2^{17} = 131072$, with
-          $q_0 \approx 2^{55}$ and
+          This section introduces the polynomial rings CKKS
+          works over, the operations on them that CKKS needs,
+          and how each operation is computed efficiently.
+        </p>
+        <p>
+          To start, let $N = 2^{16} = 65536$ be the ring
+          dimension, and fix a chain of distinct primes
+          $q_0, q_1, \ldots, q_{15}$, all congruent to $1$
+          modulo $2^{17} = 131072$, with $q_0 \approx 2^{55}$
+          and
           $q_1 \approx q_2 \approx \cdots \approx q_{15} \approx 2^{40}$.
-          Throughout, we'll write
+          The rings we care about are
         </p>
         $$
           R_\infty = \mathbb{Z}[X]/(X^{65536} + 1), \qquad
@@ -38,133 +40,221 @@
           underlying integer-coefficient ring.
         </p>
         <p>
-          Everything in CKKS is built on top of two
-          representations of the polynomials in $R_\ell$
-          <span class="lie" data-truth="implementations represent a polynomial in $R_\infty$ as a polynomial in $R_{15}$, the highest-level ring, by reducing each coefficient modulo $q_0 \cdots q_{15}$. As long as the original coefficients fit in $[-q_0 \cdots q_{15}/2,\, q_0 \cdots q_{15}/2)$, no information is lost.">(polynomials in $R_\infty$ are stored as polynomials in $R_{15}$)</span>
-          and ten operations on them, each introduced in its own
-          subsection below. Seven of the operations keep the
-          polynomial in the same ring; two drop it to a
-          lower-level ring; and one raises it to a higher-level
-          ring.
+          Everything in CKKS is built on top of polynomials in
+          $R_\ell$ for $\ell \in \{0, 1, \ldots, 15\}$
+          (polynomials in $R_\infty$ are stored in the
+          highest-level ring). Each such polynomial has two
+          representations: coefficient form and evaluation form.
         </p>
-
-        <h2>Representing integers modulo $q_0 \cdots q_\ell$</h2>
         <p>
-          Both representations of polynomials in $R_\ell$ ultimately
-          store integers modulo $q = q_0 \cdots q_\ell$, so we
-          start there. An integer modulo $q$ is stored in
-          <em>residue number system</em> (RNS) form: the RNS
-          representation of $r \in \mathbb{Z}/q\mathbb{Z}$ is the
+          On top of these representations, CKKS uses ten
+          operations on polynomials:
+        </p>
+        <ul>
+          <li>
+            <strong>Two</strong> operations convert between the
+            two representations:
+            <ul>
+              <li>
+                The <em>number-theoretic transform</em> (NTT)
+                takes a polynomial $p \in R_\ell$ in coefficient
+                form and returns the same polynomial in
+                evaluation form.
+              </li>
+              <li>
+                The <em>inverse number-theoretic transform</em>
+                (iNTT) takes a polynomial $p \in R_\ell$ in
+                evaluation form and returns the same polynomial
+                in coefficient form.
+              </li>
+            </ul>
+          </li>
+          <li>
+            <strong>Five</strong> operations keep polynomials in
+            $R_\ell$:
+            <ul>
+              <li>
+                <em>Addition</em> takes two polynomials
+                $p_1, p_2 \in R_\ell$ and returns their sum
+                $p_1 + p_2$.
+              </li>
+              <li>
+                <em>Subtraction</em> takes two polynomials
+                $p_1, p_2 \in R_\ell$ and returns their
+                difference $p_1 - p_2$.
+              </li>
+              <li>
+                <em>Scalar multiplication</em> takes a polynomial
+                $p \in R_\ell$ and a scalar $k \in \mathbb{Z}$,
+                and returns the product $k\, p$.
+              </li>
+              <li>
+                <em>Polynomial multiplication</em> takes two
+                polynomials $p_1, p_2 \in R_\ell$ and returns
+                their product $p_1 p_2$.
+              </li>
+              <li>
+                <em>Automorphisms</em> take a polynomial
+                $p(X) \in R_\ell$ and an odd integer $i$, and
+                return $p(X^i)$.
+              </li>
+            </ul>
+          </li>
+          <li>
+            <strong>Two</strong> operations drop the polynomial
+            to a lower-level ring:
+            <ul>
+              <li>
+                <em>Modulus reduction</em> takes a polynomial
+                $p \in R_\ell$ and a target level
+                $\ell' < \ell$, and returns the image of $p$
+                under the natural ring homomorphism
+                $R_\ell \to R_{\ell'}$ that reduces each
+                coefficient modulo $q_0 \cdots q_{\ell'}$.
+              </li>
+              <li>
+                <em>Rescaling</em> takes a polynomial
+                $p \in R_\ell$ and a target level
+                $\ell' < \ell$, and returns a polynomial in
+                $R_{\ell'}$ whose coefficients are approximately
+                $p$'s coefficients divided by
+                $q_{\ell' + 1} \cdots q_\ell$.
+              </li>
+            </ul>
+          </li>
+          <li>
+            <strong>One</strong> operation raises the polynomial
+            to a higher-level ring:
+            <ul>
+              <li>
+                <em>Modulus raising</em> takes a polynomial
+                $p \in R_\ell$ and a target level
+                $\ell' > \ell$, and returns the polynomial in
+                $R_{\ell'}$ obtained by lifting each coefficient
+                of $p$ to its centered integer representative in
+                $\left\{-\tfrac{q_0 \cdots q_\ell - 1}{2},\, \ldots,\, \tfrac{q_0 \cdots q_\ell - 1}{2}\right\}$
+                and reinterpreting it modulo
+                $q_0 \cdots q_{\ell'}$.
+              </li>
+            </ul>
+          </li>
+        </ul>
+
+        <h2>Representing integers</h2>
+        <p>
+          Before describing the two representations of
+          polynomials in $R_\ell$, we first need to describe how
+          the underlying integers modulo $q_0 \cdots q_\ell$ are
+          represented. An integer modulo $q_0 \cdots q_\ell$ is
+          represented in <em>residue number system</em> (RNS)
+          form: the RNS representation of
+          $r \in \mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}$ is the
           tuple
         </p>
         $$
           (r_0, r_1, \ldots, r_\ell) \in \mathbb{Z}^{\ell+1}
-          \quad\text{with}\quad
+          \quad\text{satisfying}\quad
           0 \le r_i < q_i \;\text{ and }\; r_i \equiv r \pmod{q_i}
           \;\text{ for each } i.
         $$
+        <div class="exercise-body">
+          <b>Exercise:</b> show that this tuple exists and is
+          unique.
+        </div>
         <p>
-          This tuple exists and is unique by the Chinese
-          remainder theorem. The reason for using RNS form is
-          twofold:
+          The reason for using RNS form is twofold:
         </p>
         <ul>
           <li>
-            <strong>Arithmetic is pointwise.</strong> Adding two
-            integers modulo $q$ in RNS form is just componentwise
-            addition modulo each $q_i$, and likewise for
-            multiplication. No big-integer arithmetic is needed.
+            <strong>Arithmetic is pointwise.</strong> Adding,
+            subtracting, multiplying, or dividing two integers
+            modulo $q_0 \cdots q_\ell$ in RNS form is just a
+            componentwise application of the corresponding
+            operation modulo each $q_i$.
           </li>
           <li>
             <strong>Each $q_i$ fits in a machine word.</strong>
-            Every $q_i$ is at most $2^{55}$, so each component
-            $r_i$ fits in a single $64$-bit register, and the
-            componentwise operations map directly onto fast
-            hardware instructions.
+            Every $q_i$ is less than $2^{64}$, so the
+            operations map directly onto fast hardware
+            instructions.
           </li>
         </ul>
 
-        <h2>Representing polynomials in $R_\ell$</h2>
+        <h2>Representing polynomials</h2>
         <p>
           A polynomial in $R_\ell$ has two equivalent
-          representations, the <em>coefficient domain</em> and
-          the <em>evaluation domain</em>. Both store the
-          polynomial as a tuple of $65536$ integers modulo
-          $q = q_0 \cdots q_\ell$, each in RNS form; the
-          two representations differ in what those integers
+          representations: <em>coefficient form</em> and
+          <em>evaluation form</em>. Both store the polynomial as
+          a tuple of $65536$ integers modulo
+          $q_0 \cdots q_\ell$, each in RNS form; the two
+          representations differ in what those integers
           <em>mean</em>.
         </p>
+
+        <h3>Coefficient form</h3>
         <p>
-          <strong>Coefficient domain.</strong>
           Lift $p(X) \in R_\ell$ to its unique representative
           $c_0 + c_1 X + \cdots + c_{65535} X^{65535}$ in
-          $\bigl(\mathbb{Z}/q\mathbb{Z}\bigr)[X]$ of degree at most
-          $65535$. The <em>coefficient form</em> of $p(X)$ is the
-          tuple $(c_0, c_1, \ldots, c_{65535})$, with each
-          $c_j \in \mathbb{Z}/q\mathbb{Z}$ stored in RNS form.
+          $\bigl(\mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}\bigr)[X]$
+          of degree at most $65535$. The <em>coefficient form</em>
+          of $p(X)$ is the tuple
+          $(c_0, c_1, \ldots, c_{65535})$, with each
+          $c_j \in \mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}$
+          represented in RNS form.
         </p>
         <div class="exercise-body">
           <b>Exercise:</b> convince yourself the lifted
           representative is unique.
         </div>
+
+        <h3>Evaluation form</h3>
         <p>
-          <strong>Evaluation domain.</strong>
           Let $\zeta \in \mathbb{Z}/(q_0 \cdots q_{15})\mathbb{Z}$
-          be a primitive $131072$-th root of unity &mdash; that
-          is, a root of $X^{65536} + 1$ &mdash; fixed once and
-          for all. The <em>evaluation form</em> of $p(X)$ is the
-          tuple
+          be a fixed primitive $131072$-th root of unity &mdash;
+          that is, a root of $X^{65536} + 1$.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> show that $X^{65536} + 1$ has a root
+          modulo $q_0 \cdots q_{15}$. (Hint: each $q_i$ is
+          $1$ modulo $131072$.)
+        </div>
+        <p>
+          The <em>evaluation form</em> of $p(X)$ is the tuple
         </p>
         $$
           \bigl(p(\zeta),\; p(\zeta^3),\; p(\zeta^5),\; \ldots,\; p(\zeta^{131071})\bigr),
         $$
         <p>
-          with each $p(\zeta^{2k+1}) \in \mathbb{Z}/q\mathbb{Z}$
-          stored in RNS form. The evaluation
+          with each
+          $p(\zeta^{2k+1}) \in \mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}$
+          represented in RNS form. The evaluation
           $p(\zeta^{2k+1})$ is well-defined because
           $\zeta^{2k+1}$ is itself a root of $X^{65536} + 1$, so
           the value doesn't depend on which representative of
-          $p(X)$ in $\bigl(\mathbb{Z}/q\mathbb{Z}\bigr)[X]$ we
-          plug in.
+          $p(X)$ in
+          $\bigl(\mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}\bigr)[X]$
+          we plug in.
         </p>
         <div class="exercise-body">
-          <b>Exercise:</b> show that $X^{65536} + 1$ has a root
-          modulo $q_0 \cdots q_{15}$. (Hint: each $q_i$ is
-          $1$ modulo $131072$, so the multiplicative group
-          $(\mathbb{Z}/q_i\mathbb{Z})^\times$ contains an
-          element of order $131072$. Then apply CRT.)
+          <b>Exercise:</b> show that if two polynomials in
+          $R_\ell$ have the same evaluation form, then they are
+          the same polynomial.
         </div>
-        <div class="exercise-body">
-          <b>Exercise:</b> show that every tuple in
-          $(\mathbb{Z}/q\mathbb{Z})^{65536}$ arises as the
-          evaluation form of some polynomial in $R_\ell$, and
-          that the polynomial is unique.
-        </div>
-        <div class="exercise-body">
-          <b>Exercise:</b> a slicker way to think of evaluation
-          form: the map
-          $$
-            \varphi_\ell : R_\ell
-              \;\longrightarrow\;
-              \bigl(\mathbb{Z}/q\mathbb{Z}\bigr)^{65536},
-            \qquad
-            p(X) \longmapsto \bigl(p(\zeta), p(\zeta^3), \ldots, p(\zeta^{131071})\bigr)
-          $$
-          is a ring isomorphism, where the right-hand side is a
-          product of $65536$ copies of $\mathbb{Z}/q\mathbb{Z}$
-          with componentwise operations. The evaluation form of
-          $p(X)$ is just $\varphi_\ell(p(X))$, with each
-          component then stored in RNS form. Explain why
-          $\varphi_\ell$ is an isomorphism.
-        </div>
+        <p>
+          The evaluation form map can be understood as the ring
+          isomorphism
+          $\varphi_\ell : R_\ell \to \bigl(\mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}\bigr)^{65536}$
+          given by
+          $p(X) \mapsto \bigl(p(\zeta), p(\zeta^3), \ldots, p(\zeta^{131071})\bigr)$.
+        </p>
 
         <h2>Number-theoretic transform</h2>
         <p>
-          The <em>number-theoretic transform</em> (NTT) converts
-          a polynomial from coefficient form to evaluation form,
-          and its inverse (<em>iNTT</em>) converts back. From the
-          definition of evaluation form, the two are related by
-          the matrix equation
+          The <em>negacyclic number-theoretic transform</em>
+          (NTT) converts a polynomial from coefficient form to
+          evaluation form, and the <em>inverse negacyclic
+          number-theoretic transform</em> (iNTT) converts back.
+          The NTT is the matrix transformation
         </p>
         $$
           \begin{pmatrix} p(\zeta) \\ p(\zeta^3) \\ p(\zeta^5) \\ \vdots \\ p(\zeta^{131071}) \end{pmatrix}
@@ -177,32 +267,38 @@
             1 & \zeta^{131071} & \zeta^{2 \cdot 131071} & \cdots & \zeta^{65535 \cdot 131071}
           \end{pmatrix}
           \begin{pmatrix} c_0 \\ c_1 \\ c_2 \\ \vdots \\ c_{65535} \end{pmatrix}
-          \pmod{q_0 \cdots q_\ell}.
         $$
         <p>
-          The $(k, j)$ entry of the matrix is
-          $\zeta^{(2k+1) j}$. This transformation is the
-          <em>negacyclic number-theoretic transform</em>; its
-          inverse (the matrix that converts evaluation form back
-          to coefficient form) is the <em>inverse negacyclic
-          number-theoretic transform</em>.
+          modulo $q_0 \cdots q_\ell$, and the iNTT is the
+          matrix transformation
         </p>
+        $$
+          \begin{pmatrix} c_0 \\ c_1 \\ c_2 \\ \vdots \\ c_{65535} \end{pmatrix}
+          =
+          \frac{1}{65536}
+          \begin{pmatrix}
+            1 & 1 & 1 & \cdots & 1 \\
+            \zeta^{-1} & \zeta^{-3} & \zeta^{-5} & \cdots & \zeta^{-131071} \\
+            \zeta^{-2} & \zeta^{-6} & \zeta^{-10} & \cdots & \zeta^{-2 \cdot 131071} \\
+            \vdots & \vdots & \vdots & \ddots & \vdots \\
+            \zeta^{-65535} & \zeta^{-3 \cdot 65535} & \zeta^{-5 \cdot 65535} & \cdots & \zeta^{-65535 \cdot 131071}
+          \end{pmatrix}
+          \begin{pmatrix} p(\zeta) \\ p(\zeta^3) \\ p(\zeta^5) \\ \vdots \\ p(\zeta^{131071}) \end{pmatrix}
+        $$
+        <p>modulo $q_0 \cdots q_\ell$.</p>
         <p>
           The NTT is, in essence, a discrete Fourier transform
-          over a finite ring rather than over $\mathbb{C}$. The
-          "negacyclic" qualifier is because the usual DFT is
-          built from the roots of $X^N - 1$, whereas here we use
-          the roots of $X^N + 1$. The twisted exponents
-          $\{1, 3, 5, \ldots, 2N - 1\}$ in the matrix above are
-          precisely the exponents that make $\zeta^{2k+1}$ a
-          root of $X^N + 1$.
+          over a finite ring. The "negacyclic" qualifier is
+          because the usual discrete Fourier transform is built
+          from the roots of $X^N - 1$, whereas here we use the
+          roots of $X^N + 1$.
         </p>
         <div class="exercise-body">
-          <b>Exercise:</b> show how to compute the negacyclic
-          NTT in $O(N \log N)$ time by modifying the twiddle
-          factors of the standard fast Fourier transform.
-          (Hint: substitute $X = \zeta Y$ into $X^N + 1$ to
-          relate the negacyclic transform to the cyclic one.)
+          <b>Exercise:</b> show that the two matrices are
+          inverses. Then, show how to compute the negacyclic
+          NTT and its inverse in $O(N \log N)$ time by modifying
+          the twiddle factors of the standard fast Fourier
+          transform.
         </div>
 
         <h2>Addition and subtraction</h2>
@@ -218,100 +314,68 @@
           (a_0 \pm b_0,\; a_1 \pm b_1,\; \ldots,\; a_{65535} \pm b_{65535}) \pmod{q_0 \cdots q_\ell},
         $$
         <p>
-          with each modular operation carried out componentwise
-          in RNS form. Mixing representations is not allowed:
-          one input must be converted to match the other via NTT
-          or iNTT first.
+          The output polynomial has the same representation as
+          the input polynomials.
         </p>
 
         <h2>Scalar multiplication</h2>
         <p>
           Multiplying a polynomial $p(X) \in R_\ell$ by a scalar
-          $c \in \mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}$ is
-          componentwise multiplication by $c$ in either
-          representation:
-          $(a_0, \ldots, a_{65535}) \mapsto (c\, a_0, \ldots, c\, a_{65535})$.
+          $k \in \mathbb{Z}$ is componentwise multiplication by
+          $k$ in either representation:
+          $(a_0, \ldots, a_{65535}) \mapsto (k\, a_0, \ldots, k\, a_{65535})$.
         </p>
 
         <h2>Polynomial multiplication</h2>
         <p>
-          Multiplying two polynomials in $R_\ell$ requires both
-          inputs to be in evaluation form. The product is then
-          componentwise:
-        </p>
-        $$
-          \bigl(a(\zeta),\, a(\zeta^3),\, \ldots\bigr) \cdot \bigl(b(\zeta),\, b(\zeta^3),\, \ldots\bigr)
-          = \bigl(a(\zeta)\, b(\zeta),\, a(\zeta^3)\, b(\zeta^3),\, \ldots\bigr),
-        $$
-        <p>
-          which is the evaluation form of $a(X)\, b(X)$ because
-          $a(\zeta^{2k+1})\, b(\zeta^{2k+1}) = (ab)(\zeta^{2k+1})$
-          at every root. In coefficient form, the same operation
-          would be a convolution, costing $O(N^2)$ rather than
-          $O(N)$ &mdash; this is the entire reason evaluation
-          form exists.
+          Multiplying two polynomials $a(X), b(X)$ in $R_\ell$
+          requires both inputs to be in evaluation form. Because
+          $a(\zeta^i)\, b(\zeta^i) = (ab)(\zeta^i)$ for every
+          odd integer $i$, the evaluation form of their product
+          is the pointwise product of their evaluation forms.
         </p>
         <p>
           If either input is in coefficient form, it must be
-          converted to evaluation form via NTT first; the cost
-          of that conversion is what makes multiplication
-          asymptotically more expensive than addition.
+          converted to evaluation form via NTT first.
         </p>
 
         <h2>Automorphism</h2>
         <p>
-          For each odd integer $i$, the map
+          Given an odd integer $i$, the
+          <em>automorphism map</em> is the map
+          $\tau_i : R_\ell \to R_\ell$ given by
+          $p(X) \mapsto p(X^i)$. The automorphism by $i$ can be
+          computed efficiently in either representation.
         </p>
-        $$
-          \tau_i : R_\ell \longrightarrow R_\ell, \qquad
-          p(X) \longmapsto p(X^i)
-        $$
+        <div class="exercise-body">
+          <b>Exercise:</b> show that $\tau_i$ is a ring
+          automorphism of $R_\ell$ for all odd integers $i$.
+        </div>
         <p>
-          is a ring automorphism of $R_\ell$ &mdash; hence the
-          name. (It's only required that $i$ be odd modulo
-          $2N = 131072$, since $\tau_i = \tau_{i + 2N}$.) The
-          automorphism by $i$ can be computed efficiently in
-          either representation.
-        </p>
-        <p>
-          <strong>In coefficient form.</strong> Using
-          $X^{65536} = -1$, the image of $X^j$ under $\tau_i$ is
-          $X^{ij} = (-1)^{\lfloor ij / 65536 \rfloor}\, X^{ij \bmod 65536}$,
-          so
+          <strong>In coefficient form.</strong> The image of
+          $p(X) = c_0 + c_1 X + \cdots + c_{65535} X^{65535}$ is
         </p>
         $$
           \tau_i\!\left(\sum_{j=0}^{65535} c_j X^j\right)
-          = \sum_{j=0}^{65535} (-1)^{\lfloor ij/65536 \rfloor}\, c_j\, X^{ij \bmod 65536}.
+          = \sum_{j=0}^{65535} (-1)^{\lfloor ij/65536 \rfloor}\, c_j\, X^{ij \bmod 65536},
         $$
         <p>
-          Concretely: the new coefficient at position
-          $ij \bmod 65536$ is $\pm c_j$, with the sign
-          determined by $\lfloor ij / 65536 \rfloor$. Since $i$
-          is odd, the map $j \mapsto ij \bmod 65536$ is a
-          permutation, so applying $\tau_i$ amounts to
-          permuting the coefficient tuple and flipping the
-          signs of some of its entries.
+          Since $i$ is odd, the map
+          $j \mapsto ij \bmod 65536$ is a permutation, so
+          applying $\tau_i$ amounts to permuting the coefficient
+          tuple and flipping the signs of some of its entries.
         </p>
         <p>
-          <strong>In evaluation form.</strong> The $k$-th
-          component of $\tau_i(p)$ is
+          <strong>In evaluation form.</strong> Since
         </p>
         $$
-          \tau_i(p)(\zeta^{2k+1}) = p\bigl(\zeta^{i(2k+1)}\bigr) = p\bigl(\zeta^{2k'+1}\bigr),
+          \tau_i(p)(\zeta^{2j+1}) = p\bigl(\zeta^{i(2j+1)}\bigr) = p\bigl(\zeta^{i(2j+1) \bmod 131072}\bigr),
         $$
         <p>
-          where $k'$ is the unique index in
-          $\{0, 1, \ldots, 65535\}$ with
-          $2k' + 1 \equiv i(2k + 1) \pmod{131072}$. So
-          automorphism in evaluation form is just a permutation
-          of the tuple &mdash; no sign flips at all.
+          automorphism in evaluation form is the permutation of
+          $\{0, 1, \ldots, 65535\}$ sending $j$ to
+          $\bigl(i(2j+1) \bmod 131072 - 1\bigr)/2$.
         </p>
-        <div class="exercise-body">
-          <b>Exercise:</b> check that $j \mapsto ij \bmod 65536$
-          really is a permutation when $i$ is odd, and that
-          $k \mapsto k'$ defined above is a permutation of
-          $\{0, 1, \ldots, 65535\}$.
-        </div>
 
         <h2>Modulus reduction</h2>
         <p>
@@ -329,155 +393,193 @@
           $q_0 \cdots q_\ell$ is already stored as the tuple
           $(r_0, r_1, \ldots, r_\ell)$, and its image modulo
           $q_0 \cdots q_{\ell'}$ is just the prefix
-          $(r_0, r_1, \ldots, r_{\ell'})$. Forget the
-          higher-prime components and the work is done. This
-          applies in both coefficient and evaluation form.
+          $(r_0, r_1, \ldots, r_{\ell'})$. This applies in both
+          coefficient and evaluation form.
         </p>
 
-        <h2>Modulus raise</h2>
-        <p>
-          Modulus raise must be performed in coefficient form.
-        </p>
+        <h2>Modulus raising</h2>
         <p>
           Given a target level $\ell' > \ell$, the
-          <em>modulus raise</em> operation maps
-          $R_\ell \to R_{\ell'}$ by lifting each coefficient to
-          its <em>centered</em> integer representative and then
-          reinterpreting modulo the larger product. Concretely,
-          a polynomial $c_0 + c_1 X + \cdots + c_{65535} X^{65535}$
-          in $R_\ell$ with each $c_j$ lifted to the symmetric
-          interval
-          $\bigl[-\tfrac{1}{2} q_0 \cdots q_\ell,\, \tfrac{1}{2} q_0 \cdots q_\ell\bigr)$
-          maps to the same polynomial, now viewed in $R_{\ell'}$.
-          This map is <em>not</em> a ring homomorphism &mdash;
-          there's no algebraic relationship between $R_\ell$ and
-          $R_{\ell'}$ being preserved &mdash; but it's exactly
-          the right operation for bootstrapping
-          (see <a href="bootstrapping.html">Section&nbsp;3.4</a>).
+          <em>modulus raising</em> operation
+          <span class="lie" data-truth="in key-switching, modulus raising maps rings that aren't of the form R_i, but the math is exactly the same.">maps</span>
+          $R_\ell$ to $R_{\ell'}$ by lifting each coefficient
+          to its <em>centered</em> integer representative and
+          then reinterpreting modulo the larger product. Concretely,
+          a polynomial
+          $c_0 + c_1 X + \cdots + c_{65535} X^{65535} \in R_\ell$
+          with
+          $-\tfrac{1}{2} q_0 \cdots q_\ell < c_0, c_1, \ldots, c_{65535} < \tfrac{1}{2} q_0 \cdots q_\ell$
+          maps to the same polynomial, now interpreted in
+          $R_{\ell'}$. This map is <em>not</em> a ring
+          homomorphism: there's no algebraic relationship
+          between $R_\ell$ and $R_{\ell'}$ being preserved.
         </p>
         <p>
-          To compute modulus raise efficiently in RNS, work
-          one coefficient at a time. Suppose $r$ is an integer
-          modulo $q = q_0 \cdots q_\ell$ stored as
-          $(r_0, r_1, \ldots, r_\ell)$, and we want its
-          residues $r \bmod q_j$ for each $j \in \{\ell + 1,
-          \ldots, \ell'\}$. Precompute the modular inverses
+          To modulus raise efficiently, the polynomial must be
+          in coefficient form, since the algorithm works
+          one coefficient at a time. Let $r$ be an integer
+          modulo $q = q_0 \cdots q_\ell$ whose RNS form is
+          $(r_0, r_1, \ldots, r_\ell)$, and we want the RNS
+          components of
+          $\underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{modraise}}(r)$
+          at $q_j$ for each $j \in \{\ell + 1, \ldots, \ell'\}$.
+          First, precompute the modular inverses
         </p>
         $$
-          w_i = \bigl(q / q_i\bigr)^{-1} \bmod q_i,
-          \qquad i \in \{0, 1, \ldots, \ell\}.
+          (q / q_i)^{-1} \bmod q_i,
+          \qquad i \in \{0, 1, \ldots, \ell\},
+        $$
+        <p>and the cross-residues</p>
+        $$
+          (q / q_i) \bmod q_j,
+          \qquad i \in \{0, 1, \ldots, \ell\},\; j \in \{\ell + 1, \ldots, \ell'\}.
         $$
         <p>
           Then, given $(r_0, \ldots, r_\ell)$, compute
         </p>
         $$
-          t_i = w_i\, r_i \bmod q_i \in [0,\, q_i),
-          \qquad
-          v = \mathrm{round}\!\left(\sum_{i=0}^{\ell} \frac{t_i}{q_i}\right) \in \mathbb{Z}.
+          t_i \equiv r_i \cdot (q / q_i)^{-1} \pmod{q_i},
+          \qquad t_i \in \{-(q_i-1)/2, \ldots, (q_i-1)/2\} \subset \mathbb{Z}
+        $$
+        <p>and</p>
+        $$
+          v = \mathrm{round}\!\left(\sum_{i=0}^{\ell} \frac{t_i}{q_i}\right) \in \{-\lfloor(\ell+1)/2\rfloor, \ldots, \lfloor(\ell+1)/2\rfloor\} \subset \mathbb{Z}.
+        $$
+        <p>By the Chinese remainder theorem,</p>
+        $$
+          r \equiv \sum_{i=0}^{\ell} t_i\, (q / q_i) \pmod{q},
         $$
         <p>
-          By the Chinese remainder theorem,
-          $r \equiv \sum_{i=0}^{\ell} t_i\, (q / q_i) \pmod{q}$,
           so the centered representative of $r$ is
-          $\sum_i t_i\, (q / q_i) - v\, q$. Therefore, for each
-          new prime $q_j$ with $j > \ell$,
         </p>
         $$
-          r \bmod q_j \;=\; \left[\sum_{i=0}^{\ell} t_i\, (q / q_i) \;-\; v\, q\right] \bmod q_j.
+          \sum_{i=0}^{\ell} t_i\, (q / q_i) - v\, q \in \mathbb{Z}.
         $$
         <p>
-          The inner sum and $v$ are computed once per
-          coefficient and reused across all the new primes
-          $q_{\ell + 1}, \ldots, q_{\ell'}$.
+          Therefore, for each new prime $q_j$ with $j > \ell$,
         </p>
-        <div class="exercise-body">
-          <b>Exercise:</b> verify that the $v$ defined above
-          really does round $\sum_i t_i\, (q / q_i)$ to the
-          nearest multiple of $q$, so that
-          $\sum_i t_i\, (q / q_i) - v\, q$ lands in
-          $\bigl[-q/2,\, q/2\bigr)$.
-        </div>
+        $$
+          \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{modraise}}(r) \bmod q_j \;=\; \left[\sum_{i=0}^{\ell} t_i\, \bigl((q / q_i) \bmod q_j\bigr) \;-\; v\, q\right] \bmod q_j.
+        $$
+        <p>
+          The RNS form of
+          $\underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{modraise}}(r)$
+          modulo $q_0 \cdots q_{\ell'}$ is then obtained by
+          appending these new components to the original tuple
+          $(r_0, \ldots, r_\ell)$.
+        </p>
 
-        <h2>Rescale</h2>
+        <h3>Approximate modulus raising</h3>
         <p>
-          Rescale must be performed in coefficient form.
+          In applications where the lifted coefficients need to
+          be small but do not need to lie exactly in the range
+          $-\tfrac{1}{2} q_0 \cdots q_\ell$ to
+          $\tfrac{1}{2} q_0 \cdots q_\ell$, the carry $v$ can
+          be skipped. The result then becomes
         </p>
+        $$
+          \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{modraise}_{\mathrm{approx}}}(r) \bmod q_j \;=\; \left[\sum_{i=0}^{\ell} t_i\, \bigl((q/q_i) \bmod q_j\bigr)\right] \bmod q_j
+        $$
+        <p>
+          for each $j \in \{\ell + 1, \ldots, \ell'\}$. The
+          result differs from the exact modulus raising by an
+          integer multiple of $q_0 \cdots q_\ell$ of magnitude
+          at most $\lfloor(\ell + 1)/2\rfloor\, q_0 \cdots q_\ell$.
+        </p>
+
+        <h2>Approximate rescaling</h2>
         <p>
           Given a target level $\ell' < \ell$, the
-          <em>rescale</em> operation maps $R_\ell \to R_{\ell'}$
-          by dividing every coefficient by
-          $Q'' = q_{\ell'+1} \cdots q_\ell$ and rounding to the
+          <em>rescaling</em> operation
+          <span class="lie" data-truth="in key-switching, rescale maps rings that aren't of the form R_i, but the math is exactly the same.">maps</span>
+          $R_\ell$ to
+          $R_{\ell'}$ by dividing every coefficient by
+          $Q = q_{\ell'+1} \cdots q_\ell$ and rounding to the
           nearest integer:
         </p>
         $$
           c_0 + c_1 X + \cdots + c_{65535} X^{65535}
           \;\longmapsto\;
-          \mathrm{round}\!\left(\frac{c_0}{Q''}\right)
-          + \mathrm{round}\!\left(\frac{c_1}{Q''}\right) X
-          + \cdots
-          + \mathrm{round}\!\left(\frac{c_{65535}}{Q''}\right) X^{65535},
+          \mathrm{round}\!\left(\frac{c_0}{Q}\right) + \mathrm{round}\!\left(\frac{c_1}{Q}\right) X + \cdots + \mathrm{round}\!\left(\frac{c_{65535}}{Q}\right) X^{65535}.
         $$
         <p>
-          where each $c_j$ is first lifted to its centered
-          representative in
-          $\bigl[-\tfrac{1}{2} q_0 \cdots q_\ell,\, \tfrac{1}{2} q_0 \cdots q_\ell\bigr)$.
-          Like modulus raise, rescale is not a ring homomorphism,
-          but the rounding error on each coefficient is bounded
-          by $\ell - \ell'$ &mdash; one half-unit per dropped
-          prime &mdash; and rescale satisfies
-        </p>
-        $$
-          \mathrm{rescale}(a(X) + b(X)) \approx \mathrm{rescale}(a(X)) + \mathrm{rescale}(b(X))
-        $$
-        <p>
-          up to that small error. This near-linearity is what
-          lets rescale be used inside ciphertext operations
-          without disrupting their additive structure.
+          The algorithm given in this subsection approximates
+          the true rescaling operation; the result differs from
+          the exact rescaling by an integer of magnitude at most
+          $\lfloor(\ell - \ell')/2\rfloor$ per coefficient.
         </p>
         <p>
-          To compute rescale in RNS, observe that
-          $\mathrm{round}(c_j / Q'')
-          = (c_j - \mathrm{centered}(c_j \bmod Q'')) / Q''$,
-          where the numerator is an exact multiple of $Q''$.
-          Precompute the modular inverses
+          Like modulus raising, rescaling is not a ring
+          homomorphism. However, it approximately preserves
+          additive structure
+          in the sense that
         </p>
         $$
-          w_i = (Q'' / q_i)^{-1} \bmod q_i,
-          \qquad i \in \{\ell' + 1, \ldots, \ell\}
+          \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{rescale}_{\mathrm{approx}}}\!\bigl(a(X) + b(X)\bigr)
+          \;\approx\;
+          \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{rescale}_{\mathrm{approx}}}\!\bigl(a(X)\bigr)
+          + \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{rescale}_{\mathrm{approx}}}\!\bigl(b(X)\bigr).
         $$
         <p>
-          (note these are different $w_i$ from the modulus-raise
-          version &mdash; the product is $Q''$, not $q$). Then,
-          given the RNS components $r_{\ell' + 1}, \ldots, r_\ell$
-          of a coefficient $c_j$, set
+          To rescale efficiently, the polynomial must be in
+          coefficient form, since the algorithm works one
+          coefficient at a time. Let $r$ be an integer modulo
+          $q_0 \cdots q_\ell$ whose RNS form is
+          $(r_0, r_1, \ldots, r_\ell)$; the goal is to get the
+          RNS form of an integer within
+          $\lfloor(\ell - \ell')/2\rfloor$ of
+          $\mathrm{round}(r/Q)$ modulo $q_0 \cdots q_{\ell'}$.
+          First, precompute the modular inverses
         </p>
         $$
-          t_i = w_i\, r_i \bmod q_i,
-          \qquad
-          s = \left[\sum_{i = \ell' + 1}^{\ell} t_i\, (Q'' / q_i)\right] \bmod Q'',
+          (Q / q_i)^{-1} \bmod q_i,
+          \qquad i \in \{\ell' + 1, \ldots, \ell\},
+        $$
+        $$
+          Q^{-1} \bmod q_j,
+          \qquad j \in \{0, 1, \ldots, \ell'\},
+        $$
+        <p>and the cross-residues</p>
+        $$
+          (Q / q_i) \bmod q_j,
+          \qquad i \in \{\ell' + 1, \ldots, \ell\},\; j \in \{0, 1, \ldots, \ell'\}.
         $$
         <p>
-          and let $\tilde{s}$ be the centered version of $s$
-          in $[-Q''/2,\, Q''/2)$. The rescaled coefficient,
-          modulo $q_j$ for any $j \le \ell'$, is then
+          Then, given $(r_{\ell' + 1}, \ldots, r_\ell)$,
+          compute
         </p>
         $$
-          \mathrm{rescale}(c_j) \bmod q_j
-          \;=\; (r_j - \tilde{s})\, (Q'')^{-1} \bmod q_j,
+          t_i \equiv r_i \cdot (Q / q_i)^{-1} \pmod{q_i},
+          \qquad t_i \in \{-(q_i-1)/2, \ldots, (q_i-1)/2\} \subset \mathbb{Z}
         $$
         <p>
-          where $(Q'')^{-1} \bmod q_j$ is also precomputed. The
-          subtraction inside the parentheses is divisible by
-          $Q''$ in $\mathbb{Z}$, so this division is exact
-          modulo every $q_j$ for $j \le \ell'$.
+          for each $i \in \{\ell' + 1, \ldots, \ell\}$. By the
+          Chinese remainder theorem,
         </p>
-        <div class="exercise-body">
-          <b>Exercise:</b> verify the bound of $\ell - \ell'$
-          on the per-coefficient rounding error, and explain why
-          that translates into an error of at most
-          $(\ell - \ell') / \Delta_{\ell'}$ on each entry of the
-          decoded vector after rescale.
-        </div>
+        $$
+          r \equiv \sum_{i=\ell'+1}^{\ell} t_i\, (Q/q_i) \pmod{Q},
+        $$
+        <p>and as an integer the right-hand side satisfies</p>
+        $$
+          \left|\sum_{i=\ell'+1}^{\ell} t_i\, (Q/q_i)\right| < (\ell - \ell')\, Q / 2,
+        $$
+        <p>
+          so it differs from $r$ by at most
+          $\lfloor(\ell - \ell')/2\rfloor$ multiples of $Q$. The
+          RNS component of the rescaled coefficient at $q_j$ is
+          then
+        </p>
+        $$
+          \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{rescale}_{\mathrm{approx}}}\!(r) \bmod q_j \;=\;
+          \left[r_j - \sum_{i=\ell'+1}^{\ell} t_i\, \bigl((Q/q_i) \bmod q_j\bigr)\right] Q^{-1} \bmod q_j
+        $$
+        <p>
+          for $j \in \{0, 1, \ldots, \ell'\}$. Collecting these
+          components over $j \in \{0, 1, \ldots, \ell'\}$ gives
+          the RNS form of some number within
+          $\lfloor(\ell - \ell')/2\rfloor$ of $\mathrm{round}(r/Q)$
+          modulo $q_0 \cdots q_{\ell'}$.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>

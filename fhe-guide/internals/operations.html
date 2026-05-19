@@ -85,14 +85,14 @@
         </p>
         $$
           \begin{aligned}
-            c_0' &= \underset{q_0 \cdots q_{\ell'+1} \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{rescale}}\!\bigl(c \cdot (c_0 \bmod q_0 \cdots q_{\ell'+1})\bigr), \\
-            c_1' &= \underset{q_0 \cdots q_{\ell'+1} \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{rescale}}\!\bigl(c \cdot (c_1 \bmod q_0 \cdots q_{\ell'+1})\bigr),
+            c_0' &= \underset{q_0 \cdots q_{\ell'+1} \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{rescale}_{\mathrm{approx}}}\!\bigl(c \cdot (c_0 \bmod q_0 \cdots q_{\ell'+1})\bigr), \\
+            c_1' &= \underset{q_0 \cdots q_{\ell'+1} \,\to\, q_0 \cdots q_{\ell'}}{\mathrm{rescale}_{\mathrm{approx}}}\!\bigl(c \cdot (c_1 \bmod q_0 \cdots q_{\ell'+1})\bigr),
           \end{aligned}
         $$
         <p>
           where $c = \mathrm{round}\bigl(q_{\ell'+1} \cdot \Delta_{\ell'} / \Delta_\ell\bigr) \approx 2^{40}$.
-          This reduces the cost to a single rescale through one
-          prime. The precision loss on each coefficient of the
+          This reduces the cost to a single rescaling through
+          one prime. The precision loss on each coefficient of the
           underlying plaintext is $O(1)$, so the loss in the
           decoded vector is on the order of
           $\Delta_\ell^{-1} \approx 2^{-40}$.
@@ -152,8 +152,8 @@
         </p>
         $$
           \begin{aligned}
-            c_0' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}(m\, c_0), \\
-            c_1' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}(m\, c_1).
+            c_0' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}_{\mathrm{approx}}}(m\, c_0), \\
+            c_1' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}_{\mathrm{approx}}}(m\, c_1).
           \end{aligned}
         $$
         <p>
@@ -172,7 +172,7 @@
           ciphertext's level drops by one,
           <span class="lie" data-truth="the level drop can be skipped any time the plaintext's negacyclic Fourier transform has integer coefficients, of which the scalar integer case is just one example.">except</span>
           when the plaintext is a scalar integer $k$. In that
-          case, no rescale is needed: the result is simply
+          case, no rescaling is needed: the result is simply
           $(k c_0,\, k c_1)$ at the original level, with error
           scaled by at most $|k|$.
         </p>
@@ -192,9 +192,9 @@
 
         <h3>The key-switching key</h3>
         <p>
-          Pick a <em>decomposition parameter</em> $d = 2$ and two
-          auxiliary primes $p_0, p_1 \approx 2^{60}$ that are
-          $1$ modulo $131072$. Define the extended ring
+          Pick a <em>decomposition parameter</em> $d = 2$ and
+          $d$ auxiliary primes $p_0, p_1 \approx 2^{60}$ that
+          are $1$ modulo $131072$. Define the extended ring
         </p>
         $$
           \tilde{R}_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell\, p_0 p_1)\mathbb{Z}\bigr)[X]/(X^{65536} + 1).
@@ -239,7 +239,7 @@
           compute the <em>lift</em>
         </p>
         $$
-          p^{(i)} = \underset{q_{2i} q_{2i+1} \,\to\, q_0 \cdots q_\ell\, p_0 p_1}{\mathrm{modraise}}\!\bigl(p \bmod q_{2i} q_{2i+1}\bigr),
+          p^{(i)} = \underset{q_{2i} q_{2i+1} \,\to\, q_0 \cdots q_\ell\, p_0 p_1}{\mathrm{modraise}_{\mathrm{approx}}}\!\bigl(p \bmod q_{2i} q_{2i+1}\bigr),
         $$
         <p>
           which lives in $\tilde{R}_\ell$. Then define
@@ -271,14 +271,20 @@
         </p>
         $$
           \begin{aligned}
-            k_0 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}}(\tilde k_0), \\
-            k_1 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}}(\tilde k_1).
+            k_0 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}_{\mathrm{approx}}}(\tilde k_0), \\
+            k_1 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}_{\mathrm{approx}}}(\tilde k_1).
           \end{aligned}
         $$
         <p>
           Then $(k_0, k_1)$ is a level-$\ell$ encryption of
           $p\, s'$.
         </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> show that any lift of
+          $p \bmod q_{2i} q_{2i+1}$ to $\tilde{R}_\ell$ works
+          for correctness, but the approximate modulus raising
+          is preferred over an arbitrary lift.
+        </div>
         <div class="exercise-body">
           <b>Exercise:</b> what changes if $d = 3$?
         </div>
@@ -346,14 +352,14 @@
         </p>
         $$
           \begin{aligned}
-            c_0'' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}(c_0' + k_0), \\
-            c_1'' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}(c_1' + k_1).
+            c_0'' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}_{\mathrm{approx}}}(c_0' + k_0), \\
+            c_1'' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}_{\mathrm{approx}}}(c_1' + k_1).
           \end{aligned}
         $$
         <p>
           The pair $(c_0'', c_1'') \in R_{\ell - 1} \times R_{\ell - 1}$
           decrypts to
-          $\underset{q_0 \cdots q_\ell \to q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}(mn)$,
+          $\underset{q_0 \cdots q_\ell \to q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}_{\mathrm{approx}}}(mn)$,
           which encodes $\mathbf{u} \odot \mathbf{v}$ at level
           $\ell - 1$.
         </p>
@@ -433,7 +439,7 @@
           pointwise dot product of two lists, where each list
           element is either a plaintext or a ciphertext.
           Internally, it is
-          <span class="lie" data-truth="the final rescale step in each part can be combined into one pair of rescales.">delegated</span>
+          <span class="lie" data-truth="the final rescaling step in each part can be combined into one pair of rescalings.">delegated</span>
           into two parts: the plaintext&ndash;ciphertext part
           (covering the index pairs where one side is a
           plaintext) and the ciphertext&ndash;ciphertext part
@@ -460,8 +466,8 @@
         </p>
         $$
           \begin{aligned}
-            c_0' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}\!\Bigl(\textstyle\sum_{i=1}^{k} m^{(i)}\, c_0^{(i)}\Bigr), \\
-            c_1' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}}\!\Bigl(\textstyle\sum_{i=1}^{k} m^{(i)}\, c_1^{(i)}\Bigr).
+            c_0' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}_{\mathrm{approx}}}\!\Bigl(\textstyle\sum_{i=1}^{k} m^{(i)}\, c_0^{(i)}\Bigr), \\
+            c_1' &= \underset{q_0 \cdots q_\ell \,\to\, q_0 \cdots q_{\ell - 1}}{\mathrm{rescale}_{\mathrm{approx}}}\!\Bigl(\textstyle\sum_{i=1}^{k} m^{(i)}\, c_1^{(i)}\Bigr).
           \end{aligned}
         $$
         <p>
