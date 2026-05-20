@@ -112,7 +112,169 @@
         </div>
 
         <h2>Matrix multiplication</h2>
-        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          The matrix multiplication operation takes a plaintext
+          $32768 \times 32768$ matrix $M$ and a level-$\ell$
+          ciphertext
+          $\boxed{\mathbf{v}} = \mathrm{Encrypt}(\mathrm{Encode}(\mathbf{v}))$
+          encrypting a vector
+          $\mathbf{v} \in \mathbb{C}^{32768}$, and produces a
+          level-$(\ell - 1)$ encryption of $M\mathbf{v}$. The
+          algorithm is most efficient when $M$ is
+          <em>diagonal-sparse</em>.
+        </p>
+        <p>
+          To describe the matrix multiplication algorithm,
+          first define some notation. For
+          $d \in \{0, 1, \ldots, 32767\}$, define the
+          <em>$d$th diagonal</em> of $M$ to be the vector
+        </p>
+        $$
+          \mathbf{m}_d = (M_{0,\, d},\; M_{1,\, d+1},\; M_{2,\, d+2},\; \ldots,\; M_{32767,\, d+32767}) \in \mathbb{C}^{32768},
+        $$
+        <p>
+          with indices taken modulo $32768$. Define
+          $D \subseteq \{0, 1, \ldots, 32767\}$ to be the set
+          of $d$ for which $\mathbf{m}_d \neq \mathbf{0}$. The
+          expression
+        </p>
+        $$
+          \sum_{d \in D} \mathrm{Encode}(\mathbf{m}_d) \odot \mathrm{rot}_d(\,\boxed{\mathbf{v}}\,)
+        $$
+        <p>
+          is then an encryption of $M\mathbf{v}$, where $\odot$
+          denotes plaintext&ndash;ciphertext multiplication (which
+          acts as the Hadamard product on the underlying vectors).
+          Evaluating this expression naively takes
+          $|D \setminus \{0\}|$ rotations; we can do better
+          with a baby-step giant-step algorithm.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> verify that the above expression is
+          an encryption of $M\mathbf{v}$.
+        </div>
+
+        <h3>Baby-step giant-step</h3>
+        <p>
+          The <em>baby-step giant-step</em> algorithm reduces
+          the rotation count by factoring each rotation. Choose
+          sets
+          $B, G \subseteq \{0, 1, \ldots, 32767\}$ such that
+        </p>
+        $$
+          D \subseteq \{\,b + g \bmod 32768 \,:\, b \in B,\, g \in G\,\}.
+        $$
+        <p>
+          Define
+          $\sigma : \mathbb{C}^{32768} \to \mathbb{C}^{32768}$
+          to be the cyclic shift by one index, so that
+        </p>
+        $$
+          \sigma(v_0, v_1, \ldots, v_{32767}) = (v_1, v_2, \ldots, v_{32767}, v_0).
+        $$
+        <p>
+          Then the encryption of $M\mathbf{v}$ rearranges to
+        </p>
+        $$
+          \sum_{g \in G} \mathrm{rot}_g\!\left(
+            \sum_{b \in B} \mathrm{Encode}(\sigma^{-g}(\mathbf{m}_{b+g})) \odot \mathrm{rot}_b(\,\boxed{\mathbf{v}}\,)
+          \right).
+        $$
+        <p>
+          The plaintexts
+          $\mathrm{Encode}(\sigma^{-g}(\mathbf{m}_{b+g}))$ can
+          be precomputed. At runtime, the work splits into
+          three stages:
+        </p>
+        <ul>
+          <li><b>baby steps:</b> for each $b \in B \setminus \{0\}$, compute $\mathrm{rot}_b(\,\boxed{\mathbf{v}}\,)$,</li>
+          <li><b>inner sums:</b> for each $g \in G$, fuse the inner $b$-sum into a single plaintext&ndash;ciphertext dot product against the precomputed plaintexts, and</li>
+          <li><b>giant steps:</b> for each $g \in G \setminus \{0\}$, apply $\mathrm{rot}_g$ to the corresponding inner sum, and accumulate the $|G|$ rotated sums into one ciphertext.</li>
+        </ul>
+        <p>
+          This uses $|B \setminus \{0\}|$ rotations in the
+          baby steps and $|G \setminus \{0\}|$ in the giant
+          steps, for a total of
+          $|B \setminus \{0\}| + |G \setminus \{0\}|$
+          rotations. For most structured matrices, $B$ and $G$
+          can be chosen so that this is much better than the
+          naive approach.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> show that any $B, G$ covering $D$
+          via the sumset satisfy $|B| + |G| \geq 2\sqrt{|D|}$,
+          and explain why $2\lceil\sqrt{|D|}\rceil$ rotations
+          suffice when the nonzero diagonal indices form an
+          arithmetic progression.
+        </div>
+
+        <h3>Hoisting</h3>
+        <p>
+          <em>Hoisting</em> is an optimization that shares the
+          modulus-raising step of the rotation key-switch
+          across many rotations of the same ciphertext, as in
+          the baby-step stage of matrix multiplication. To
+          hoist many rotations of a ciphertext
+          $\boxed{\mathbf{v}}$, let
+          $\boxed{\mathbf{v}} = (c_0, c_1)$ and recall from
+          <a href="fundamental.html">Section&nbsp;3.3</a> that
+          each rotation key-switch begins by lifting
+          $\mathrm{rot}_b(c_1)$ into the extended ring
+          $\tilde R_\ell$ via $\lfloor \ell / 3 \rfloor + 1$
+          approximate modulus raises:
+        </p>
+        $$
+          (\mathrm{rot}_b(c_1))^{(i)} \;=\; \underset{Q_i \,\to\, q_0 \cdots q_\ell\, p_0 p_1 p_2}{\mathrm{modraise}_{\mathrm{approx}}}\!\bigl(\mathrm{rot}_b(c_1) \bmod Q_i\bigr).
+        $$
+        <p>
+          Because $\mathrm{rot}_b$ acts on polynomial
+          coefficients as a signed permutation, it commutes
+          with both modular reduction and approximate modulus
+          raising, giving
+        </p>
+        $$
+          (\mathrm{rot}_b(c_1))^{(i)} \;=\; \mathrm{rot}_b\bigl(c_1^{(i)}\bigr).
+        $$
+        <p>
+          So the lifts
+          $c_1^{(0)}, c_1^{(1)}, \ldots, c_1^{(\lfloor \ell/3 \rfloor)}$
+          can be computed once on $c_1$, and for each
+          $b \in B \setminus \{0\}$ the per-rotation lifts can
+          be obtained by applying the cheap permutation
+          $\mathrm{rot}_b$. This reduces the baby-step
+          modulus-raising work from $|B \setminus \{0\}|$
+          batches of lifts to one lift.
+        </p>
+
+        <h3>Double hoisting</h3>
+        <p>
+          <em>Double hoisting</em> is an optimization that
+          shares the rescaling step of the rotation key-switch
+          across rotations whose outputs are summed, as in the
+          giant-step stage of matrix multiplication. To
+          double-hoist a sum of rotations of ciphertexts at
+          the same level, let
+          $(\tilde k_0^{(g)}, \tilde k_1^{(g)}) \in \tilde R_\ell \times \tilde R_\ell$
+          denote the unrescaled output of the $g$th rotation
+          key-switch and recall from
+          <a href="fundamental.html">Section&nbsp;3.3</a> that
+          the rescaled output is
+          $\bigl(\mathrm{rescale}_{\mathrm{approx}}(\tilde k_0^{(g)}),\, \mathrm{rescale}_{\mathrm{approx}}(\tilde k_1^{(g)})\bigr)$.
+          Approximate rescaling is approximately linear, so
+        </p>
+        $$
+          \begin{aligned}
+            \sum_{g \in G \setminus \{0\}} \mathrm{rescale}_{\mathrm{approx}}\!\bigl(\tilde k_0^{(g)}\bigr) &\approx \mathrm{rescale}_{\mathrm{approx}}\!\Bigl(\textstyle\sum_{g \in G \setminus \{0\}} \tilde k_0^{(g)}\Bigr), \\
+            \sum_{g \in G \setminus \{0\}} \mathrm{rescale}_{\mathrm{approx}}\!\bigl(\tilde k_1^{(g)}\bigr) &\approx \mathrm{rescale}_{\mathrm{approx}}\!\Bigl(\textstyle\sum_{g \in G \setminus \{0\}} \tilde k_1^{(g)}\Bigr).
+          \end{aligned}
+        $$
+        <p>
+          So the giant-step rescales can be deferred:
+          accumulate the unrescaled $\tilde k_j^{(g)}$'s in
+          $\tilde R_\ell$ first, then rescale once at the end.
+          This reduces the giant-step rescaling count from
+          $2\,|G \setminus \{0\}|$ rescales to two rescales.
+        </p>
 
         <h2>Polynomial evaluation</h2>
         <p><b>[WORK IN PROGRESS]</b></p>

@@ -196,41 +196,44 @@
 
         <h3>The key-switching key</h3>
         <p>
-          Pick a <em>decomposition parameter</em> $d = 2$ and
-          $d$ auxiliary primes $p_0, p_1 \approx 2^{60}$ that
-          are $1$ modulo $131072$. Define the extended ring
+          Pick a <em>decomposition parameter</em> $d = 3$ and
+          $d$ auxiliary primes $p_0, p_1, p_2 \approx 2^{60}$
+          that are $1$ modulo $131072$. Define the extended
+          ring
         </p>
         $$
-          \tilde{R}_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell\, p_0 p_1)\mathbb{Z}\bigr)[X]/(X^{65536} + 1).
+          \tilde{R}_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell\, p_0 p_1 p_2)\mathbb{Z}\bigr)[X]/(X^{65536} + 1).
         $$
         <p>
-          Group the prime chain into $\lceil 16 / d \rceil = 8$
-          consecutive blocks of size $d = 2$:
-          $G_0 = \{q_0, q_1\},\, G_1 = \{q_2, q_3\},\, \ldots,\, G_7 = \{q_{14}, q_{15}\}$.
+          Group the prime chain into $\lceil 16 / d \rceil = 6$
+          consecutive blocks of size at most $d = 3$:
+          $G_0 = \{q_0, q_1, q_2\},\, G_1 = \{q_3, q_4, q_5\},\, \ldots,\, G_4 = \{q_{12}, q_{13}, q_{14}\},\, G_5 = \{q_{15}\}$.
+          Write $Q_i = \prod_{q \in G_i} q$ for the product of
+          primes in block $G_i$, so $Q_0 = q_0 q_1 q_2,\, Q_1 = q_3 q_4 q_5,\, \ldots,\, Q_4 = q_{12} q_{13} q_{14},\, Q_5 = q_{15}$.
           For each block, let $u_i \in \mathbb{Z}/(q_0 \cdots q_{15})\mathbb{Z}$
           be the element that is $1$ modulo each prime in $G_i$
           and $0$ modulo each prime outside $G_i$. The key
           $\mathrm{ksk}_{s'}$
           <span class="lie" data-truth="during bootstrapping, key-switching is performed at levels higher than 15, where the prime chain is extended and the decomposition needs correspondingly more (a_i, b_i) pairs.">consists</span>
-          of $8$ pairs of polynomials
-          $(a_0, b_0), (a_1, b_1), \ldots, (a_7, b_7) \in \tilde{R}_{15} \times \tilde{R}_{15}$,
+          of $6$ pairs of polynomials
+          $(a_0, b_0), (a_1, b_1), \ldots, (a_5, b_5) \in \tilde{R}_{15} \times \tilde{R}_{15}$,
           generated as follows:
         </p>
         <ol>
           <li>Sample each $b_i$ uniformly at random from $\tilde{R}_{15}$.</li>
           <li>
-            Sample error polynomials $e_0, \ldots, e_7 \in R_\infty$
+            Sample error polynomials $e_0, \ldots, e_5 \in R_\infty$
             with coefficients drawn independently from a discrete
             Gaussian of standard deviation $3.2$.
           </li>
           <li>
-            Set $a_i = -b_i\, s + e_i + p_0 p_1\, s'\, u_i$ for
-            $i = 0, 1, \ldots, 7$.
+            Set $a_i = -b_i\, s + e_i + p_0 p_1 p_2\, s'\, u_i$
+            for $i = 0, 1, \ldots, 5$.
           </li>
         </ol>
         <p>
           Intuitively, $(a_i, b_i)$ is an RLWE-style encryption of
-          $p_0 p_1\, s'\, u_i$.
+          $p_0 p_1 p_2\, s'\, u_i$.
         </p>
 
         <h3>The key-switch</h3>
@@ -239,44 +242,44 @@
           polynomial $p \in R_\ell$, the key-switch produces a
           level-$\ell$ ciphertext encrypting $p\, s'$ in three
           steps. First, for each
-          $i \in \{0, 1, \ldots, \lfloor \ell/2 \rfloor\}$,
+          $i \in \{0, 1, \ldots, \lfloor \ell/3 \rfloor\}$,
           compute the <em>lift</em>
         </p>
         $$
-          p^{(i)} = \underset{q_{2i} q_{2i+1} \,\to\, q_0 \cdots q_\ell\, p_0 p_1}{\mathrm{modraise}_{\mathrm{approx}}}\!\bigl(p \bmod q_{2i} q_{2i+1}\bigr),
+          p^{(i)} = \underset{Q_i \,\to\, q_0 \cdots q_\ell\, p_0 p_1 p_2}{\mathrm{modraise}_{\mathrm{approx}}}\!\bigl(p \bmod Q_i\bigr),
         $$
         <p>
           which lives in $\tilde{R}_\ell$. Then define
         </p>
         $$
           \begin{aligned}
-            \tilde k_0 &= \displaystyle\sum_{i=0}^{\lfloor \ell/2 \rfloor} p^{(i)}\, (a_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell, \\
-            \tilde k_1 &= \displaystyle\sum_{i=0}^{\lfloor \ell/2 \rfloor} p^{(i)}\, (b_i \bmod q_0 \cdots q_\ell\, p_0 p_1) \in \tilde{R}_\ell.
+            \tilde k_0 &= \displaystyle\sum_{i=0}^{\lfloor \ell/3 \rfloor} p^{(i)}\, (a_i \bmod q_0 \cdots q_\ell\, p_0 p_1 p_2) \in \tilde{R}_\ell, \\
+            \tilde k_1 &= \displaystyle\sum_{i=0}^{\lfloor \ell/3 \rfloor} p^{(i)}\, (b_i \bmod q_0 \cdots q_\ell\, p_0 p_1 p_2) \in \tilde{R}_\ell.
           \end{aligned}
         $$
         <p>
           The pair $(\tilde k_0, \tilde k_1)$ is an encryption of
-          $p_0 p_1\, p\, s'$ in $\tilde{R}_\ell$:
+          $p_0 p_1 p_2\, p\, s'$ in $\tilde{R}_\ell$:
         </p>
         $$
           \begin{aligned}
             \tilde k_0 + \tilde k_1\, s
             &= \textstyle\sum_i p^{(i)} (a_i + b_i\, s) \\
-            &= \textstyle\sum_i p^{(i)} \bigl(e_i + p_0 p_1\, s'\, u_i\bigr) \\
-            &= \textstyle\sum_i p^{(i)}\, e_i \;+\; p_0 p_1\, s' \textstyle\sum_i p^{(i)}\, u_i \\
-            &\approx p_0 p_1\, p\, s',
+            &= \textstyle\sum_i p^{(i)} \bigl(e_i + p_0 p_1 p_2\, s'\, u_i\bigr) \\
+            &= \textstyle\sum_i p^{(i)}\, e_i \;+\; p_0 p_1 p_2\, s' \textstyle\sum_i p^{(i)}\, u_i \\
+            &\approx p_0 p_1 p_2\, p\, s',
           \end{aligned}
         $$
         <p>
           where the last step uses
           $\sum_i p^{(i)}\, u_i \equiv p \pmod{q_0 \cdots q_\ell}$.
           Finally, rescale away the auxiliary primes to drop the
-          factor of $p_0 p_1$:
+          factor of $p_0 p_1 p_2$:
         </p>
         $$
           \begin{aligned}
-            k_0 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}_{\mathrm{approx}}}(\tilde k_0), \\
-            k_1 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}_{\mathrm{approx}}}(\tilde k_1).
+            k_0 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 p_2 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}_{\mathrm{approx}}}(\tilde k_0), \\
+            k_1 &= \underset{q_0 \cdots q_\ell\, p_0 p_1 p_2 \,\to\, q_0 \cdots q_\ell}{\mathrm{rescale}_{\mathrm{approx}}}(\tilde k_1).
           \end{aligned}
         $$
         <p>
@@ -284,13 +287,13 @@
           $p\, s'$.
         </p>
         <div class="exercise-body">
-          <b>Exercise:</b> show that any lift of
-          $p \bmod q_{2i} q_{2i+1}$ to $\tilde{R}_\ell$ works
-          for correctness, but the approximate modulus raising
-          is preferred over an arbitrary lift.
+          <b>Exercise:</b> explain why an arbitrary lift of
+          $p \bmod Q_i$ to $\tilde{R}_\ell$ does not work for
+          correctness, while the approximate modulus raising
+          does work.
         </div>
         <div class="exercise-body">
-          <b>Exercise:</b> what changes if $d = 3$?
+          <b>Exercise:</b> what changes if $d = 2$?
         </div>
         <div class="exercise-body">
           <b>Exercise:</b> there is a lot of flexibility in the
