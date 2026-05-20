@@ -143,8 +143,8 @@
         $$
         <p>
           is then an encryption of $M\mathbf{v}$, where $\odot$
-          denotes plaintext&ndash;ciphertext multiplication (which
-          acts as the Hadamard product on the underlying vectors).
+          denotes plaintext&ndash;ciphertext pointwise (Hadamard)
+          multiplication.
           Evaluating this expression naively takes
           $|D \setminus \{0\}|$ rotations; we can do better
           with a baby-step giant-step algorithm.
@@ -158,12 +158,16 @@
         <p>
           The <em>baby-step giant-step</em> algorithm reduces
           the rotation count by factoring each rotation. Choose
-          sets
-          $B, G \subseteq \{0, 1, \ldots, 32767\}$ such that
+          sets $B, G \subseteq \{0, 1, \ldots, 32767\}$ such
+          that
         </p>
         $$
-          D \subseteq \{\,b + g \bmod 32768 \,:\, b \in B,\, g \in G\,\}.
+          D \subseteq \{\,b + g \bmod 32768 \,:\, b \in B,\, g \in G\,\}
         $$
+        <p>
+          and $|B \setminus \{0\}| + |G \setminus \{0\}|$ is
+          minimal.
+        </p>
         <p>
           Define
           $\sigma : \mathbb{C}^{32768} \to \mathbb{C}^{32768}$
@@ -212,8 +216,9 @@
         <p>
           <em>Hoisting</em> is an optimization that shares the
           modulus-raising step of the rotation key-switch
-          across many rotations of the same ciphertext, as in
-          the baby-step stage of matrix multiplication. To
+          across many rotations of the same ciphertext, such
+          as what happens in the baby-step stage of matrix
+          multiplication. To
           hoist many rotations of a ciphertext
           $\boxed{\mathbf{v}}$, let
           $\boxed{\mathbf{v}} = (c_0, c_1)$ and recall from
@@ -228,9 +233,9 @@
         $$
         <p>
           Because $\mathrm{rot}_b$ acts on polynomial
-          coefficients as a signed permutation, it commutes
-          with both modular reduction and approximate modulus
-          raising, giving
+          coefficients by permuting them and flipping some
+          signs, it commutes with both modular reduction
+          and approximate modulus raising, giving
         </p>
         $$
           (\mathrm{rot}_b(c_1))^{(i)} \;=\; \mathrm{rot}_b\bigl(c_1^{(i)}\bigr).
@@ -245,31 +250,48 @@
           modulus-raising work from $|B \setminus \{0\}|$
           batches of lifts to one lift.
         </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> check that $\mathrm{rot}_b$ commutes
+          with approximate modulus raising.
+        </div>
 
         <h3>Double hoisting</h3>
         <p>
           <em>Double hoisting</em> is an optimization that
           shares the rescaling step of the rotation key-switch
-          across rotations whose outputs are summed, as in the
-          giant-step stage of matrix multiplication. To
-          double-hoist a sum of rotations of ciphertexts at
-          the same level, let
+          across rotations whose outputs are summed, such as
+          what happens in the giant-step stage of matrix
+          multiplication. To double-hoist a sum of rotations
+          of ciphertexts
+        </p>
+        $$
+          \sum_{g \in G \setminus \{0\}} \mathrm{rot}_g(\,\boxed{\mathbf{w}_g}\,)
+        $$
+        <p>
+          at the same level, let
           $(\tilde k_0^{(g)}, \tilde k_1^{(g)}) \in \tilde R_\ell \times \tilde R_\ell$
           denote the unrescaled output of the $g$th rotation
           key-switch and recall from
           <a href="fundamental.html">Section&nbsp;3.3</a> that
-          the rescaled output is
-          $\bigl(\mathrm{rescale}_{\mathrm{approx}}(\tilde k_0^{(g)}),\, \mathrm{rescale}_{\mathrm{approx}}(\tilde k_1^{(g)})\bigr)$.
-          Approximate rescaling is approximately linear, so
+          the rescaled outputs are
+        </p>
+        $$
+          \begin{aligned}
+            k_0^{(g)} &= \mathrm{rescale}_{\mathrm{approx}}(\tilde k_0^{(g)}), \\
+            k_1^{(g)} &= \mathrm{rescale}_{\mathrm{approx}}(\tilde k_1^{(g)})
+          \end{aligned}
+        $$
+        <p>
+          for $g \in G \setminus \{0\}$. Since
         </p>
         $$
           \begin{aligned}
             \sum_{g \in G \setminus \{0\}} \mathrm{rescale}_{\mathrm{approx}}\!\bigl(\tilde k_0^{(g)}\bigr) &\approx \mathrm{rescale}_{\mathrm{approx}}\!\Bigl(\textstyle\sum_{g \in G \setminus \{0\}} \tilde k_0^{(g)}\Bigr), \\
-            \sum_{g \in G \setminus \{0\}} \mathrm{rescale}_{\mathrm{approx}}\!\bigl(\tilde k_1^{(g)}\bigr) &\approx \mathrm{rescale}_{\mathrm{approx}}\!\Bigl(\textstyle\sum_{g \in G \setminus \{0\}} \tilde k_1^{(g)}\Bigr).
+            \sum_{g \in G \setminus \{0\}} \mathrm{rescale}_{\mathrm{approx}}\!\bigl(\tilde k_1^{(g)}\bigr) &\approx \mathrm{rescale}_{\mathrm{approx}}\!\Bigl(\textstyle\sum_{g \in G \setminus \{0\}} \tilde k_1^{(g)}\Bigr),
           \end{aligned}
         $$
         <p>
-          So the giant-step rescales can be deferred:
+          the giant-step rescales can be deferred:
           accumulate the unrescaled $\tilde k_j^{(g)}$'s in
           $\tilde R_\ell$ first, then rescale once at the end.
           This reduces the giant-step rescaling count from
