@@ -417,10 +417,14 @@
         <p>
           <b>Remark:</b> storing $\mathrm{rot}_i$ for every
           $i \in \{1, 2, \ldots, 32767\}$ would consume too much
-          memory, so in practice only a small set of <em>base</em>
-          rotation keys is generated &mdash; typically
-          $\mathrm{rot}_{2^k}$ for $k = 0, 1, \ldots, 14$.
+          memory, so in practice only the rotation keys that
+          are actually needed for a given computation are
+          generated.
         </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> compute the amount of memory that
+          one rotation key takes up, in megabytes.
+        </div>
 
         <h2>Conjugation</h2>
         <p>

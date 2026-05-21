@@ -16,10 +16,11 @@
         <h1>Composite operations</h1>
 
         <p>
-          This section covers three <em>composite</em> ciphertext
-          operations: dot product, matrix multiplication, and
-          polynomial evaluation. Each of these can be implemented
-          by stringing together the fundamental operations from
+          This section covers four <em>composite</em> ciphertext
+          operations: $k$-ary product, dot product, matrix
+          multiplication, and polynomial evaluation. Each of
+          these can be implemented by stringing together the
+          fundamental operations from
           <a href="fundamental.html">Section&nbsp;3.3</a>, but is
           exposed as its own operation for two reasons:
         </p>
@@ -27,6 +28,24 @@
           <li><b>convenience:</b> they show up often enough in practice that callers shouldn't have to assemble them from scratch every time, and</li>
           <li><b>efficiency:</b> a fused implementation can be more efficient than the naive composition.</li>
         </ul>
+
+        <h2>$k$-ary product</h2>
+        <p>
+          The $k$-ary product operation multiplies $k$
+          ciphertexts together with optimal depth. The
+          algorithm maintains a priority queue of the input
+          ciphertexts keyed by level, repeatedly popping the
+          two highest-level ciphertexts, multiplying them,
+          and pushing the result back. When all $k$
+          ciphertexts start at the same level, this takes
+          $\lceil \log_2 k \rceil$ depth.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> the multiplications above use
+          level drops whenever the two input ciphertexts are
+          not at the same level. Find an algorithm that uses
+          at most one level drop in the entire process.
+        </div>
 
         <h2>Dot product</h2>
         <p>
@@ -298,8 +317,339 @@
           $2\,|G \setminus \{0\}|$ rescales to two rescales.
         </p>
 
+        <h3>Optimizing key count</h3>
+        <p>
+          Rotation keys take up a lot of space, so reducing
+          the number of distinct rotation amounts used by
+          the baby-step giant-step algorithm directly
+          reduces the memory footprint of the matrix
+          multiplication. The two sums in the algorithm
+          &mdash; the inner sum over $B$ and the outer sum
+          over $G$ &mdash; each admit different
+          optimizations when their rotation amounts form
+          arithmetic progressions.
+        </p>
+        <p>
+          <b>Inner sum (over $B$).</b> The baby-step
+          rotations $\mathrm{rot}_b(\boxed{\mathbf{v}})$ for
+          $b \in B$ can be computed in sequence from a
+          single base rotation key. When $B$ is an
+          arithmetic progression
+          $\{0, d, 2d, \ldots, (k-1) d\}$, the rotations
+          are obtained by iterated application of
+          $\mathrm{rot}_d$:
+        </p>
+        $$
+          \mathrm{rot}_{i\, d}(\boxed{\mathbf{v}})
+            = \underbrace{\mathrm{rot}_d \circ \cdots \circ \mathrm{rot}_d}_{i \text{ times}}(\boxed{\mathbf{v}}).
+        $$
+        <p>
+          This uses only the single rotation key
+          $\mathrm{rot}_d$, saving
+          $|B \setminus \{0\}| - 1$ keys. The trade-off is
+          that the rotations now operate on a chain of
+          distinct ciphertexts rather than on the same
+          $\boxed{\mathbf{v}}$, so hoisting no longer
+          applies.
+        </p>
+        <p>
+          <b>Outer sum (over $G$).</b> The giant-step sum
+          $\sum_{g \in G} \mathrm{rot}_g(\boxed{\mathbf{w}_g})$,
+          where each $\boxed{\mathbf{w}_g}$ is the inner sum
+          at giant step $g$, cannot be reduced by
+          precomputing rotations of a single ciphertext,
+          because the $\boxed{\mathbf{w}_g}$'s themselves
+          differ. Instead, when $G$ is an arithmetic
+          progression $\{0, d, 2d, \ldots, (k-1) d\}$, a
+          <em>Horner-style</em> nesting reduces the
+          giant-step rotation amounts to one:
+        </p>
+        $$
+          \sum_{i=0}^{k-1} \mathrm{rot}_{i\, d}(\boxed{\mathbf{w}_i})
+            = \boxed{\mathbf{w}_0} + \mathrm{rot}_d\Bigl(\boxed{\mathbf{w}_1}
+              + \mathrm{rot}_d\bigl(\boxed{\mathbf{w}_2}
+              + \cdots\bigr)\Bigr).
+        $$
+        <p>
+          This saves $|G \setminus \{0\}| - 1$ rotation
+          keys for giant steps. The trade-off is that the
+          chain of giant-step rotations is sequential and
+          operates on distinct accumulators, so
+          double-hoisting no longer applies.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> the optimizations above only
+          work directly when the rotation amounts form an
+          arithmetic progression. For a generic set of
+          rotation amounts $\{r_1, \ldots, r_k\}$, explain
+          how it becomes a Steiner tree problem over
+          $\mathbb{Z}/32768\mathbb{Z}$.
+        </div>
+
         <h2>Polynomial evaluation</h2>
-        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Because CKKS's fundamental operations are limited
+          to addition, subtraction, multiplication, and
+          rotation, the only functions that can be evaluated
+          on a ciphertext are polynomials. Non-polynomial
+          functions like $\sqrt{\,\cdot\,}$,
+          $\lfloor \cdot \rfloor$, or $|\cdot|$ have to be
+          approximated by polynomials first, so polynomial
+          evaluation is a workhorse worth optimizing.
+        </p>
+        <p>
+          The polynomial evaluation operation takes a
+          degree-$d$ polynomial with plaintext coefficients
+          and a level-$\ell$ ciphertext
+          $\boxed{\mathbf{v}}$, and returns a level-$(\ell -
+          \lceil \log_2(d+1) \rceil)$ ciphertext encrypting
+          the slotwise application of the polynomial to
+          $\mathbf{v}$. There are two regimes, distinguished
+          by the basis the polynomial is expressed in:
+          low-degree evaluation uses the monomial basis
+          $\{1, x, x^2, \ldots\}$, while high-degree
+          evaluation uses a numerically stable
+          Chebyshev-like basis.
+        </p>
+
+        <h3>Low-degree evaluation</h3>
+        <p>
+          For low-degree evaluation, write the polynomial as
+          $p(x) = \sum_{i=0}^{d} c_i\, x^i$. One way to
+          evaluate the polynomial is to first precompute the
+          powers $x^2, x^3, \ldots, x^d$ via
+          $x^i = x^{\lceil i/2 \rceil}\, x^{\lfloor i/2 \rfloor}$
+          and then compute the dot product
+          $\sum_i c_i \cdot x^i$. However, this has two
+          inefficiencies:
+        </p>
+        <ul>
+          <li>it uses depth $\lceil \log_2 d \rceil + 1$, one more than the optimum $\lceil \log_2(d+1) \rceil$, and</li>
+          <li>it requires $d - 1$ ciphertext&ndash;ciphertext multiplications, which is expensive.</li>
+        </ul>
+        <p>
+          The <em>Paterson&ndash;Stockmeyer</em> algorithm
+          optimizes the ciphertext&ndash;ciphertext
+          multiplication count. To evaluate a polynomial
+          using the Paterson&ndash;Stockmeyer algorithm,
+          pick a block size $s$ equal to a power of two near
+          $\sqrt{d+1}$, and precompute
+        </p>
+        <ul>
+          <li>the <em>baby steps</em> $x, x^2, \ldots, x^s$ via $x^i = x^{\lceil i/2 \rceil}\, x^{\lfloor i/2 \rfloor}$, and</li>
+          <li>the <em>giant steps</em> $x^s, x^{2s}, \ldots, x^{\lfloor d/s \rfloor s}$ via $x^{is} = x^{\lceil i/2 \rceil s}\, x^{\lfloor i/2 \rfloor s}$.</li>
+        </ul>
+        <p>Then write</p>
+        $$
+          p(x) = \sum_{k=0}^{\lfloor d/s \rfloor}
+            \Bigl(\sum_{i=0}^{s-1} c_{ks + i}\, x^i\Bigr)\, x^{ks}.
+        $$
+        <p>
+          The $\lfloor d/s \rfloor$ outer multiplications by
+          giant steps all sum together, so they fuse into a
+          single ciphertext&ndash;ciphertext dot product
+          sharing one key-switch. The total key-switch count
+          is therefore
+          $s + \lfloor d/s \rfloor - 1 \approx 2\sqrt{d}$,
+          much better than the $d - 1$ key-switches of the
+          naive approach.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> verify that
+          $s \approx \sqrt{d+1}$ minimizes this key-switch
+          count.
+        </div>
+        <p>
+          However, this is still not depth-optimal: the
+          topmost giant step $x^{\lfloor d/s \rfloor s}$
+          sits at depth $\lceil \log_2 d \rceil$, and
+          multiplying its block by it pushes the total
+          depth to $\lceil \log_2 d \rceil + 1$. To save the
+          last level, replace the flat block sum with a
+          recursive partition. Let $L$ be the smallest power
+          of two greater than $d$, and extend the giant
+          steps to $x^s, x^{2s}, \ldots, x^{L/2}$. Then
+          define a recursive evaluator
+          $\mathrm{eval}(a, b)$ that returns the partial sum
+          $\sum_{i \in [a, b)} c_i\, x^{i - a}$ by:
+        </p>
+        <ul>
+          <li>if $b - a \le 2$, returning the
+              plaintext&ndash;ciphertext dot product
+              $\sum_{i \in [a, b)} c_i\, x^{i - a}$ directly;</li>
+          <li>otherwise, splitting at the midpoint
+              $m = (a + L) / 2$ of the enclosing
+              power-of-two interval $[a, L)$ (so $m - a$ is
+              a power of two), decomposing the fully
+              populated lower half $[a, m)$ as a flat block
+              sum
+              $\sum_{k=0}^{(m-a)/s - 1} \bigl(\sum_{i=0}^{s-1} c_{a + ks + i}\, x^i\bigr)\, x^{ks}$,
+              recursively computing $\mathrm{eval}(m, b)$
+              for the partially populated upper half
+              $[m, b)$, multiplying by $x^{m - a}$ (one of
+              the precomputed giant steps, or a baby step
+              if $m - a < s$), and summing the two halves.</li>
+        </ul>
+        <p>
+          Calling $\mathrm{eval}(0, d+1)$ gives $p(x)$. For
+          example, for $d = 15$ with $s = 4$, the recursion
+          unfolds as
+        </p>
+        <ul>
+          <li>$\mathrm{eval}(0, 16)$, $m = 8$: lower half $(c_0 + c_1 x + c_2 x^2 + c_3 x^3) + (c_4 + c_5 x + c_6 x^2 + c_7 x^3)\, x^4$; recurse on $[8, 16)$ and multiply by $x^8$.</li>
+          <li>$\mathrm{eval}(8, 16)$, $m = 12$: lower half $c_8 + c_9 x + c_{10} x^2 + c_{11} x^3$; recurse on $[12, 16)$ and multiply by $x^4$.</li>
+          <li>$\mathrm{eval}(12, 16)$, $m = 14$: lower half $c_{12} + c_{13} x$ (here $m - a = 2 < s$, so the giant step $x^2$ is a baby step); recurse on $[14, 16)$ and multiply by $x^2$.</li>
+          <li>$\mathrm{eval}(14, 16)$: base case, returns $c_{14} + c_{15} x$.</li>
+        </ul>
+        <p>Combining gives the expansion</p>
+        $$
+          \begin{aligned}
+            p(x) =\;& (c_0 + c_1 x + c_2 x^2 + c_3 x^3) \\
+                    &+ (c_4 + c_5 x + c_6 x^2 + c_7 x^3)\, x^4 \\
+                    &+ \bigl[(c_8 + c_9 x + c_{10} x^2 + c_{11} x^3)
+                            + \bigl(c_{12} + c_{13} x + (c_{14} + c_{15} x)\, x^2\bigr)\, x^4\bigr]\, x^8.
+          \end{aligned}
+        $$
+        <div class="exercise-body">
+          <b>Exercise:</b> check that this uses optimal
+          depth $\lceil \log_2(d+1) \rceil$.
+        </div>
+        <div class="exercise-body">
+          <b>Exercise:</b> verify that the optimal block
+          size for the depth-aware version is
+          $s \approx \sqrt{L/2}$, and that the total
+          key-switch count at this optimum is at most
+          $\sqrt{2d} + \log_2 d$.
+        </div>
+
+        <h3>High-degree evaluation</h3>
+        <p>
+          For large $d$, monomial evaluation fails: the
+          coefficients $c_n$ become very small while the
+          basis values $x^n$ become very large, so the
+          intermediate $c_n x^n$ products cannot be computed
+          within CKKS's $\sim 2^{-40}$ precision. The fix is
+          to switch to a well-conditioned basis.
+        </p>
+        <p>
+          The <em>Chebyshev basis</em> on $[-2, 2]$ is the
+          sequence $\{\tilde T_n\}_{n \ge 0}$ given by
+        </p>
+        $$
+          \tilde T_0 = 2,\quad \tilde T_1(x) = x,\quad
+          \tilde T_{n+1}(x) = x\, \tilde T_n(x) - \tilde T_{n-1}(x),
+        $$
+        <p>
+          obtained by rescaling the usual Chebyshev
+          polynomials via $\tilde T_n(x) = 2\, T_n(x/2)$.
+          The first few entries are
+        </p>
+        $$
+          \begin{aligned}
+            \tilde T_2(x) &= x^2 - 2, \\
+            \tilde T_3(x) &= x^3 - 3x, \\
+            \tilde T_4(x) &= x^4 - 4x^2 + 2, \\
+            \tilde T_5(x) &= x^5 - 5x^3 + 5x, \\
+            \tilde T_6(x) &= x^6 - 6x^4 + 9x^2 - 2, \\
+            \tilde T_7(x) &= x^7 - 7x^5 + 14x^3 - 7x,
+          \end{aligned}
+        $$
+        <p>
+          and so on. Coefficients in this basis are small
+          because the orthogonality relation gives
+        </p>
+        $$
+          |c_n| = \left|\frac{1}{2\pi} \int_{-2}^{2}
+            \frac{p(x)\, \tilde T_n(x)}{\sqrt{4 - x^2}}\, dx\right|
+          \le \frac{1}{2\pi} \int_{-2}^{2}
+            \frac{2\,\|p\|_\infty}{\sqrt{4 - x^2}}\, dx
+          = \|p\|_\infty.
+        $$
+        <p>
+          Paterson&ndash;Stockmeyer carries over to this
+          basis because the $\tilde T_n$'s satisfy the
+          product identity
+        </p>
+        $$
+          \tilde T_{m+n}(x) = \tilde T_m(x)\, \tilde T_n(x) - \tilde T_{|m-n|}(x).
+        $$
+        <p>
+          The baby and giant steps become
+          $\tilde T_1, \ldots, \tilde T_s$ and
+          $\tilde T_s, \tilde T_{2s}, \ldots, \tilde T_{L/2}$,
+          built via this identity with depth-balanced
+          splits.
+        </p>
+        <p>
+          The recursive partition of $[0, d+1)$ is
+          otherwise identical to the monomial case, but
+          each split at $\tilde T_N$ now produces a
+          cross-term that has to be absorbed into the
+          lower-index coefficients:
+        </p>
+        $$
+          \sum_{n=N}^{2N-1} c_n\, \tilde T_n
+            = \tilde T_N \cdot \Bigl(c_N + \sum_{j=1}^{N-1} c_{N+j}\, \tilde T_j\Bigr)
+              - \sum_{j=1}^{N-1} c_{N+j}\, \tilde T_{N-j}.
+        $$
+        <p>
+          The final negative sum has indices in
+          $[1, N-1]$, which get folded into the existing
+          coefficients of $\tilde T_1, \ldots, \tilde T_{N-1}$.
+        </p>
+        <p>
+          For example, for $d = 15$ with $s = 4$, the
+          recursion produces the expansion
+        </p>
+        $$
+          \begin{aligned}
+            p(x) =\;& (\gamma_0 + \gamma_1 \tilde T_1 + \gamma_2 \tilde T_2 + \gamma_3 \tilde T_3) \\
+                    &+ (\gamma_4 + \gamma_5 \tilde T_1 + \gamma_6 \tilde T_2 + \gamma_7 \tilde T_3)\, \tilde T_4 \\
+                    &+ \bigl[(\gamma_8 + \gamma_9 \tilde T_1 + \gamma_{10} \tilde T_2 + \gamma_{11} \tilde T_3)
+                            + \bigl(\gamma_{12} + \gamma_{13} \tilde T_1 + (\gamma_{14} + \gamma_{15} \tilde T_1)\, \tilde T_2\bigr)\, \tilde T_4\bigr]\, \tilde T_8,
+          \end{aligned}
+        $$
+        <p>
+          where the $\gamma_i$ are linear combinations of
+          the $c_j$:
+        </p>
+        $$
+          \begin{aligned}
+            \gamma_0 &= c_0, \\
+            \gamma_1 &= c_1 - c_7 + c_9 - c_{15}, \\
+            \gamma_2 &= c_2 - c_6 + c_{10} - c_{14}, \\
+            \gamma_3 &= c_3 - c_5 + c_{11} - c_{13}, \\
+            \gamma_4 &= c_4 - c_{12}, \\
+            \gamma_5 &= c_5 - c_{11}, \\
+            \gamma_6 &= c_6 - c_{10}, \\
+            \gamma_7 &= c_7 - c_9, \\
+            \gamma_8 &= c_8, \\
+            \gamma_9 &= c_9 - c_{15}, \\
+            \gamma_{10} &= c_{10} - c_{14}, \\
+            \gamma_{11} &= c_{11} - c_{13}, \\
+            \gamma_{12} &= c_{12}, \\
+            \gamma_{13} &= c_{13} - c_{15}, \\
+            \gamma_{14} &= c_{14}, \\
+            \gamma_{15} &= c_{15}.
+          \end{aligned}
+        $$
+        <p>
+          The encrypted runtime and depth match the
+          monomial case, up to the extra subtraction in
+          each Chebyshev recursion step.
+        </p>
+
+        <h3>Per-slot evaluation</h3>
+        <p>
+          The coefficients $c_i$ in either algorithm above
+          can be plaintext vectors with different values in
+          different slots, since they only enter as
+          plaintext&ndash;ciphertext multiplications. Thus,
+          it is possible to run a different polynomial on
+          each of the $32768$ slots of
+          $\boxed{\mathbf{v}}$ in parallel; the runtime and
+          depth are set by the largest degree across all slots.
+        </p>
 
       </article>
       <nav class="post-nav" id="post-nav"></nav>
