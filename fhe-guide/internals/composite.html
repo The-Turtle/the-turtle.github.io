@@ -546,6 +546,8 @@
         </p>
         $$
           \begin{aligned}
+            \tilde T_0(x) &= 2, \\
+            \tilde T_1(x) &= x, \\
             \tilde T_2(x) &= x^2 - 2, \\
             \tilde T_3(x) &= x^3 - 3x, \\
             \tilde T_4(x) &= x^4 - 4x^2 + 2, \\
@@ -555,16 +557,26 @@
           \end{aligned}
         $$
         <p>
-          and so on. Coefficients in this basis are small
-          because the orthogonality relation gives
+          and so on. The relevant quantity for numerical
+          stability is the intermediate product
+          $c_n\, \tilde T_n(x)$, which is numerically stable
+          on $[-2, 2]$ because both factors are bounded:
         </p>
-        $$
-          |c_n| = \left|\frac{1}{2\pi} \int_{-2}^{2}
-            \frac{p(x)\, \tilde T_n(x)}{\sqrt{4 - x^2}}\, dx\right|
-          \le \frac{1}{2\pi} \int_{-2}^{2}
-            \frac{2\,\|p\|_\infty}{\sqrt{4 - x^2}}\, dx
-          = \|p\|_\infty.
-        $$
+        <ul>
+          <li>the basis itself is bounded: substituting
+              $x = 2\cos\theta$ gives
+              $\tilde T_n(2\cos\theta) = 2\cos(n\theta)$, so
+              $|\tilde T_n(x)| \le 2$ on $[-2, 2]$;</li>
+          <li>the coefficients are bounded: the
+              orthogonality relation gives
+              $$
+                |c_n| = \left|\frac{1}{2\pi} \int_{-2}^{2}
+                  \frac{p(x)\, \tilde T_n(x)}{\sqrt{4 - x^2}}\, dx\right|
+                \le \frac{1}{2\pi} \int_{-2}^{2}
+                  \frac{2\,\|p\|_\infty}{\sqrt{4 - x^2}}\, dx
+                = \|p\|_\infty.
+              $$</li>
+        </ul>
         <p>
           Paterson&ndash;Stockmeyer carries over to this
           basis because the $\tilde T_n$'s satisfy the
@@ -638,6 +650,20 @@
           monomial case, up to the extra subtraction in
           each Chebyshev recursion step.
         </p>
+        <p>
+          Note that this basis is only numerically stable
+          on $[-2, 2]$: outside this range, $|\tilde T_n(x)|$
+          grows quickly with $n$. To evaluate a polynomial
+          stably
+          on a different interval, the input ciphertext
+          should first be rescaled and shifted so that its
+          slot values land in $[-2, 2]$.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> why not use the standard
+          Chebyshev basis $T_n$ on $[-1, 1]$ instead of
+          $\tilde T_n$ on $[-2, 2]$?
+        </div>
 
         <h3>Per-slot evaluation</h3>
         <p>
