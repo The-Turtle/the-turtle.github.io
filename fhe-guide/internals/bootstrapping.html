@@ -29,10 +29,13 @@
         </p>
         <ol>
           <li>
-            <strong>Mod-raise.</strong> Reinterpret the
-            level-$0$ ciphertext as a ciphertext at level $30$.
-            The underlying plaintext polynomial picks up a
-            multiple of $q_0$ in each coefficient.
+            <strong>Mod-raise.</strong> Key-switch the
+            level-$0$ ciphertext from $s$ to a sparse secret
+            $s'$, reinterpret it as a ciphertext at level $30$,
+            then key-switch back to $s$. The
+            underlying plaintext polynomial picks up a multiple
+            of $q_0$ between $-16 q_0$ and $16 q_0$ in each
+            coefficient.
           </li>
           <li>
             <strong>Coefficients-to-slots.</strong> Use
@@ -76,8 +79,7 @@
           modulus chain is extended with $13$ distinct primes
           $q_{18}, q_{19}, \ldots, q_{30}$, each approximately
           $q_0 \approx 2^{55}$ and congruent to $1$ modulo
-          $2^{17}$. The extended chain has $31$ levels in
-          total, and each new level has a scale factor around
+          $2^{17}$. Each new level has a scale factor around
           $2^{55}$ given by the recurrence
         </p>
         $$
@@ -164,15 +166,16 @@
           $(c_0, c_1) \in R_0 \times R_0$ encrypting a
           plaintext polynomial $m \in R_0$ and returns a
           level-$30$ ciphertext encrypting $m + q_0\, t$ for
-          some $t \in R_\infty$ with small coefficients.
-          Internally, it does this in three sub-steps:
+          some integer polynomial $t \in R_\infty$ with
+          coefficients at most $16$ in magnitude. Internally,
+          it does this in three sub-steps:
         </p>
         <ol>
           <li>
             Apply $\mathrm{ksk}_{s \to s'}$ to $(c_0, c_1)$ to
             obtain a level-$0$ ciphertext
             $(c_0', c_1') \in R_0 \times R_0$ satisfying
-            $c_0' + c_1'\, s' \approx m$.
+            $c_0' + c_1'\, s' = m$.
           </li>
           <li>
             Apply modulus raising to $c_0'$ and $c_1'$ with
@@ -182,7 +185,7 @@
               \qquad
               c_1'' \;=\; \underset{q_0 \,\to\, q_0 \cdots q_{30}}{\mathrm{modraise}}(c_1').
             $$
-            Now, $c_0'' + c_1''\, s' \approx m + q_0\, t$ for
+            Now, $c_0'' + c_1''\, s' = m + q_0\, t$ for
             some $t \in R_\infty$.
           </li>
           <li>
@@ -192,70 +195,16 @@
           </li>
         </ol>
 
-        <h3 id="distribution-of-t">The distribution of $t$</h3>
-
         <p>
-          The coefficients of $c_0''$ and $c_1''$ are the
-          centered lifts of the coefficients of $c_0'$ and
-          $c_1'$, which are indistinguishable from uniform draws
-          on $\bigl\{-\tfrac{q_0 - 1}{2},\, \ldots,\, \tfrac{q_0 - 1}{2}\bigr\}$
-          by the RLWE assumption. Writing
-          $c_1'' = \sum_{i=0}^{N-1} c_i\, X^i$, the product
-          $c_1''\, s'$ in $R_{30}$ expands degree by degree as
-        </p>
-        $$
-          c_1''\, s'
-            \;=\; \sum_{k=0}^{N-1}\,
-                  \biggl(\sum_{j \in \mathrm{supp}(s')}
-                    (c_1'')_{[k - j]}\biggr) X^k,
-        $$
-        <p>
-          where $(c_1'')_{[k - j]}$ is the appropriately-signed
-          coefficient of $c_1''$ that arises from multiplying
-          the $j$-th monomial of $s'$ through: it equals
-          $\pm c_{k - j}$ if $k \ge j$ and $\mp c_{k + N - j}$
-          otherwise, with the sign determined by
-          $s'_j \in \{-1, +1\}$ and the negacyclic relation
-          $X^N = -1$ in $R_{30}$. The outer sum is over the $N$
-          degrees, and the inner sum is over the $h' = 32$
-          positions at which $s'$ is nonzero. So every
-          coefficient of $c_1''\, s'$ is a signed sum of
-          $h' = 32$ independent uniform draws on
-          $\bigl\{-\tfrac{q_0 - 1}{2},\, \ldots,\, \tfrac{q_0 - 1}{2}\bigr\}$
-          &mdash; which, since that set is symmetric about $0$,
-          is the same distribution as a sum of $h' = 32$
-          unsigned uniform draws on it. Adding $c_0''$
-          contributes one more independent uniform draw.
-        </p>
-
-        <p>
-          The relation
-          $c_0'' + c_1''\, s' \approx m + q_0\, t$ in $R_{30}$
-          gives
-        </p>
-        $$
-          t \;\approx\; \frac{c_0'' + c_1''\, s' - m}{q_0} \;\in\; R_\infty,
-        $$
-        <p>
-          where $c_0''$ and $c_1''$ are interpreted as
-          polynomials in $R_\infty$. For typical messages the
-          coefficients of $m$ are much smaller than $q_0/2$
-          (with $|m_i| \lesssim \Delta_0 \approx 2^{40}$ for
-          unit-magnitude encrypted vectors, versus
-          $q_0/2 \approx 2^{54}$), so the $-m$ shift in the
-          numerator is negligible. To excellent approximation,
-          each coefficient of $t$ is then distributed as
-        </p>
-        $$
-          t_i \;\sim\; \sum_{k=1}^{h' + 1} U_k,
-            \qquad U_k \stackrel{\text{iid}}{\sim} \mathrm{Uniform}\!\bigl(-\tfrac{1}{2},\, \tfrac{1}{2}\bigr).
-        $$
-        <p>
-          This is the <em>centered Irwin&ndash;Hall
-          distribution</em> with parameter $h' + 1 = 33$. Its support
-          is $[-(h'+1)/2,\, (h'+1)/2] = [-16.5,\, 16.5]$, its
-          mean is $0$, and its standard deviation is
-          $\sqrt{(h'+1)/12} \approx 1.66$.
+          Now, let's show that every coefficient of $t$ has
+          magnitude at most $16$. As polynomials in
+          $\mathbb{Z}[X]$, each of $c_0''$, $c_1''$, and $m$
+          has coefficients bounded in magnitude by $q_0/2$.
+          Since $s'$ has $h' = 32$ nonzero $\pm 1$
+          coefficients, every coefficient of
+          $c_0'' + c_1''\, s' - m = q_0\, t$ is a signed sum of
+          $h' + 2 = 34$ such values, so every coefficient of
+          $t$ has magnitude less than $17$.
         </p>
 
         <h2 id="coefficients-to-slots">Coefficients-to-slots</h2>
@@ -266,260 +215,81 @@
           polynomial is
         </p>
         $$
-          m^\star \;\approx\; m + q_0\, t,
+          m^\star \;=\; m + q_0\, t,
         $$
         <p>
-          with $\|t\|_\infty \le K = 16$. We'd like to strip off
-          the $q_0\, t$ term, but the only operation CKKS gives
-          us that acts non-linearly on the underlying plaintext
-          is <em>slot-wise</em> polynomial evaluation. So we
-          first need to move the $N = 65536$
-          <em>coefficients</em> of $m^\star$ into the slots of
-          some ciphertexts.
+          with $t$ having integer coefficients of magnitude at
+          most $16$. We'd like to strip off the $q_0\, t$ term,
+          but the only operation CKKS gives us that acts
+          non-linearly on the underlying plaintext is
+          <em>slot-wise</em> polynomial evaluation. So we first
+          need to move the $N = 65536$ coefficients of
+          $m^\star$ into the slots of some ciphertexts.
         </p>
 
         <p>
-          Recall from
-          <a href="encryption.html#encoding-vectors">Section&nbsp;3.2</a> that
-          encoding a vector
-          $\mathbf{v} \in \mathbb{C}^{32768}$ as a plaintext
-          polynomial $m^\star$ at scale $\Delta$ chooses
-          $m^\star$ so that
-          $m^\star(\zeta^{5^j}) = \Delta\, v_j$ for
-          $j = 0, 1, \ldots, 32767$, where
-          $\zeta = e^{2\pi i / 131072}$. Equivalently,
-          $m^\star$ has the $32768$ values
-          $m^\star(\zeta),\, m^\star(\zeta^5),\, \ldots,\,
-           m^\star(\zeta^{5^{32767}})$
-          in its slots.
-        </p>
-
-        <p>
-          Coefficients-to-slots produces two level-$27$
-          ciphertexts that together hold the $N = 65536$
-          coefficients of $m^\star$, in bit-reversed order, in
-          their $2 \cdot 32768$ slots:
+          As is, the level-$30$ ciphertext encrypts some
+          (garbage) vector $\mathbf{v}^\star \in \mathbb{C}^{32768}$
+          determined by the coefficients
+          $m^\star_0, m^\star_1, \ldots, m^\star_{N-1}$ of
+          $m^\star = \sum_{i=0}^{N-1} m^\star_i\, X^i$ via the
+          slot-decoding matrix identity
         </p>
         $$
-          \mathrm{slots}(\,\boxed{\,\cdot\,}_1\,)
-            = \bigl(m_{\mathrm{rev}(0)},\;\; m_{\mathrm{rev}(2)},\;\; m_{\mathrm{rev}(4)},\;\; \ldots,\;\; m_{\mathrm{rev}(N-2)}\bigr),
-        $$
-        $$
-          \mathrm{slots}(\,\boxed{\,\cdot\,}_2\,)
-            = \bigl(m_{\mathrm{rev}(1)},\;\; m_{\mathrm{rev}(3)},\;\; m_{\mathrm{rev}(5)},\;\; \ldots,\;\; m_{\mathrm{rev}(N-1)}\bigr),
-        $$
-        <p>
-          where $m_k$ is the $k$th coefficient of $m^\star$ and
-          $\mathrm{rev}(k)$ denotes the bit-reversal of $k$ as a
-          $\log_2 N = 16$-bit binary number. The bit reversal is
-          a quirk of the matrix factorization we'll see below;
-          it doesn't matter beyond the bookkeeping, because the
-          inverse step in three subsections puts everything back
-          in order.
-        </p>
-
-        <h3 id="the-two-matrices">The two matrices</h3>
-
-        <p>
-          The map from coefficients to slots boils down to two
-          $(N/2) \times (N/2)$ matrix&ndash;vector
-          multiplications. To see how, fix the slot index
-          structure
-          $\bigl(m^\star(\zeta),\, m^\star(\zeta^5),\, \ldots,\,
-           m^\star(\zeta^{5^{N/2 - 1}})\bigr)$, and observe that
-          for any polynomial of degree less than $N$,
-          $\sum_{k} m_k\, \zeta^{5^j\, k}$ is a sum of $N$
-          terms, with $N/2$ "even-$k$" terms involving $\zeta^2$
-          to various powers and $N/2$ "odd-$k$" terms with an
-          extra factor of $\zeta^{5^j}$. After some algebra
-          (worked out in the docstring of
-          <code>coefficients_to_slots</code> in the reference
-          implementation), and using the bit-reversal trick to
-          arrange the rows so the upcoming sparse factorization
-          is clean, the even-coefficient ciphertext
-          $\boxed{\,\cdot\,}_1$ comes out as
-          $N$ times
-        </p>
-        $$
-          L\, \begin{pmatrix} m^\star(\zeta) \\ m^\star(\zeta^5) \\ \vdots \\ m^\star(\zeta^{5^{N/2 - 1}}) \end{pmatrix}
-            \;+\;
-          \overline{L}\, \begin{pmatrix} m^\star(\zeta^{-1}) \\ m^\star(\zeta^{-5}) \\ \vdots \\ m^\star(\zeta^{-5^{N/2 - 1}}) \end{pmatrix}
-        $$
-        <p>
-          and the odd-coefficient ciphertext
-          $\boxed{\,\cdot\,}_2$ comes out as $N$ times
-        </p>
-        $$
-          (-i)\cdot L'\, \begin{pmatrix} m^\star(\zeta) \\ m^\star(\zeta^5) \\ \vdots \\ m^\star(\zeta^{5^{N/2 - 1}}) \end{pmatrix}
-            \;+\;
-          (\,i\,)\cdot \overline{L'}\, \begin{pmatrix} m^\star(\zeta^{-1}) \\ m^\star(\zeta^{-5}) \\ \vdots \\ m^\star(\zeta^{-5^{N/2 - 1}}) \end{pmatrix},
-        $$
-        <p>
-          where $L$ is the $(N/2) \times (N/2)$ matrix
-        </p>
-        $$
-          L \;=\; \begin{pmatrix}
-            1 & 1 & 1 & \cdots & 1 \\
-            \zeta^{-\mathrm{rev}(2)} & \zeta^{-\mathrm{rev}(2)\cdot 5} & \zeta^{-\mathrm{rev}(2)\cdot 25} & \cdots & \zeta^{-\mathrm{rev}(2)\cdot 5^{N/2 - 1}} \\
-            \zeta^{-\mathrm{rev}(4)} & \zeta^{-\mathrm{rev}(4)\cdot 5} & \zeta^{-\mathrm{rev}(4)\cdot 25} & \cdots & \zeta^{-\mathrm{rev}(4)\cdot 5^{N/2 - 1}} \\
-            \vdots & \vdots & \vdots & \ddots & \vdots \\
-            \zeta^{-\mathrm{rev}(N-2)} & \zeta^{-\mathrm{rev}(N-2)\cdot 5} & \zeta^{-\mathrm{rev}(N-2)\cdot 25} & \cdots & \zeta^{-\mathrm{rev}(N-2)\cdot 5^{N/2 - 1}}
+          \begin{pmatrix}
+            v^\star_0 \\
+            v^\star_1 \\
+            v^\star_2 \\
+            \vdots \\
+            v^\star_{N/2 - 1}
           \end{pmatrix}
-        $$
-        <p>
-          and $L'$ is the same matrix with odd indices
-          $\mathrm{rev}(1), \mathrm{rev}(3), \ldots, \mathrm{rev}(N-1)$
-          on the rows instead of even ones. The conjugate
-          matrices $\overline{L}$ and $\overline{L'}$ are
-          obtained slot-wise from $L$ and $L'$ using the
-          conjugation operation from
-          <a href="fundamental.html#conjugation">Section&nbsp;3.3</a>:
-          $\bigl(m^\star(\zeta^{-1}), \ldots\bigr)$ is just the
-          complex conjugate of
-          $\bigl(m^\star(\zeta), \ldots\bigr)$ in the slots,
-          and applying $\overline{L}$ to the conjugated vector
-          gives the conjugate of $L$ times the original vector.
-        </p>
-
-        <p>
-          A small additional observation cuts the work in half
-          again: the matrix $L'$ turns out to be $L$ multiplied
-          slot-wise by the vector
-          $(\zeta^{-1}, \zeta^{-5}, \ldots, \zeta^{-5^{N/2-1}})$,
-          and that vector is just the slot representation of the
-          polynomial $X$. So $L'$ never has to be applied
-          directly: compute the single product $L\, \boxed{m^\star}$,
-          and the two output ciphertexts are
-        </p>
-        $$
-          \boxed{\,\cdot\,}_1
-            \;=\; L\,\boxed{m^\star} + \overline{L\,\boxed{m^\star}},
-            \qquad
-          \boxed{\,\cdot\,}_2
-            \;=\; \bigl(\,\overline{L\,\boxed{m^\star}} - L\,\boxed{m^\star}\,\bigr) \cdot i,
-        $$
-        <p>
-          where each overline denotes one application of the
-          conjugation operation from
-          <a href="fundamental.html#conjugation">Section&nbsp;3.3</a>. So
-          all the heavy lifting is in computing one
-          matrix&ndash;ciphertext product
-          $L\, \boxed{m^\star}$.
-        </p>
-
-        <h3 id="sparse-factorization-of-l">Sparse factorization of $L$</h3>
-
-        <p>
-          Naive matrix&ndash;vector multiplication against $L$
-          via the algorithm of
-          <a href="composite.html#matrix-multiplication">Section&nbsp;3.4</a> needs to
-          handle a matrix with $\Theta(N)$ nonzero diagonals,
-          giving a runtime of order $\sqrt{N}$ rotations. We can
-          do much better. The matrix $L$ factors as a product of
-          $\log_2(N/2) = 15$ sparse matrices, each with just
-          three nonzero diagonals. To illustrate, here is the
-          factorization for the toy ring dimension $N = 16$
-          (so $L$ is $8 \times 8$). Naming the three sparse
-          factors $A_2$, $A_1$, $A_0$ (in order of
-          application, right-to-left),
-        </p>
-        $$
-          L \;=\; A_2 \cdot A_1 \cdot A_0,
-        $$
-        <p>where</p>
-        $$
-          A_0 \;=\; \begin{pmatrix}
-            1 & & & & \zeta^{-1} & & & \\
-            & 1 & & & & \zeta^{-5} & & \\
-            & & 1 & & & & \zeta^{-25} & \\
-            & & & 1 & & & & \zeta^{-29} \\
-            \zeta^{-17} & & & & 1 & & & \\
-            & \zeta^{-21} & & & & 1 & & \\
-            & & \zeta^{-9} & & & & 1 & \\
-            & & & \zeta^{-13} & & & & 1
+          \;=\;
+          \begin{pmatrix}
+            1 & \zeta & \zeta^{2} & \cdots & \zeta^{N-1} \\
+            1 & \zeta^{5} & \zeta^{2 \cdot 5} & \cdots & \zeta^{(N-1) \cdot 5} \\
+            1 & \zeta^{5^2} & \zeta^{2 \cdot 5^2} & \cdots & \zeta^{(N-1) \cdot 5^2} \\
+            \vdots & \vdots & \vdots & \ddots & \vdots \\
+            1 & \zeta^{5^{N/2 - 1}} & \zeta^{2 \cdot 5^{N/2 - 1}} & \cdots & \zeta^{(N-1) \cdot 5^{N/2 - 1}}
+          \end{pmatrix}
+          \begin{pmatrix}
+            m^\star_0 \\
+            m^\star_1 \\
+            m^\star_2 \\
+            \vdots \\
+            m^\star_{N-1}
           \end{pmatrix},
         $$
-        $$
-          A_1 \;=\; \begin{pmatrix}
-            1 & & 1 & & & & & \\
-            & 1 & & 1 & & & & \\
-            \zeta^{-2} & & \zeta^{-18} & & & & & \\
-            & \zeta^{-10} & & \zeta^{-26} & & & & \\
-            & & & & 1 & & 1 & \\
-            & & & & & 1 & & 1 \\
-            & & & & \zeta^{-2} & & \zeta^{-18} & \\
-            & & & & & \zeta^{-10} & & \zeta^{-26}
-          \end{pmatrix},
-        $$
-        $$
-          A_2 \;=\; \begin{pmatrix}
-            1 & 1 & & & & & & \\
-            \zeta^{-4} & \zeta^{-20} & & & & & & \\
-            & & 1 & 1 & & & & \\
-            & & \zeta^{-4} & \zeta^{-20} & & & & \\
-            & & & & 1 & 1 & & \\
-            & & & & \zeta^{-4} & \zeta^{-20} & & \\
-            & & & & & & 1 & 1 \\
-            & & & & & & \zeta^{-4} & \zeta^{-20}
-          \end{pmatrix}.
-        $$
         <p>
-          Multiplying out $A_2 \cdot A_1 \cdot A_0$ recovers
-        </p>
-        $$
-          L \;=\; \begin{pmatrix}
-            1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
-            \zeta^{-4} & \zeta^{-20} & \zeta^{-4} & \zeta^{-20} & \zeta^{-4} & \zeta^{-20} & \zeta^{-4} & \zeta^{-20} \\
-            \zeta^{-2} & \zeta^{-10} & \zeta^{-18} & \zeta^{-26} & \zeta^{-2} & \zeta^{-10} & \zeta^{-18} & \zeta^{-26} \\
-            \zeta^{-6} & \zeta^{-30} & \zeta^{-22} & \zeta^{-14} & \zeta^{-6} & \zeta^{-30} & \zeta^{-22} & \zeta^{-14} \\
-            \zeta^{-1} & \zeta^{-5} & \zeta^{-25} & \zeta^{-29} & \zeta^{-17} & \zeta^{-21} & \zeta^{-9} & \zeta^{-13} \\
-            \zeta^{-5} & \zeta^{-25} & \zeta^{-29} & \zeta^{-17} & \zeta^{-21} & \zeta^{-9} & \zeta^{-13} & \zeta^{-1} \\
-            \zeta^{-3} & \zeta^{-15} & \zeta^{-11} & \zeta^{-23} & \zeta^{-19} & \zeta^{-31} & \zeta^{-27} & \zeta^{-7} \\
-            \zeta^{-7} & \zeta^{-3} & \zeta^{-15} & \zeta^{-11} & \zeta^{-23} & \zeta^{-19} & \zeta^{-31} & \zeta^{-27}
-          \end{pmatrix}.
-        $$
-        <p>
-          Each factor is a sparse matrix with exactly three
-          nonzero diagonals (counting the main diagonal), and
-          the diagonal offsets halve from one factor to the
-          next: $4 \to 2 \to 1$ in the $N = 16$ example, and
-          generally $N/4 \to N/8 \to \cdots \to 2 \to 1$ in
-          the general case.
-        </p>
-        <p>
-          For $N = 65536$, the full factorization has
-          $\log_2(N/2) = 15$ such sparse factors. Applying all
-          $15$ individually would consume $15$ levels, far more
-          than the $3$ we've budgeted &mdash; so we combine
-          consecutive factors by ordinary matrix multiplication
-          into $3$ stages, each somewhat denser than a single
-          factor but consuming only one level. Concretely,
-          group the $15$ factors into three contiguous blocks
-          of $5$, multiply within each block, and then apply
-          the three resulting matrices in sequence using the
-          baby-step giant-step algorithm from
-          <a href="composite.html#baby-step-giant-step">Section&nbsp;3.4</a>.
-        </p>
-        <p>
-          The fewer stages we use, the fewer levels we consume
-          but the denser each stage's matrix becomes; the
-          three-stage choice is a sweet spot for the $N = 65536$
-          parameters &mdash; few enough levels to be affordable,
-          and sparse enough that the rotation count per stage is
-          still manageable.
+          where $\zeta = e^{2\pi i / 2N}$ is the primitive
+          $2N$-th root of unity from
+          <a href="encryption.html#encoding-vectors">Section&nbsp;3.2</a>.
+          Call the $(N/2) \times N$ matrix above $\Sigma$.
         </p>
 
-        <div class="exercise-body">
-          <b>Exercise:</b> verify the $N = 16$ factorization
-          above by direct computation.
-        </div>
-        <div class="exercise-body">
-          <b>Exercise:</b> work out the general pattern of the
-          $\ell$th sparse factor (for
-          $\ell = 0, 1, \ldots, \log_2(N/2) - 1$): which
-          diagonals are nonzero, and what entries appear on
-          them.
-        </div>
+        <p>
+          We'd like to invert this identity to recover the
+          $m^\star_i$ from the $v^\star_j$, but $\Sigma$ isn't
+          square. The missing equations come from complex
+          conjugation, since the coefficients of $m^\star$ are
+          integers and hence real. Letting $E$ be the inverse
+          of the left $(N/2) \times (N/2)$ half of $\Sigma$
+          and splitting the coefficient vector into
+          $\mathbf{m}^\star_L = (m^\star_0, \ldots, m^\star_{N/2 - 1})$
+          and
+          $\mathbf{m}^\star_H = (m^\star_{N/2}, \ldots, m^\star_{N-1})$,
+          this rearranges as
+        </p>
+        $$
+          E\, \mathbf{v}^\star \;=\; \mathbf{m}^\star_L \,+\, i\, \mathbf{m}^\star_H,
+        $$
+        <p>
+          so
+        </p>
+        $$
+          \mathbf{m}^\star_L \;=\; \mathrm{Re}(E\, \mathbf{v}^\star),
+          \qquad
+          \mathbf{m}^\star_H \;=\; \mathrm{Im}(E\, \mathbf{v}^\star).
+        $$
 
         <h2 id="mod-eval">Mod-eval</h2>
 
@@ -552,63 +322,6 @@
           evaluation of this function.
         </p>
 
-        <h3 id="choosing-the-mod-eval-interval">Choosing the mod-eval interval</h3>
-
-        <p>
-          The polynomial approximation of $x \bmod 1$ needs to
-          hold on an interval $[-K,\, K]$ where $K$ is an upper
-          bound on $\max_i |t_i|$. Smaller $K$ means lower
-          polynomial degree, so we want $K$ as small as we can
-          get away with.
-        </p>
-        <p>
-          We choose $K$ so that the per-bootstrap failure
-          probability &mdash; the probability that some
-          coefficient of $t$ falls outside $[-K, K]$ &mdash; is
-          at most $2^{-128}$. There are $N = 65536$ coefficients,
-          so by union bound it suffices to take $K$ with
-          $\Pr[|t_i| > K] \le 2^{-128 - 16} = 2^{-144}$ for any
-          single coefficient.
-        </p>
-        <p>
-          Near the upper edge of its support, the
-          Irwin&ndash;Hall PDF behaves like
-          $\bigl((h'+1)/2 - x\bigr)^{h'}/(h')!$, so the
-          one-sided tail satisfies
-        </p>
-        $$
-          \Pr\bigl[\,t_i > K\,\bigr]
-            \;\approx\;
-              \frac{\bigl((h'+1)/2 - K\bigr)^{h' + 1}}{(h' + 1)!}.
-        $$
-        <p>
-          Setting $h' = 32$ and $K = 16$, this gives
-        </p>
-        $$
-          \Pr\bigl[\,|t_i| > 16\,\bigr]
-            \;\approx\; 2^{-155},
-        $$
-        <p>
-          per coefficient, so by union bound the probability
-          that <em>any</em> coefficient of $t$ exceeds $16$ in
-          magnitude is at most $2^{-155 + 16} = 2^{-139}$ &mdash;
-          comfortably below $2^{-128}$. Setting $K = 15$ instead
-          would give a per-coefficient bound of only $\approx
-          2^{-99}$, blowing the budget once unioned over $N$
-          coefficients.
-        </p>
-        <p>
-          So we'll take $K = 16$: the mod-eval polynomial needs
-          to approximate $x \bmod 1$ accurately on $[-16, 16]$.
-        </p>
-
-        <div class="exercise-body">
-          <b>Exercise:</b> verify the Irwin&ndash;Hall tail
-          estimate above, either by computing the tail directly
-          from the piecewise-polynomial PDF or by Monte Carlo
-          simulation.
-        </div>
-
         <h3 id="how-accurate-the-approximation-needs-to-be">How accurate the approximation needs to be</h3>
 
         <p>
@@ -621,12 +334,12 @@
         <ul>
           <li>
             the size of the interval the approximation must
-            cover, which we set to $[-K, K] = [-16, 16]$ above,
-            and
+            cover, which is $[-16, 16]$ (from the bound on $t$
+            above), and
           </li>
           <li>
             the <em>neighborhood radius</em> $\delta$ around
-            each integer in $[-K, K]$ within which the slot
+            each integer in $[-16, 16]$ within which the slot
             values actually live: by the previous derivation,
             slot values land at distance at most
             $\delta = \max_k |m_k|/q_0$ from the integer
@@ -635,16 +348,16 @@
         </ul>
         <p>
           So the polynomial doesn't need to approximate
-          $x \bmod 1$ everywhere on $[-K, K]$ &mdash; only on
+          $x \bmod 1$ everywhere on $[-16, 16]$ &mdash; only on
           the union of small neighborhoods
         </p>
         $$
-          I \;=\; \bigcup_{k=-K}^{K} \bigl[k - \delta,\, k + \delta\bigr]
+          I \;=\; \bigcup_{k=-16}^{16} \bigl[k - \delta,\, k + \delta\bigr]
         $$
         <p>
           around the integers. This is a much weaker requirement
-          than uniform approximation on $[-K, K]$, and it's what
-          lets a low-degree polynomial do the job. For the
+          than uniform approximation on $[-16, 16]$, and it's
+          what lets a low-degree polynomial do the job. For the
           encryptions we care about, with $\Delta_0 \approx
           2^{40}$ and message magnitudes bounded by $1$, $|m_k|
           \lesssim \Delta_0$, so $\delta \approx \Delta_0/q_0
@@ -684,138 +397,7 @@
 
         <h2 id="slots-to-coefficients">Slots-to-coefficients</h2>
 
-        <p>
-          The last step undoes coefficients-to-slots: it takes
-          the two ciphertexts whose slots hold the rescaled
-          coefficients of $m$ and produces a single ciphertext
-          whose plaintext polynomial <em>is</em> (a scalar
-          multiple of) $m$, encrypted at level $17$.
-        </p>
-
-        <p>
-          The construction mirrors coefficients-to-slots. With
-          $\boxed{\cdot}_1$ and $\boxed{\cdot}_2$ holding the
-          even- and odd-indexed bit-reversed coefficients of
-          $m$, the combined ciphertext
-          $\boxed{\cdot}_1 + i \cdot \boxed{\cdot}_2$ holds, in
-          its slots, the values
-        </p>
-        $$
-          \bigl(m_{\mathrm{rev}(0)} + i\, m_{\mathrm{rev}(1)},\; \;
-                m_{\mathrm{rev}(2)} + i\, m_{\mathrm{rev}(3)},\;\;
-                \ldots,\;\;
-                m_{\mathrm{rev}(N-2)} + i\, m_{\mathrm{rev}(N-1)}\bigr).
-        $$
-        <p>
-          To turn this into a ciphertext whose plaintext
-          polynomial has $(m_0, m_1, \ldots, m_{N-1})$ as
-          coefficients, multiply slot-wise by the inverse of
-          the coefficients-to-slots map:
-        </p>
-        $$
-          L^{-1}
-            \;=\;
-          \begin{pmatrix}
-            1 & \zeta^{\mathrm{rev}(2)} & \zeta^{\mathrm{rev}(4)} & \cdots & \zeta^{\mathrm{rev}(N-2)} \\
-            1 & \zeta^{\mathrm{rev}(2) \cdot 5} & \zeta^{\mathrm{rev}(4) \cdot 5} & \cdots & \zeta^{\mathrm{rev}(N-2) \cdot 5} \\
-            1 & \zeta^{\mathrm{rev}(2) \cdot 25} & \zeta^{\mathrm{rev}(4) \cdot 25} & \cdots & \zeta^{\mathrm{rev}(N-2) \cdot 25} \\
-            \vdots & \vdots & \vdots & \ddots & \vdots \\
-            1 & \zeta^{\mathrm{rev}(2) \cdot 5^{N/2 - 1}} & \zeta^{\mathrm{rev}(4) \cdot 5^{N/2 - 1}} & \cdots & \zeta^{\mathrm{rev}(N-2) \cdot 5^{N/2 - 1}}
-          \end{pmatrix},
-        $$
-        <p>
-          which is (up to a normalization) the inverse of the
-          matrix $L$ from coefficients-to-slots. Applying
-          $L^{-1}$ slot-wise to
-          $\boxed{\cdot}_1 + i \cdot \boxed{\cdot}_2$ produces a
-          ciphertext whose slots are the evaluations of
-          $\sum_j m_j X^j$ at $X = \zeta, \zeta^5, \ldots$, which
-          is precisely the slot representation of the plaintext
-          polynomial $m$.
-        </p>
-
-        <h3 id="sparse-factorization-of-l-inv">Sparse factorization of $L^{-1}$</h3>
-
-        <p>
-          Just like $L$, the inverse matrix $L^{-1}$ admits a
-          factorization into $\log_2(N/2) = 15$ sparse matrices
-          with three nonzero diagonals each. For the toy case
-          $N = 16$, naming the three sparse factors $B_2$,
-          $B_1$, $B_0$ (in order of application, right-to-left),
-        </p>
-        $$
-          L^{-1} \;=\; B_2 \cdot B_1 \cdot B_0,
-        $$
-        <p>where</p>
-        $$
-          B_0 \;=\; \begin{pmatrix}
-            1 & \zeta^4 & & & & & & \\
-            1 & \zeta^{20} & & & & & & \\
-            & & 1 & \zeta^4 & & & & \\
-            & & 1 & \zeta^{20} & & & & \\
-            & & & & 1 & \zeta^4 & & \\
-            & & & & 1 & \zeta^{20} & & \\
-            & & & & & & 1 & \zeta^4 \\
-            & & & & & & 1 & \zeta^{20}
-          \end{pmatrix},
-        $$
-        $$
-          B_1 \;=\; \begin{pmatrix}
-            1 & & \zeta^2 & & & & & \\
-            & 1 & & \zeta^{10} & & & & \\
-            1 & & \zeta^{18} & & & & & \\
-            & 1 & & \zeta^{26} & & & & \\
-            & & & & 1 & & \zeta^2 & \\
-            & & & & & 1 & & \zeta^{10} \\
-            & & & & 1 & & \zeta^{18} & \\
-            & & & & & 1 & & \zeta^{26}
-          \end{pmatrix},
-        $$
-        $$
-          B_2 \;=\; \begin{pmatrix}
-            1 & & & & \zeta & & & \\
-            & 1 & & & & \zeta^5 & & \\
-            & & 1 & & & & \zeta^{25} & \\
-            & & & 1 & & & & \zeta^{29} \\
-            1 & & & & \zeta^{17} & & & \\
-            & 1 & & & & \zeta^{21} & & \\
-            & & 1 & & & & \zeta^9 & \\
-            & & & 1 & & & & \zeta^{13}
-          \end{pmatrix}.
-        $$
-        <p>
-          Multiplying out $B_2 \cdot B_1 \cdot B_0$ recovers
-        </p>
-        $$
-          L^{-1} \;=\; \begin{pmatrix}
-            1 & \zeta^4 & \zeta^2 & \zeta^6 & \zeta & \zeta^5 & \zeta^3 & \zeta^7 \\
-            1 & \zeta^{20} & \zeta^{10} & \zeta^{30} & \zeta^5 & \zeta^{25} & \zeta^{15} & \zeta^3 \\
-            1 & \zeta^4 & \zeta^{18} & \zeta^{22} & \zeta^{25} & \zeta^{29} & \zeta^{11} & \zeta^{15} \\
-            1 & \zeta^{20} & \zeta^{26} & \zeta^{14} & \zeta^{29} & \zeta^{17} & \zeta^{23} & \zeta^{11} \\
-            1 & \zeta^4 & \zeta^2 & \zeta^6 & \zeta^{17} & \zeta^{21} & \zeta^{19} & \zeta^{23} \\
-            1 & \zeta^{20} & \zeta^{10} & \zeta^{30} & \zeta^{21} & \zeta^9 & \zeta^{31} & \zeta^{19} \\
-            1 & \zeta^4 & \zeta^{18} & \zeta^{22} & \zeta^9 & \zeta^{13} & \zeta^{27} & \zeta^{31} \\
-            1 & \zeta^{20} & \zeta^{26} & \zeta^{14} & \zeta^{13} & \zeta & \zeta^7 & \zeta^{27}
-          \end{pmatrix}.
-        $$
-        <p>
-          This is essentially the coefficients-to-slots
-          factorization run in reverse: the diagonal offsets go
-          $1 \to 2 \to 4$ (doubling), instead of $4 \to 2 \to
-          1$ (halving). For $N = 65536$, the full factorization
-          again has $15$ sparse factors, which we combine into
-          $3$ stages and apply via baby-step giant-step.
-        </p>
-
-        <p>
-          The output of this final step is a level-$17$
-          ciphertext encrypting the original vector
-          $\mathbf{v}$, completing the bootstrap. The level
-          has been refreshed from $0$ all the way back up to
-          $17$, and the ciphertext is ready for $17$ more
-          multiplications before it needs to be bootstrapped
-          again.
-        </p>
+        <p>[TODO]</p>
 
       </article>
       <nav class="post-nav" id="post-nav"></nav>
