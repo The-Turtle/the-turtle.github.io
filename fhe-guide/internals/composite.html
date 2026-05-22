@@ -29,7 +29,7 @@
           <li><b>efficiency:</b> a fused implementation can be more efficient than the naive composition.</li>
         </ul>
 
-        <h2>$k$-ary product</h2>
+        <h2 id="k-ary-product">$k$-ary product</h2>
         <p>
           The $k$-ary product operation multiplies $k$
           ciphertexts together with optimal depth. The
@@ -47,7 +47,7 @@
           at most one level drop in the entire process.
         </div>
 
-        <h2>Dot product</h2>
+        <h2 id="dot-product">Dot product</h2>
         <p>
           The dot product operation evaluates the pointwise dot
           product of two lists, where each list element is either
@@ -130,7 +130,7 @@
           carefully combining level drops.
         </div>
 
-        <h2>Matrix multiplication</h2>
+        <h2 id="matrix-multiplication">Matrix multiplication</h2>
         <p>
           The matrix multiplication operation takes a plaintext
           $32768 \times 32768$ matrix $M$ and a level-$\ell$
@@ -173,18 +173,17 @@
           an encryption of $M\mathbf{v}$.
         </div>
 
-        <h3>Baby-step giant-step</h3>
+        <h3 id="baby-step-giant-step">Baby-step giant-step</h3>
         <p>
           The <em>baby-step giant-step</em> algorithm reduces
-          the rotation count by factoring each rotation. Choose
-          sets $B, G \subseteq \{0, 1, \ldots, 32767\}$ such
-          that
-        </p>
-        $$
-          D \subseteq \{\,b + g \bmod 32768 \,:\, b \in B,\, g \in G\,\}
-        $$
-        <p>
-          and $|B \setminus \{0\}| + |G \setminus \{0\}|$ is
+          the rotation count by factoring each rotation. For
+          each $d \in D$, choose a representative pair
+          $(b_d, g_d) \in \{0, 1, \ldots, 32767\}^2$ with
+          $b_d + g_d \equiv d \pmod{32768}$. Let
+          $B = \{b_d : d \in D\}$ and
+          $G = \{g_d : d \in D\}$, and choose the
+          representatives so that
+          $|B \setminus \{0\}| + |G \setminus \{0\}|$ is
           minimal.
         </p>
         <p>
@@ -200,13 +199,13 @@
         </p>
         $$
           \sum_{g \in G} \mathrm{rot}_g\!\left(
-            \sum_{b \in B} \mathrm{Encode}(\sigma^{-g}(\mathbf{m}_{b+g})) \odot \mathrm{rot}_b(\,\boxed{\mathbf{v}}\,)
+            \sum_{\substack{d \in D \\ g_d = g}} \mathrm{Encode}(\sigma^{-g}(\mathbf{m}_d)) \odot \mathrm{rot}_{b_d}(\,\boxed{\mathbf{v}}\,)
           \right).
         $$
         <p>
           The plaintexts
-          $\mathrm{Encode}(\sigma^{-g}(\mathbf{m}_{b+g}))$ can
-          be precomputed. At runtime, the work splits into
+          $\mathrm{Encode}(\sigma^{-g}(\mathbf{m}_d))$ can be
+          precomputed. At runtime, the work splits into
           three stages:
         </p>
         <ul>
@@ -226,12 +225,12 @@
         <div class="exercise-body">
           <b>Exercise:</b> show that any $B, G$ covering $D$
           via the sumset satisfy $|B| + |G| \geq 2\sqrt{|D|}$,
-          and explain why $2\lceil\sqrt{|D|}\rceil$ rotations
+          and explain why $\lceil 2\sqrt{|D|}\,\rceil$ rotations
           suffice when the nonzero diagonal indices form an
           arithmetic progression.
         </div>
 
-        <h3>Hoisting</h3>
+        <h3 id="hoisting">Hoisting</h3>
         <p>
           <em>Hoisting</em> is an optimization that shares the
           modulus-raising step of the rotation key-switch
@@ -241,23 +240,23 @@
           hoist many rotations of a ciphertext
           $\boxed{\mathbf{v}}$, let
           $\boxed{\mathbf{v}} = (c_0, c_1)$ and recall from
-          <a href="fundamental.html">Section&nbsp;3.3</a> that
+          <a href="fundamental.html#the-key-switch">Section&nbsp;3.3</a> that
           each rotation key-switch begins by lifting
           $\mathrm{rot}_b(c_1)$ into the extended ring
           $\tilde R_\ell$ via $\lfloor \ell / 3 \rfloor + 1$
           approximate modulus raises:
         </p>
         $$
-          (\mathrm{rot}_b(c_1))^{(i)} \;=\; \underset{Q_i \,\to\, q_0 \cdots q_\ell\, p_0 p_1 p_2}{\mathrm{modraise}_{\mathrm{approx}}}\!\bigl(\mathrm{rot}_b(c_1) \bmod Q_i\bigr).
+          (\tau_{5^b}(c_1))^{(i)} \;=\; \underset{Q_i \,\to\, q_0 \cdots q_\ell\, p_0 p_1 p_2}{\mathrm{modraise}_{\mathrm{approx}}}\!\bigl(\tau_{5^b}(c_1) \bmod Q_i\bigr).
         $$
         <p>
-          Because $\mathrm{rot}_b$ acts on polynomial
+          Because $\tau_{5^b}$ acts on polynomial
           coefficients by permuting them and flipping some
           signs, it commutes with both modular reduction
           and approximate modulus raising, giving
         </p>
         $$
-          (\mathrm{rot}_b(c_1))^{(i)} \;=\; \mathrm{rot}_b\bigl(c_1^{(i)}\bigr).
+          (\tau_{5^b}(c_1))^{(i)} \;=\; \tau_{5^b}\bigl(c_1^{(i)}\bigr).
         $$
         <p>
           So the lifts
@@ -265,16 +264,16 @@
           can be computed once on $c_1$, and for each
           $b \in B \setminus \{0\}$ the per-rotation lifts can
           be obtained by applying the cheap permutation
-          $\mathrm{rot}_b$. This reduces the baby-step
+          $\tau_{5^b}$. This reduces the baby-step
           modulus-raising work from $|B \setminus \{0\}|$
           batches of lifts to one lift.
         </p>
         <div class="exercise-body">
-          <b>Exercise:</b> check that $\mathrm{rot}_b$ commutes
+          <b>Exercise:</b> check that $\tau_{5^b}$ commutes
           with approximate modulus raising.
         </div>
 
-        <h3>Double hoisting</h3>
+        <h3 id="double-hoisting">Double hoisting</h3>
         <p>
           <em>Double hoisting</em> is an optimization that
           shares the rescaling step of the rotation key-switch
@@ -291,7 +290,7 @@
           $(\tilde k_0^{(g)}, \tilde k_1^{(g)}) \in \tilde R_\ell \times \tilde R_\ell$
           denote the unrescaled output of the $g$th rotation
           key-switch and recall from
-          <a href="fundamental.html">Section&nbsp;3.3</a> that
+          <a href="fundamental.html#the-key-switch">Section&nbsp;3.3</a> that
           the rescaled outputs are
         </p>
         $$
@@ -317,7 +316,7 @@
           $2\,|G \setminus \{0\}|$ rescales to two rescales.
         </p>
 
-        <h3>Optimizing key count</h3>
+        <h3 id="optimizing-key-count">Optimizing key count</h3>
         <p>
           Rotation keys take up a lot of space, so reducing
           the number of distinct rotation amounts used by
@@ -386,7 +385,7 @@
           $\mathbb{Z}/32768\mathbb{Z}$.
         </div>
 
-        <h2>Polynomial evaluation</h2>
+        <h2 id="polynomial-evaluation">Polynomial evaluation</h2>
         <p>
           Because CKKS's fundamental operations are limited
           to addition, subtraction, multiplication, and
@@ -412,7 +411,7 @@
           Chebyshev-like basis.
         </p>
 
-        <h3>Low-degree evaluation</h3>
+        <h3 id="low-degree-evaluation">Low-degree evaluation</h3>
         <p>
           For low-degree evaluation, write the polynomial as
           $p(x) = \sum_{i=0}^{d} c_i\, x^i$. One way to
@@ -450,14 +449,18 @@
           single ciphertext&ndash;ciphertext dot product
           sharing one key-switch. The total key-switch count
           is therefore
-          $s + \lfloor d/s \rfloor - 1 \approx 2\sqrt{d}$,
+          $s + \lfloor d/s \rfloor - 1 \approx \tfrac{3}{2}\sqrt{2d}$
+          (the constant degrades from the ideal $2\sqrt{d}$
+          because $s$ must be a power of two and so deviates
+          from $\sqrt{d+1}$ by up to a factor of $\sqrt{2}$),
           much better than the $d - 1$ key-switches of the
           naive approach.
         </p>
         <div class="exercise-body">
-          <b>Exercise:</b> verify that
-          $s \approx \sqrt{d+1}$ minimizes this key-switch
-          count.
+          <b>Exercise:</b> verify that with $s$ constrained to
+          a power of two, the choice of $s$ closest to
+          $\sqrt{d+1}$ minimizes this key-switch count, giving
+          the $\tfrac{3}{2}\sqrt{2d}$ bound above.
         </div>
         <p>
           However, this is still not depth-optimal: the
@@ -467,8 +470,8 @@
           depth to $\lceil \log_2 d \rceil + 1$. To save the
           last level, replace the flat block sum with a
           recursive partition. Let $L$ be the smallest power
-          of two greater than $d$, and extend the giant
-          steps to $x^s, x^{2s}, \ldots, x^{L/2}$. Then
+          of two greater than $d$, and compute the giant
+          steps $x^s, x^{2s}, \ldots, x^{L/2}$. Then
           define a recursive evaluator
           $\mathrm{eval}(a, b)$ that returns the partial sum
           $\sum_{i \in [a, b)} c_i\, x^{i - a}$ by:
@@ -496,7 +499,7 @@
           unfolds as
         </p>
         <ul>
-          <li>$\mathrm{eval}(0, 16)$, $m = 8$: lower half $(c_0 + c_1 x + c_2 x^2 + c_3 x^3) + (c_4 + c_5 x + c_6 x^2 + c_7 x^3)\, x^4$; recurse on $[8, 16)$ and multiply by $x^8$.</li>
+          <li>$\mathrm{eval}(0, 16)$, $m = 8$: lower half $c_0 + c_1 x + c_2 x^2 + c_3 x^3 + (c_4 + c_5 x + c_6 x^2 + c_7 x^3)\, x^4$; recurse on $[8, 16)$ and multiply by $x^8$.</li>
           <li>$\mathrm{eval}(8, 16)$, $m = 12$: lower half $c_8 + c_9 x + c_{10} x^2 + c_{11} x^3$; recurse on $[12, 16)$ and multiply by $x^4$.</li>
           <li>$\mathrm{eval}(12, 16)$, $m = 14$: lower half $c_{12} + c_{13} x$ (here $m - a = 2 < s$, so the giant step $x^2$ is a baby step); recurse on $[14, 16)$ and multiply by $x^2$.</li>
           <li>$\mathrm{eval}(14, 16)$: base case, returns $c_{14} + c_{15} x$.</li>
@@ -504,7 +507,7 @@
         <p>Combining gives the expansion</p>
         $$
           \begin{aligned}
-            p(x) =\;& (c_0 + c_1 x + c_2 x^2 + c_3 x^3) \\
+            p(x) =\;& c_0 + c_1 x + c_2 x^2 + c_3 x^3 \\
                     &+ (c_4 + c_5 x + c_6 x^2 + c_7 x^3)\, x^4 \\
                     &+ \bigl[(c_8 + c_9 x + c_{10} x^2 + c_{11} x^3)
                             + \bigl(c_{12} + c_{13} x + (c_{14} + c_{15} x)\, x^2\bigr)\, x^4\bigr]\, x^8.
@@ -515,24 +518,32 @@
           depth $\lceil \log_2(d+1) \rceil$.
         </div>
         <div class="exercise-body">
-          <b>Exercise:</b> verify that the optimal block
-          size for the depth-aware version is
-          $s \approx \sqrt{L/2}$, and that the total
-          key-switch count at this optimum is at most
+          <b>Exercise:</b> verify that with $s$ a power of
+          two, the optimal block size for the depth-aware
+          version is $s \approx \sqrt{L/2}$, and that the
+          total key-switch count at this optimum is at most
           $\sqrt{2d} + \log_2 d$.
         </div>
+        <div class="exercise-body">
+          <b>Exercise:</b> the depth-aware analysis above
+          assumes $d = 2^k - 1$ for some $k$ (so that
+          $L = d + 1$). Optimize the algorithm further for
+          $d$ not of this form, where $L$ may be much larger
+          than $d + 1$.
+        </div>
 
-        <h3>High-degree evaluation</h3>
+        <h3 id="high-degree-evaluation">High-degree evaluation</h3>
         <p>
-          For large $d$, monomial evaluation fails: the
-          coefficients $c_n$ become very small while the
-          basis values $x^n$ become very large, so the
-          intermediate $c_n x^n$ products cannot be computed
-          within CKKS's $\sim 2^{-40}$ precision. The fix is
-          to switch to a well-conditioned basis.
+          For large $d$, monomial evaluation is numerically
+          unstable: one of $c_n$ and $x^n$ can be very large
+          while the other is very small, so the intermediate
+          $c_n x^n$ products cannot be computed within CKKS's
+          $\sim 2^{-40}$ precision. The fix is to switch to a
+          well-conditioned basis.
         </p>
         <p>
-          The <em>Chebyshev basis</em> on $[-2, 2]$ is the
+          The <em>Chebyshev basis of the first kind</em> on
+          $[-2, 2]$ is the
           sequence $\{\tilde T_n\}_{n \ge 0}$ given by
         </p>
         $$
@@ -567,14 +578,14 @@
               $x = 2\cos\theta$ gives
               $\tilde T_n(2\cos\theta) = 2\cos(n\theta)$, so
               $|\tilde T_n(x)| \le 2$ on $[-2, 2]$;</li>
-          <li>the coefficients are bounded: the
-              orthogonality relation gives
+          <li>the coefficients are bounded: for nonzero $n$,
+              the orthogonality relation gives
               $$
                 |c_n| = \left|\frac{1}{2\pi} \int_{-2}^{2}
                   \frac{p(x)\, \tilde T_n(x)}{\sqrt{4 - x^2}}\, dx\right|
                 \le \frac{1}{2\pi} \int_{-2}^{2}
-                  \frac{2\,\|p\|_\infty}{\sqrt{4 - x^2}}\, dx
-                = \|p\|_\infty.
+                  \frac{2\,\max_{x \in [-2, 2]} |p(x)|}{\sqrt{4 - x^2}}\, dx
+                = \max_{x \in [-2, 2]} |p(x)|.
               $$</li>
         </ul>
         <p>
@@ -615,7 +626,7 @@
         </p>
         $$
           \begin{aligned}
-            p(x) =\;& (\gamma_0 + \gamma_1 \tilde T_1 + \gamma_2 \tilde T_2 + \gamma_3 \tilde T_3) \\
+            p(x) =\;& \gamma_0 + \gamma_1 \tilde T_1 + \gamma_2 \tilde T_2 + \gamma_3 \tilde T_3 \\
                     &+ (\gamma_4 + \gamma_5 \tilde T_1 + \gamma_6 \tilde T_2 + \gamma_7 \tilde T_3)\, \tilde T_4 \\
                     &+ \bigl[(\gamma_8 + \gamma_9 \tilde T_1 + \gamma_{10} \tilde T_2 + \gamma_{11} \tilde T_3)
                             + \bigl(\gamma_{12} + \gamma_{13} \tilde T_1 + (\gamma_{14} + \gamma_{15} \tilde T_1)\, \tilde T_2\bigr)\, \tilde T_4\bigr]\, \tilde T_8,
@@ -665,7 +676,7 @@
           $\tilde T_n$ on $[-2, 2]$?
         </div>
 
-        <h3>Per-slot evaluation</h3>
+        <h3 id="per-slot-evaluation">Per-slot evaluation</h3>
         <p>
           The coefficients $c_i$ in either algorithm above
           can be plaintext vectors with different values in

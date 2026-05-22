@@ -38,7 +38,7 @@
           Three of these operations &mdash; ciphertext&ndash;ciphertext
           multiplication, conjugation, and rotation &mdash; each
           require a new public key generated alongside the key set
-          from <a href="encryption.html">Section&nbsp;3.2</a>. These
+          from <a href="encryption.html#key-generation">Section&nbsp;3.2</a>. These
           are the <em>relinearization key</em>, <em>conjugation
           key</em>, and <em>rotation keys</em>, introduced in their
           respective subsections below. In this section and future
@@ -47,7 +47,7 @@
           instead of $s(X), a(X), b(X), c_0(X), c_1(X), m(X)$.
         </p>
 
-        <h2>Dropping levels</h2>
+        <h2 id="dropping-levels">Dropping levels</h2>
         <p>
           A <em>level drop</em> converts a level-$\ell$ ciphertext
           $(c_0, c_1) \in R_\ell \times R_\ell$
@@ -108,7 +108,7 @@
           $2^{-40}$.
         </div>
 
-        <h2>Addition and subtraction</h2>
+        <h2 id="addition-and-subtraction">Addition and subtraction</h2>
         <p>
           To add or subtract two ciphertexts $(c_0, c_1)$ and
           $(d_0, d_1)$ encrypting vectors
@@ -148,7 +148,7 @@
           encrypts $\mathbf{v} \pm \mathbf{u}$.
         </p>
 
-        <h2>Plaintext&ndash;ciphertext multiplication</h2>
+        <h2 id="plaintext-ciphertext-multiplication">Plaintext&ndash;ciphertext multiplication</h2>
         <p>
           To multiply a level-$\ell$ ciphertext $(c_0, c_1)$ by a
           plaintext $m$, first re-encode $m$ at level $\ell$ if
@@ -181,7 +181,7 @@
           scaled by at most $|k|$.
         </p>
 
-        <h2>Interlude: key-switching</h2>
+        <h2 id="key-switching">Interlude: key-switching</h2>
         <p>
           The remaining ciphertext operations &mdash;
           multiplication, rotation, and conjugation &mdash; share
@@ -191,10 +191,10 @@
           $p \in R_\ell$ and produce a level-$\ell$ ciphertext
           $(k_0, k_1)$ that decrypts to $p\, s'$. All of the key-switching keys are generated
           at the same time as the secret key and public key from
-          <a href="encryption.html">Section&nbsp;3.2</a>.
+          <a href="encryption.html#key-generation">Section&nbsp;3.2</a>.
         </p>
 
-        <h3>The key-switching key</h3>
+        <h3 id="the-key-switching-key">The key-switching key</h3>
         <p>
           Pick a <em>decomposition parameter</em> $d = 3$ and
           $d$ auxiliary primes $p_0, p_1, p_2 \approx 2^{60}$
@@ -205,22 +205,22 @@
           \tilde{R}_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell\, p_0 p_1 p_2)\mathbb{Z}\bigr)[X]/(X^{65536} + 1).
         $$
         <p>
-          Group the prime chain into $\lceil 16 / d \rceil = 6$
-          consecutive blocks of size at most $d = 3$:
-          $G_0 = \{q_0, q_1, q_2\},\, G_1 = \{q_3, q_4, q_5\},\, \ldots,\, G_4 = \{q_{12}, q_{13}, q_{14}\},\, G_5 = \{q_{15}\}$.
+          Group the prime chain into $\lceil 18 / d \rceil = 6$
+          consecutive blocks of size $d = 3$:
+          $G_0 = \{q_0, q_1, q_2\},\, G_1 = \{q_3, q_4, q_5\},\, \ldots,\, G_5 = \{q_{15}, q_{16}, q_{17}\}$.
           Write $Q_i = \prod_{q \in G_i} q$ for the product of
-          primes in block $G_i$, so $Q_0 = q_0 q_1 q_2,\, Q_1 = q_3 q_4 q_5,\, \ldots,\, Q_4 = q_{12} q_{13} q_{14},\, Q_5 = q_{15}$.
-          For each block, let $u_i \in \mathbb{Z}/(q_0 \cdots q_{15})\mathbb{Z}$
+          primes in block $G_i$, so $Q_0 = q_0 q_1 q_2,\, Q_1 = q_3 q_4 q_5,\, \ldots,\, Q_5 = q_{15} q_{16} q_{17}$.
+          For each block, let $u_i \in \mathbb{Z}/(q_0 \cdots q_{17})\mathbb{Z}$
           be the element that is $1$ modulo each prime in $G_i$
           and $0$ modulo each prime outside $G_i$. The key
           $\mathrm{ksk}_{s'}$
-          <span class="lie" data-truth="during bootstrapping, key-switching is performed at levels higher than 15, where the prime chain is extended and the decomposition needs correspondingly more (a_i, b_i) pairs.">consists</span>
+          <span class="lie" data-truth="during bootstrapping, key-switching is performed at levels higher than 17, where the prime chain is extended and the decomposition needs correspondingly more (a_i, b_i) pairs.">consists</span>
           of $6$ pairs of polynomials
-          $(a_0, b_0), (a_1, b_1), \ldots, (a_5, b_5) \in \tilde{R}_{15} \times \tilde{R}_{15}$,
+          $(a_0, b_0), (a_1, b_1), \ldots, (a_5, b_5) \in \tilde{R}_{17} \times \tilde{R}_{17}$,
           generated as follows:
         </p>
         <ol>
-          <li>Sample each $b_i$ uniformly at random from $\tilde{R}_{15}$.</li>
+          <li>Sample each $b_i$ uniformly at random from $\tilde{R}_{17}$.</li>
           <li>
             Sample error polynomials $e_0, \ldots, e_5 \in R_\infty$
             with coefficients drawn independently from a discrete
@@ -236,7 +236,7 @@
           $p_0 p_1 p_2\, s'\, u_i$.
         </p>
 
-        <h3>The key-switch</h3>
+        <h3 id="the-key-switch">The key-switch</h3>
         <p>
           Given the key $\mathrm{ksk}_{s'}$ and an input
           polynomial $p \in R_\ell$, the key-switch produces a
@@ -301,7 +301,7 @@
           should always be at least $2^{40 d}$; explain why.
         </div>
 
-        <h2>Ciphertext&ndash;ciphertext multiplication</h2>
+        <h2 id="ciphertext-ciphertext-multiplication">Ciphertext&ndash;ciphertext multiplication</h2>
         <p>
           To multiply two ciphertexts $(c_0, c_1)$ and $(d_0, d_1)$
           encrypting plaintext polynomials $m$ and $n$, first
@@ -371,48 +371,49 @@
           $\ell - 1$.
         </p>
 
-        <h2>Rotation</h2>
+        <h2 id="rotation">Rotation</h2>
         <p>
           To rotate a ciphertext $(c_0, c_1)$ encrypting a
           plaintext polynomial $m \in R_\ell$ by
           $i \in \{1, 2, \ldots, 32767\}$ slots, it suffices to
-          obtain a ciphertext encrypting $\sigma^i(m)$, where
-          $\sigma: R_\ell \to R_\ell$ is the automorphism mapping
-          $X \mapsto X^5$.
+          obtain a ciphertext encrypting $\tau_{5^i}(m)$, where
+          $\tau_j: R_\ell \to R_\ell$ is the automorphism
+          $X \mapsto X^j$ from
+          <a href="polynomials.html#automorphism">Section&nbsp;3.1</a>.
         </p>
         <div class="exercise-body">
           <b>Exercise:</b> show that if $m$ encodes the vector
           $(v_0, v_1, \ldots, v_{32767}) \in \mathbb{C}^{32768}$,
-          then $\sigma^i(m)$ encodes the cyclic shift
+          then $\tau_{5^i}(m)$ encodes the cyclic shift
           $(v_i, v_{i+1}, \ldots, v_{32767}, v_0, v_1, \ldots, v_{i-1})$.
         </div>
         <p>
-          Define $c_0' = \sigma^i(c_0)$ and
-          $c_1' = \sigma^i(c_1)$. Given the secret key $s$, a
-          decryptor could recover $\sigma^i(m)$ from the pair
+          Define $c_0' = \tau_{5^i}(c_0)$ and
+          $c_1' = \tau_{5^i}(c_1)$. Given the secret key $s$, a
+          decryptor could recover $\tau_{5^i}(m)$ from the pair
           $(c_0', c_1')$ by computing
         </p>
         $$
-          c_0' + c_1'\, \sigma^i(s) = \sigma^i(c_0 + c_1\, s) \approx \sigma^i(m).
+          c_0' + c_1'\, \tau_{5^i}(s) = \tau_{5^i}(c_0 + c_1\, s) \approx \tau_{5^i}(m).
         $$
         <p>
           However, the pair $(c_0', c_1')$ isn't a standard
           ciphertext under $s$. To turn it into one, the key idea
-          is to fold the $c_1'\, \sigma^i(s)$ term into $c_0'$
+          is to fold the $c_1'\, \tau_{5^i}(s)$ term into $c_0'$
           using the key-switching key
-          $\mathrm{rot}_i = \mathrm{ksk}_{\sigma^i(s)}$; this key
-          is called a <em>rotation key</em>.
+          $\mathrm{rot}_i = \mathrm{ksk}_{\tau_{5^i}(s)}$; this
+          key is called a <em>rotation key</em>.
         </p>
         <p>
           Applying the key-switch to $c_1'$ with $\mathrm{rot}_i$
           yields a level-$\ell$ encryption $(k_0, k_1)$ of
-          $c_1'\, \sigma^i(s)$, and the ciphertext
+          $c_1'\, \tau_{5^i}(s)$, and the ciphertext
         </p>
         $$
           c_0'' = c_0' + k_0, \qquad c_1'' = k_1
         $$
         <p>
-          encrypts $\sigma^i(m)$.
+          encrypts $\tau_{5^i}(m)$.
         </p>
         <p>
           <b>Remark:</b> storing $\mathrm{rot}_i$ for every
@@ -426,21 +427,24 @@
           one rotation key takes up, in megabytes.
         </div>
 
-        <h2>Conjugation</h2>
+        <h2 id="conjugation">Conjugation</h2>
         <p>
           Pointwise conjugation follows the same pattern as
-          rotation, but with the automorphism
-          $\tau: R_\ell \to R_\ell$ mapping $X \mapsto X^{-1}$.
-          The corresponding key-switching key
-          $\mathrm{conj} = \mathrm{ksk}_{\tau(s)}$ is called the
-          <em>conjugation key</em>, and applying it to $\tau(c_1)$
-          yields $(k_0, k_1)$ such that the ciphertext
-          $\bigl(\tau(c_0) + k_0,\; k_1\bigr)$ encrypts $\tau(m)$.
+          rotation, but with the automorphism $\tau_{-1}$ from
+          <a href="polynomials.html#automorphism">Section&nbsp;3.1</a>,
+          mapping $X \mapsto X^{-1}$. The corresponding
+          key-switching key
+          $\mathrm{conj} = \mathrm{ksk}_{\tau_{-1}(s)}$ is
+          called the <em>conjugation key</em>, and applying it
+          to $\tau_{-1}(c_1)$ yields $(k_0, k_1)$ such that the
+          ciphertext
+          $\bigl(\tau_{-1}(c_0) + k_0,\; k_1\bigr)$ encrypts
+          $\tau_{-1}(m)$.
         </p>
         <div class="exercise-body">
           <b>Exercise:</b> show that if $m$ encodes the vector
-          $\mathbf{v} \in \mathbb{C}^{32768}$, then $\tau(m)$
-          encodes its pointwise complex conjugate
+          $\mathbf{v} \in \mathbb{C}^{32768}$, then
+          $\tau_{-1}(m)$ encodes its pointwise complex conjugate
           $\overline{\mathbf{v}}$.
         </div>
 

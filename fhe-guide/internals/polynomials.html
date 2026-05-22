@@ -23,10 +23,10 @@
         <p>
           To start, let $N = 2^{16} = 65536$ be the ring
           dimension, and fix a chain of distinct primes
-          $q_0, q_1, \ldots, q_{15}$, all congruent to $1$
+          $q_0, q_1, \ldots, q_{17}$, all congruent to $1$
           modulo $2^{17} = 131072$, with $q_0 \approx 2^{55}$
           and
-          $q_1 \approx q_2 \approx \cdots \approx q_{15} \approx 2^{40}$.
+          $q_1 \approx q_2 \approx \cdots \approx q_{17} \approx 2^{40}$.
           The rings we care about are
         </p>
         $$
@@ -35,13 +35,13 @@
         $$
         <p>
           so $R_\ell$ is the polynomial ring at
-          <span class="lie" data-truth="during bootstrapping, the level can exceed 15 inside the implementation, but this isn't visible to users."><em>level</em></span>
-          $\ell \in \{0, 1, \ldots, 15\}$, and $R_\infty$ is the
+          <span class="lie" data-truth="during bootstrapping, the level can exceed 17 inside the implementation, but this isn't visible to users."><em>level</em></span>
+          $\ell \in \{0, 1, \ldots, 17\}$, and $R_\infty$ is the
           underlying integer-coefficient ring.
         </p>
         <p>
           Everything in CKKS is built on top of polynomials in
-          $R_\ell$ for $\ell \in \{0, 1, \ldots, 15\}$
+          $R_\ell$ for $\ell \in \{0, 1, \ldots, 17\}$
           (polynomials in $R_\infty$ are stored in the
           highest-level ring). Each such polynomial has two
           representations: coefficient form and evaluation form.
@@ -140,7 +140,7 @@
           </li>
         </ul>
 
-        <h2>Representing integers</h2>
+        <h2 id="representing-integers">Representing integers</h2>
         <p>
           Before describing the two representations of
           polynomials in $R_\ell$, we first need to describe how
@@ -180,7 +180,7 @@
           </li>
         </ul>
 
-        <h2>Representing polynomials</h2>
+        <h2 id="representing-polynomials">Representing polynomials</h2>
         <p>
           A polynomial in $R_\ell$ has two equivalent
           representations: <em>coefficient form</em> and
@@ -191,7 +191,7 @@
           <em>mean</em>.
         </p>
 
-        <h3>Coefficient form</h3>
+        <h3 id="coefficient-form">Coefficient form</h3>
         <p>
           Lift $p(X) \in R_\ell$ to its unique representative
           $c_0 + c_1 X + \cdots + c_{65535} X^{65535}$ in
@@ -207,15 +207,15 @@
           representative is unique.
         </div>
 
-        <h3>Evaluation form</h3>
+        <h3 id="evaluation-form">Evaluation form</h3>
         <p>
-          Let $\zeta \in \mathbb{Z}/(q_0 \cdots q_{15})\mathbb{Z}$
+          Let $\zeta \in \mathbb{Z}/(q_0 \cdots q_{17})\mathbb{Z}$
           be a fixed primitive $131072$-th root of unity &mdash;
           that is, a root of $X^{65536} + 1$.
         </p>
         <div class="exercise-body">
           <b>Exercise:</b> show that $X^{65536} + 1$ has a root
-          modulo $q_0 \cdots q_{15}$. (Hint: each $q_i$ is
+          modulo $q_0 \cdots q_{17}$. (Hint: each $q_i$ is
           $1$ modulo $131072$.)
         </div>
         <p>
@@ -250,7 +250,7 @@
           $p(X) \mapsto \bigl(p(\zeta), p(\zeta^3), \ldots, p(\zeta^{131071})\bigr)$.
         </p>
 
-        <h2>Number-theoretic transform</h2>
+        <h2 id="number-theoretic-transform">Number-theoretic transform</h2>
         <p>
           The <em>negacyclic number-theoretic transform</em>
           (NTT) converts a polynomial from coefficient form to
@@ -303,7 +303,7 @@
           transform.
         </div>
 
-        <h2>Addition and subtraction</h2>
+        <h2 id="addition-and-subtraction">Addition and subtraction</h2>
         <p>
           Adding or subtracting two polynomials in $R_\ell$ is
           componentwise, provided both inputs are in the same
@@ -320,7 +320,7 @@
           the input polynomials.
         </p>
 
-        <h2>Scalar multiplication</h2>
+        <h2 id="scalar-multiplication">Scalar multiplication</h2>
         <p>
           Multiplying a polynomial $p(X) \in R_\ell$ by a scalar
           $k \in \mathbb{Z}$ is componentwise multiplication by
@@ -328,7 +328,7 @@
           $(a_0, \ldots, a_{65535}) \mapsto (k\, a_0, \ldots, k\, a_{65535})$.
         </p>
 
-        <h2>Polynomial multiplication</h2>
+        <h2 id="polynomial-multiplication">Polynomial multiplication</h2>
         <p>
           Multiplying two polynomials $a(X), b(X)$ in $R_\ell$
           requires both inputs to be in evaluation form. Because
@@ -341,7 +341,7 @@
           converted to evaluation form via NTT first.
         </p>
 
-        <h2>Automorphism</h2>
+        <h2 id="automorphism">Automorphism</h2>
         <p>
           Given an odd integer $i$, the
           <em>automorphism map</em> is the map
@@ -379,7 +379,7 @@
           $\bigl(i(2j+1) \bmod 131072 - 1\bigr)/2$.
         </p>
 
-        <h2>Modulus reduction</h2>
+        <h2 id="modulus-reduction">Modulus reduction</h2>
         <p>
           Given a target level $\ell' < \ell$, the
           <em>modulus reduction</em> operation is the natural
@@ -399,7 +399,7 @@
           coefficient and evaluation form.
         </p>
 
-        <h2>Modulus raising</h2>
+        <h2 id="modulus-raising">Modulus raising</h2>
         <p>
           Given a target level $\ell' > \ell$, the
           <em>modulus raising</em> operation
@@ -476,7 +476,7 @@
           $(r_0, \ldots, r_\ell)$.
         </p>
 
-        <h3>Approximate modulus raising</h3>
+        <h3 id="approximate-modulus-raising">Approximate modulus raising</h3>
         <p>
           In applications where the lifted coefficients need to
           be small but do not need to lie exactly in the range
@@ -494,7 +494,7 @@
           at most $\lfloor(\ell + 1)/2\rfloor\, q_0 \cdots q_\ell$.
         </p>
 
-        <h2>Approximate rescaling</h2>
+        <h2 id="approximate-rescaling">Approximate rescaling</h2>
         <p>
           Given a target level $\ell' < \ell$, the
           <em>rescaling</em> operation

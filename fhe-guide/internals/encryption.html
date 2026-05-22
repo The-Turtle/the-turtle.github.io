@@ -30,15 +30,15 @@
         <p>
           As a reminder from <a href="polynomials.html">Section&nbsp;3.1</a>,
           we've fixed a ring dimension of $65536$, a chain of
-          primes $q_0, q_1, \ldots, q_{15}$ with
+          primes $q_0, q_1, \ldots, q_{17}$ with
           $q_0 \approx 2^{55}$ and
-          $q_1 \approx \cdots \approx q_{15} \approx 2^{40}$, and
+          $q_1 \approx \cdots \approx q_{17} \approx 2^{40}$, and
           the polynomial rings
           $R_\ell = \bigl(\mathbb{Z}/(q_0 \cdots q_\ell)\mathbb{Z}\bigr)[X]/(X^{65536} + 1)$
           and $R_\infty = \mathbb{Z}[X]/(X^{65536} + 1)$.
         </p>
 
-        <h2>Encoding vectors</h2>
+        <h2 id="encoding-vectors">Encoding vectors</h2>
 
         <p>
           The <em>encoding</em> step converts a plaintext vector
@@ -46,15 +46,15 @@
           in $R_\ell$, since encryption operates on polynomials,
           not vectors. Plaintext polynomials carry two pieces of
           metadata: a <em>level</em>
-          $\ell \in \{0, 1, \ldots, 15\}$ and a <em>scale
+          $\ell \in \{0, 1, \ldots, 17\}$ and a <em>scale
           factor</em> $\Delta_\ell$ that depends on the level
           but is always very close to $2^{40}$. The scale factor
           is determined by the recurrence
         </p>
         $$
-          \Delta_{15} = 2^{40}, \qquad
+          \Delta_{17} = 2^{40}, \qquad
           \Delta_{\ell - 1} = \frac{\Delta_\ell^{\,2}}{q_\ell}
-          \quad\text{for } \ell \in \{1, \ldots, 15\}.
+          \quad\text{for } \ell \in \{1, \ldots, 17\}.
         $$
         <p>
           The polynomial itself is an element $m(X) \in R_\ell$,
@@ -81,8 +81,8 @@
             where $\zeta = e^{2\pi i / 131072}$ is a primitive
             $131072$-th root of unity. (This complex $\zeta$ is
             unrelated to the primitive $131072$-th root of unity
-            in $\mathbb{Z}/(q_0 \cdots q_{15})\mathbb{Z}$ that
-            appears in <a href="polynomials.html">Section&nbsp;3.1</a>.)
+            in $\mathbb{Z}/(q_0 \cdots q_{17})\mathbb{Z}$ that
+            appears in <a href="polynomials.html#evaluation-form">Section&nbsp;3.1</a>.)
             <div class="exercise-body">
               <b>Exercise:</b> convince yourself such a $P$
               exists and is unique. (You'll need the fact that
@@ -151,30 +151,33 @@
           </li>
         </ol>
 
-        <h2>Key generation</h2>
+        <h2 id="key-generation">Key generation</h2>
 
         <p>
           Before encrypting anything, we need to generate a key
-          set, which consists of a secret key and
+          set, which consists of
+          <span class="lie" data-truth="a second, sparse, ephemeral secret key is also generated during key generation and immediately discarded, leaving behind only two key-switching keys that convert between the two secrets. The sparse secret is used internally during bootstrapping to control the size of the wrap-around error after the mod-raise step.">a secret key</span>
+          and
           <span class="lie" data-truth="there are several other keys &mdash; an evaluation key for ciphertext-ciphertext multiplication, rotation keys for cyclically shifting vector entries, and others. They're introduced later.">a public key</span>.
         </p>
         <p>
           The <em>secret key</em> is a polynomial
           $s(X) \in R_\infty$ with coefficients in
           $\{-1, 0, 1\}$. It is chosen uniformly at random from
-          the set of all such polynomials with exactly $96$
-          coefficients equal to $+1$ and exactly $96$ equal to
-          $-1$ (the remaining $65344$ coefficients are zero).
-          Such a key is called a <em>sparse secret key</em>
-          with <em>Hamming weight</em> $192$.
+          the set of all such polynomials with exactly $512$
+          coefficients equal to $+1$ and exactly $512$ equal to
+          $-1$ (the remaining $64512$ coefficients are zero).
+          The number of nonzero coefficients of $s$ is called
+          its <em>Hamming weight</em>, which for this $s$ is
+          $h = 1024$.
         </p>
         <p>
           The <em>public key</em> is a pair of polynomials
-          $(a(X), b(X)) \in R_{15} \times R_{15}$, generated
+          $(a(X), b(X)) \in R_{17} \times R_{17}$, generated
           from $s(X)$ as follows:
         </p>
         <ol>
-          <li>Sample $b(X)$ uniformly at random from $R_{15}$.</li>
+          <li>Sample $b(X)$ uniformly at random from $R_{17}$.</li>
           <li>
             Sample an <em>error polynomial</em>
             $e(X) \in R_\infty$ whose coefficients are drawn
@@ -186,7 +189,7 @@
           </li>
         </ol>
 
-        <h2>Encrypting plaintext polynomials</h2>
+        <h2 id="encrypting-plaintext-polynomials">Encrypting plaintext polynomials</h2>
 
         <p>
           Ciphertexts, like plaintexts, carry
@@ -240,7 +243,7 @@
           wipes it out.
         </p>
 
-        <h2>The RLWE assumption</h2>
+        <h2 id="rlwe">The RLWE assumption</h2>
 
         <p>
           The security of CKKS rests on a
