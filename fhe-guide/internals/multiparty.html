@@ -14,9 +14,111 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Multiparty key generation</h1>
+
+        <p>
+          Turning CKKS into a multiparty computation only requires
+          changing two pieces of the pipeline: key generation and
+          decryption. Encoding, encryption, the homomorphic
+          operations, and decoding all run unchanged on the joint
+          keys produced by this protocol. The cost is that key
+          generation becomes a three-round ceremony among the $n$
+          parties, and that decryption requires at least $t$ of them
+          to come back together at the end.
+        </p>
+
+        <p>The ceremony runs in three rounds:</p>
+        <ul>
+          <li>
+            <strong>Round 1.</strong> Each party samples a
+            secret-key shard $s_i(X)$ locally. The group secret key
+            is $s(X) = s_1(X) + \cdots + s_n(X)$, but this sum is
+            never actually computed. Each party then
+            publishes shards of the public key, the rotation keys,
+            and the conjugation key derived from its $s_i$; summing
+            the broadcasts yields the joint public key, joint
+            rotation keys, and joint conjugation key. The parties
+            also publish auxiliary information that round 2 will
+            need to produce the relinearization key.
+          </li>
+          <li>
+            <strong>Round 2.</strong> Each party combines its $s_i$
+            with the round-1 broadcasts to produce a shard of the
+            relinearization key; the sum of the shards is the joint
+            relinearization key. To enable $t$-of-$n$ decryption,
+            every pair of parties also exchanges a small piece of
+            information, so that any $t$ of them can reconstruct
+            the missing parties' contributions during decryption.
+          </li>
+          <li>
+            <strong>Round 3.</strong> The parties jointly compute
+            the ephemeral key-switching keys used internally during
+            <a href="bootstrapping.html">bootstrapping</a>. This
+            round is only needed when the computation involves
+            bootstrapping; if it doesn't, the ceremony ends after
+            round 2.
+          </li>
+        </ul>
+
+        <h2 id="round-1">Round 1</h2>
         <p><b>[WORK IN PROGRESS]</b></p>
 
-        <p>Generating a key collaboratively so that no single party holds it, and decrypting the same way at the end of a computation.</p>
+        <h3 id="secret-key-shards">Secret-key shards</h3>
+        <p>
+          How the parties agree on common randomness and sample
+          their secret-key shards $s_i$.
+        </p>
+
+        <h3 id="public-rotation-conjugation-shards">Public, rotation, and conjugation key shards</h3>
+        <p>
+          How each party derives its shards of the joint public key,
+          rotation keys, and conjugation key from $s_i$.
+        </p>
+
+        <h3 id="relin-setup">Relinearization key setup</h3>
+        <p>
+          The auxiliary information broadcast in round 1 that round
+          2 will need to produce the joint relinearization key.
+        </p>
+
+        <h2 id="round-2">Round 2</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+
+        <h3 id="relin-shards">Relinearization key shards</h3>
+        <p>
+          How each party combines its $s_i$ with the round-1
+          broadcasts to produce a relinearization key shard, and how
+          the shards sum to the joint relinearization key.
+        </p>
+
+        <h3 id="pairwise-shares">Pairwise $t$-of-$n$ shares</h3>
+        <p>
+          The Shamir procedure: the information every pair of
+          parties exchanges so that any $t$ of them can later
+          reconstruct the missing parties' contributions at
+          decryption time.
+        </p>
+
+        <h2 id="round-3">Round 3</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          How the parties jointly compute the ephemeral
+          key-switching keys used internally during
+          <a href="bootstrapping.html">bootstrapping</a>. This round
+          is only needed when the computation involves
+          bootstrapping; if it doesn't, the ceremony ends after
+          round 2.
+        </p>
+
+        <h2 id="multiparty-decryption">Multiparty decryption</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          How any $t$ of the $n$ parties combine their partial
+          decryptions to recover the result, why noise flooding is
+          needed to keep partial decryptions from leaking the
+          shards, and how much flooding noise is enough &mdash; with
+          a pointer to <a href="../security/index.html">Part&nbsp;5</a>
+          for the full justification.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>
