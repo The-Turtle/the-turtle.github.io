@@ -44,8 +44,8 @@ const SECTIONS = [
             { slug: 'fundamental',   title: 'Fundamental operations' },
             { slug: 'composite',     title: 'Composite operations' },
             { slug: 'bootstrapping', title: 'Bootstrapping' },
-            { slug: 'optimizations', title: 'Optimizations' },
-            { slug: 'multiparty',    title: 'Multiparty key generation' }
+            { slug: 'multiparty',    title: 'Multiparty key generation' },
+            { slug: 'optimizations', title: 'Optimizations' }
         ]
     },
     {
