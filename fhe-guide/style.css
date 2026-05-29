@@ -297,12 +297,17 @@ main > .post-list li:hover {
    A wiki-style sticky sidebar on the left listing the h2 headings
    of the current page. Built by renderPageToc() in layout.js,
    which scans <main> for h2 elements, auto-assigns ids, and
-   appends this nav. Hidden on narrow viewports where there's no
-   room next to the centered main content. */
+   appends this nav. Hidden only on narrow viewports where there's
+   truly no room next to <main>. On medium viewports we keep it
+   pinned to the left edge and shift <main> right (see below) so
+   the sidebar stays visible as much as possible. */
 .page-toc {
     position: fixed;
     top: 96px;
-    left: calc(50vw - 680px);
+    /* Sit ~40px to the left of a centered <main> on wide screens,
+       but never let the sidebar slide off-screen: clamp to 20px
+       once the viewport gets narrower than ~1400px. */
+    left: max(20px, calc(50vw - 680px));
     width: 240px;
     max-height: calc(100vh - 140px);
     overflow-y: auto;
@@ -345,8 +350,26 @@ main > .post-list li:hover {
     border-left-color: var(--fhe-link);
     text-decoration: none;
 }
-@media (max-width: 1360px) {
+
+/* Once the viewport is narrower than ~1400px the sidebar is
+   pinned to left: 20px (see clamp above), which would overlap
+   a centered 800px <main>. Push <main> to the right on pages
+   that actually have a TOC so the two don't collide. */
+@media (max-width: 1399px) {
+    body:has(.page-toc) main {
+        margin-left: 300px;
+        margin-right: auto;
+    }
+}
+
+/* Below ~1100px there isn't enough room for both the sidebar
+   and a readable <main>, so drop the sidebar and re-center. */
+@media (max-width: 1099px) {
     .page-toc { display: none; }
+    body:has(.page-toc) main {
+        margin-left: auto;
+        margin-right: auto;
+    }
 }
 
 /* --- Pipeline diagram: a vertical stack of stages connected by
