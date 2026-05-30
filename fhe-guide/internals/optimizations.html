@@ -14,9 +14,57 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Optimizations</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
 
-        <p>Factoring the FFT matrix, polynomial evaluation, baby-step giant-step matrix multiplication, sparse secret key encapsulation, 32-bit primes, meta-bootstrapping, all-real slots, seeded random polynomials, Montgomery form.</p>
+        <p>
+          In this section, we will describe three further
+          optimizations to the CKKS scheme.
+        </p>
+        <ul>
+          <li>
+            <strong>All-real slots</strong> roughly doubles
+            throughput when the application doesn't need full
+            complex numbers, packing $65536$ real values into a
+            single plaintext polynomial instead of $32768$ complex
+            ones. This requires changing how polynomials are
+            represented in both coefficient form and slot form.
+          </li>
+          <li>
+            <strong>Meta-bootstrapping</strong> lets bootstrapping
+            retain arbitrarily high precision, at the cost of
+            making each bootstrap slower.
+          </li>
+          <li>
+            <strong>Grafting</strong> speeds up the homomorphic
+            operations themselves by switching the modulus chain
+            to $32$-bit primes &mdash; and including $2^{32}$
+            itself as one of them. This lets the chain use the
+            minimal number of primes for a given computation, and
+            hence the minimal number of RNS residues to track in
+            every operation, saving work.
+          </li>
+        </ul>
+
+        <h2 id="all-real-slots">All-real slots</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          How to store polynomials in the all-real subfield, and
+          how to modify the bootstrapping algorithm to operate on
+          them.
+        </p>
+
+        <h2 id="meta-bootstrapping">Meta-bootstrapping</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Meta-bootstrapping is a way of modifying the bootstrapping
+          algorithm to retain arbitrarily high precision.
+        </p>
+
+        <h2 id="grafting">Grafting</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Switching the modulus chain to 32-bit primes, and
+          including $2^{32}$ itself in the chain alongside them.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>

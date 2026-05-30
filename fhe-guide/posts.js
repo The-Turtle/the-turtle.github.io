@@ -62,7 +62,8 @@ const SECTIONS = [
         title: 'How secure is CKKS?',
         posts: [
             { slug: 'models',  title: 'Security models' },
-            { slug: 'attacks', title: 'Hardness assumptions and attacks' }
+            { slug: 'trust',   title: 'Trust assumptions' },
+            { slug: 'attacks', title: 'Attacks' }
         ]
     },
     {

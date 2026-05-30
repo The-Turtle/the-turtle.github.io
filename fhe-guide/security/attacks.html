@@ -13,10 +13,211 @@
     <main>
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
-        <h1>Hardness assumptions and attacks</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
+        <h1>Attacks</h1>
 
-        <p>RLWE attacks, sparse secret key attacks, the information leaked by ciphertext noise, and what quantum computers might do to all of this.</p>
+        <p>CKKS faces three families of attacks:</p>
+        <ul>
+          <li>
+            against the underlying
+            <a href="../internals/encryption.html#rlwe">RLWE assumption</a>,
+          </li>
+          <li>
+            against the sparse-secret-key encapsulation used
+            during
+            <a href="../internals/bootstrapping.html">bootstrapping</a>, and
+          </li>
+          <li>
+            against the residual noise on decrypted values.
+          </li>
+        </ul>
+        <p>Each family informs different parameters of the deployment:</p>
+        <ul>
+          <li>
+            Given the ring dimension $N$, the hardness of
+            <a href="#rlwe-attacks">RLWE</a> determines an upper
+            bound on the largest modulus the scheme uses,
+            $q_0 q_1 \cdots q_L \cdot p_0 p_1 \cdots p_k$ (where
+            the $p_i$ are the auxiliary primes added during key
+            switching), the standard deviation $\sigma$ of the
+            error distribution added to fresh encryptions, and
+            the Hamming weight of the main secret key.
+          </li>
+          <li>
+            <a href="#sparse-secret-key-attacks">Sparse secret key attacks</a>
+            determine the minimum Hamming weight of the sparse
+            secret used in bootstrapping encapsulation, and hence
+            the degree of the interpolating polynomial in the
+            bootstrap circuit.
+          </li>
+          <li>
+            The analysis of
+            <a href="#information-leakage-from-noise">information leakage from noise</a>
+            determines how much
+            <a href="../internals/multiparty.html#multiparty-decryption">noise flooding</a>
+            must be added to partial decryptions.
+          </li>
+        </ul>
+
+        <h2 id="rlwe-attacks">RLWE attacks</h2>
+        <p>Each attack below targets the following problem.</p>
+        <blockquote>
+          <p>
+            Fix the ring $R = \mathbb{Z}_q[X]/(X^N + 1)$ with
+            $N$ a power of two. An <em>RLWE sample</em> is a pair
+            $(a, b) \in R^2$ of the form $a = b\,s + e$, where
+            $b$ is drawn uniformly at random from $R$, $e$ is an
+            <em>error</em> polynomial with coefficients drawn
+            from a discrete Gaussian of standard deviation
+            $\sigma$, and $s \in R$ is a fixed <em>secret</em>
+            polynomial. Given $m$ independent RLWE samples
+            sharing the same secret $s$, recover $s$.
+          </p>
+        </blockquote>
+        <p>
+          The hardness of the problem depends on the distribution
+          of $s$. Several common choices:
+        </p>
+        <ul>
+          <li>
+            <strong>Fixed Hamming weight.</strong> Uniform over
+            polynomials with exactly $h$ coefficients equal to
+            $\pm 1$ and the rest zero. CKKS uses this distribution
+            for the secret key $s$ in
+            <a href="../internals/encryption.html#key-generation">Section&nbsp;3.2</a>,
+            with $h = 1024$ at $N = 65536$.
+          </li>
+          <li>
+            <strong>Discrete Gaussian.</strong> Coefficients drawn
+            independently from a discrete Gaussian of small
+            standard deviation. CKKS uses this distribution for
+            the encryption mask $v$ in
+            <a href="../internals/encryption.html#encrypting-plaintext-polynomials">Section&nbsp;3.2</a>,
+            whose security argument treats $v$ as the secret of a
+            fresh RLWE sample.
+          </li>
+        </ul>
+        <p>
+          This is the <em>search</em> version of RLWE; the
+          <em>decision</em> version, which asks to distinguish
+          RLWE samples from uniformly random pairs in $R^2$, is
+          the form
+          <a href="../internals/encryption.html#rlwe">Section&nbsp;3.2</a>'s
+          RLWE assumption uses, and the two are equivalent up to
+          polynomial factors.
+        </p>
+
+        <p>
+          For the parameter regime CKKS cares about &mdash;
+          $N = 2^{16}$ and $\sigma = 3.2$ &mdash; this problem is
+          believed to provide $128$-bit security as long as
+          $\log_2 q \le 1721$.
+        </p>
+
+        <p>
+          More generally, the maximum $\log_2 q$ that still
+          yields $128$-bit security at each ring dimension $N$ is
+          approximately:
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>$N$</th>
+              <th>Max $\log_2 q$</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>$2^{10}$</td><td>[TODO]</td></tr>
+            <tr><td>$2^{11}$</td><td>[TODO]</td></tr>
+            <tr><td>$2^{12}$</td><td>[TODO]</td></tr>
+            <tr><td>$2^{13}$</td><td>[TODO]</td></tr>
+            <tr><td>$2^{14}$</td><td>[TODO]</td></tr>
+            <tr><td>$2^{15}$</td><td>[TODO]</td></tr>
+            <tr><td>$2^{16}$</td><td>$1721$</td></tr>
+            <tr><td>$2^{17}$</td><td>[TODO]</td></tr>
+            <tr><td>$2^{18}$</td><td>[TODO]</td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          These bounds are the largest moduli currently considered
+          safe, and they may shrink as new attacks are discovered.
+        </p>
+
+        <h3 id="algebraic-attack">Algebraic attack</h3>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Recovers $s$ by treating the bounded coefficients of
+          each error polynomial $e_i$ as roots of a polynomial of
+          bounded degree, which yields a system of nonlinear
+          polynomial equations in the coefficients of $s$ that can
+          be solved by linearization.
+        </p>
+
+        <h3 id="ramified-prime-attack">Ramified prime attack</h3>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Uses a ring homomorphism to project the RLWE samples
+          into a smaller subfield, where the noise collapses.
+          Only effective for very small $\sigma$, so it does not
+          apply at $\sigma = 3.2$.
+        </p>
+
+        <h3 id="primal-attack">Primal attack</h3>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Embeds the RLWE samples into a single high-dimensional
+          lattice and uses lattice reduction to find the
+          exceptionally short vector that encodes $s$ and the
+          errors.
+        </p>
+
+        <h3 id="dual-attack">Dual attack</h3>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Recovers $s$ by finding short vectors in the dual of
+          the lattice associated with the RLWE samples.
+        </p>
+
+        <h3 id="combinatorial-attack">Combinatorial / BKW attack</h3>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Reduces the dimension of the problem by combining a
+          large number of RLWE samples to cancel out coefficients
+          of $s$. Mostly theoretical at the parameters above,
+          since it requires far more samples than are usually
+          available.
+        </p>
+
+        <h3 id="hybrid-attack">Hybrid attack</h3>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Interpolates between a combinatorial (BKW-style)
+          reduction and a primal or dual lattice-reduction
+          attack.
+        </p>
+
+        <h2 id="sparse-secret-key-attacks">Sparse secret key attacks</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Dedicated attacks against the sparse secret key used by
+          the sparse-secret-key encapsulation in
+          <a href="../internals/bootstrapping.html">bootstrapping</a>,
+          which the dense secret key isn't vulnerable to, and how
+          the parameters keep them out of reach.
+        </p>
+
+        <h2 id="information-leakage-from-noise">Information leakage from noise</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Specific attacks that recover information about the
+          secret key from the residual noise on decrypted values
+          &mdash; the failure mode that
+          <a href="models.html#ind-cpa-d">IND-CPA<sup>D</sup> security</a>
+          models &mdash; and how noise flooding defends against
+          them.
+        </p>
+
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>

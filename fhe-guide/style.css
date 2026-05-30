@@ -80,6 +80,16 @@ main a:hover {
     text-decoration: underline;
 }
 
+/* Keep superscripts and subscripts (e.g. the D in IND-CPA^D)
+   from inflating the line height of their containing line.
+   Without this, a heading or TOC entry that contains a <sup>
+   ends up taller than its siblings. */
+main sup, main sub,
+.page-toc sup, .page-toc sub {
+    line-height: 0;
+    font-size: 0.75em;
+}
+
 /* Code: monospace, dark warm brown text, faint blue tint background. */
 main code,
 main pre {
@@ -113,6 +123,25 @@ main blockquote {
     background: var(--fhe-tint);
     border-top: 1px solid var(--fhe-tint-hov);
     border-bottom: 1px solid var(--fhe-tint-hov);
+}
+
+/* Tables: small, centered, with a tinted header row.
+   The dark theme has no default contrast on browser tables, so we
+   draw explicit borders against the page background. */
+main table {
+    border-collapse: collapse;
+    margin: 16px auto;
+    font-size: 14px;
+}
+main th,
+main td {
+    padding: 6px 14px;
+    border: 1px solid var(--fhe-rule);
+    text-align: left;
+}
+main th {
+    background: var(--fhe-tint);
+    font-weight: 600;
 }
 
 main hr {

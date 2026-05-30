@@ -14,9 +14,106 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Security models</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
 
-        <p>Hardness assumptions, IND-CPA and IND-CPA<sup>D</sup> security, and noise flooding.</p>
+        <p>
+          There are two common security models for CKKS: IND-CPA
+          and IND-CPA<sup>D</sup>. IND-CPA<sup>D</sup> security is
+          stronger than IND-CPA security, and should be used when
+          the decryptions of results are
+          <a href="../introduction/use-cases.html">broadcast publicly</a>
+          or an attacker otherwise has access to many decryptions.
+        </p>
+
+        <h2 id="ind-cpa">IND-CPA</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          The FHE standard is IND-CPA security. In a
+          chosen-plaintext attack, the attacker has access to the
+          public key &mdash; so it can encrypt any plaintext it
+          wants &mdash; but never sees a decryption. The game
+          proceeds as follows:
+        </p>
+        <ol>
+          <li>
+            The challenger generates a public/secret key pair and
+            sends the public key to the attacker.
+          </li>
+          <li>
+            The attacker picks two distinct plaintexts $m_0$ and
+            $m_1$.
+          </li>
+          <li>
+            The challenger picks a random bit $b \in \{0, 1\}$,
+            encrypts $m_b$ under the public key, and sends the
+            ciphertext to the attacker.
+          </li>
+          <li>
+            The attacker outputs a guess $b' \in \{0, 1\}$.
+          </li>
+        </ol>
+        <p>
+          A scheme is IND-CPA secure if no efficient attacker can
+          guess $b$ correctly with probability noticeably better
+          than $1/2$. Naive CKKS is IND-CPA secure, and its
+          security reduces to the
+          <a href="../internals/encryption.html#rlwe">RLWE assumption</a>
+          (see <a href="attacks.html#rlwe-attacks">Section&nbsp;5.3</a>
+          for known attacks).
+        </p>
+
+        <h2 id="ind-cpa-d">IND-CPA<sup>D</sup></h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          In approximate FHE schemes like CKKS, the residual
+          noise left over after decryption can leak information
+          about the secret key. The IND-CPA<sup>D</sup> model
+          captures this by extending IND-CPA with a decryption
+          oracle: the attacker can create ciphertexts, evaluate
+          arithmetic circuits on them, and ask for decryptions of
+          the results. The game proceeds as follows:
+        </p>
+        <ol>
+          <li>
+            The challenger generates a public/secret key pair and
+            sends the public key to the attacker.
+          </li>
+          <li>
+            The attacker picks two distinct plaintexts $m_0$ and
+            $m_1$ and an arithmetic circuit $f$ satisfying
+            $f(m_0) = f(m_1)$.
+          </li>
+          <li>
+            The challenger picks a random bit $b \in \{0, 1\}$,
+            encrypts $m_b$, evaluates $f$ homomorphically on the
+            ciphertext, decrypts the result, and sends the noisy
+            decryption to the attacker.
+          </li>
+          <li>
+            The attacker outputs a guess $b' \in \{0, 1\}$.
+          </li>
+        </ol>
+        <p>
+          A scheme is IND-CPA<sup>D</sup> secure if no efficient
+          attacker can win this game with probability noticeably
+          better than $1/2$. The constraint $f(m_0) = f(m_1)$ is
+          essential: without it, the attacker could trivially
+          distinguish by reading the decrypted plaintext,
+          regardless of the encryption scheme. With it in place,
+          the two underlying plaintexts agree, and the only
+          signal available to the attacker is the noise riding on
+          the decryption.
+        </p>
+        <p>
+          Naive CKKS does not have IND-CPA<sup>D</sup> security,
+          because the residual noise after decryption carries
+          information about the secret key (see
+          <a href="attacks.html#information-leakage-from-noise">Section&nbsp;5.3</a>
+          for specific attacks). To fix it, the secret-key holder
+          must obscure decryptions by adding
+          additional Gaussian noise &mdash; a technique called
+          <em>noise flooding</em>, discussed in
+          <a href="../internals/multiparty.html#multiparty-decryption">Section&nbsp;3.6</a>.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>
