@@ -21,7 +21,11 @@
           <em>Bootstrapping</em>
           is the operation that "refreshes" a level-$0$
           ciphertext, returning a level-$17$ ciphertext
-          encrypting the same vector.
+          encrypting the same vector. The level increase also
+          means that the computation carried out during
+          bootstrapping itself happens at approximately $15$
+          bits more precision than computations normally do
+          (see the <a href="#scale-factor-seam">remark below</a>).
         </p>
 
         <p>
@@ -92,7 +96,7 @@
           coefficients-to-slots, $7$ levels for mod-eval, and
           $3$ levels for slots-to-coefficients.
         </p>
-        <p>
+        <p id="scale-factor-seam">
           <b>Remark.</b> The recurrence holds within each piece
           of the chain &mdash; $\ell \in \{19, \ldots, 30\}$
           and $\ell \in \{1, \ldots, 17\}$ &mdash; but it
@@ -244,6 +248,7 @@
             v^\star_{N/2 - 1}
           \end{pmatrix}
           \;=\;
+          \frac{1}{\Delta_{30}}
           \begin{pmatrix}
             1 & \zeta & \zeta^{2} & \cdots & \zeta^{N-1} \\
             1 & \zeta^{5} & \zeta^{2 \cdot 5} & \cdots & \zeta^{(N-1) \cdot 5} \\
@@ -266,30 +271,93 @@
           Call the $(N/2) \times N$ matrix above $\Sigma$.
         </p>
 
+        <h3 id="motivation">Motivation</h3>
+
         <p>
           We'd like to invert this identity to recover the
           $m^\star_i$ from the $v^\star_j$, but $\Sigma$ isn't
           square. The missing equations come from complex
           conjugation, since the coefficients of $m^\star$ are
-          integers and hence real. Letting $E$ be the inverse
-          of the left $(N/2) \times (N/2)$ half of $\Sigma$
-          and splitting the coefficient vector into
-          $\mathbf{m}^\star_L = (m^\star_0, \ldots, m^\star_{N/2 - 1})$
-          and
-          $\mathbf{m}^\star_H = (m^\star_{N/2}, \ldots, m^\star_{N-1})$,
-          this rearranges as
+          integers and hence real. Letting
         </p>
         $$
-          E\, \mathbf{v}^\star \;=\; \mathbf{m}^\star_L \,+\, i\, \mathbf{m}^\star_H,
+          E \;=\;
+          \begin{pmatrix}
+            1 & \zeta & \zeta^{2} & \cdots & \zeta^{N/2-1} \\
+            1 & \zeta^{5} & \zeta^{2 \cdot 5} & \cdots & \zeta^{(N/2-1) \cdot 5} \\
+            1 & \zeta^{5^2} & \zeta^{2 \cdot 5^2} & \cdots & \zeta^{(N/2-1) \cdot 5^2} \\
+            \vdots & \vdots & \vdots & \ddots & \vdots \\
+            1 & \zeta^{5^{N/2 - 1}} & \zeta^{2 \cdot 5^{N/2 - 1}} & \cdots & \zeta^{(N/2-1) \cdot 5^{N/2 - 1}}
+          \end{pmatrix}
         $$
         <p>
-          so
+          be the left $(N/2) \times (N/2)$ half of $\Sigma$.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> show that the right half of $\Sigma$
+          equals $i$ times $E$.
+        </div>
+        <p>
+          Hence the identity $\Sigma\, \mathbf{m}^\star =
+          \Delta_{30}\, \mathbf{v}^\star$ becomes
         </p>
         $$
-          \mathbf{m}^\star_L \;=\; \mathrm{Re}(E\, \mathbf{v}^\star),
-          \qquad
-          \mathbf{m}^\star_H \;=\; \mathrm{Im}(E\, \mathbf{v}^\star).
+          E\!\left[
+          \begin{pmatrix}
+            m^\star_0 \\
+            \vdots \\
+            m^\star_{N/2 - 1}
+          \end{pmatrix}
+          \,+\, i
+          \begin{pmatrix}
+            m^\star_{N/2} \\
+            \vdots \\
+            m^\star_{N - 1}
+          \end{pmatrix}
+          \right]
+          \;=\; \Delta_{30}\, \mathbf{v}^\star,
         $$
+        <p>
+          and taking real and imaginary parts gives
+        </p>
+        $$
+          \begin{pmatrix}
+            m^\star_0 \\
+            m^\star_1 \\
+            \vdots \\
+            m^\star_{N/2 - 1}
+          \end{pmatrix}
+          \;=\; \Delta_{30}\, \mathrm{Re}(E^{-1}\, \mathbf{v}^\star),
+          \qquad
+          \begin{pmatrix}
+            m^\star_{N/2} \\
+            m^\star_{N/2 + 1} \\
+            \vdots \\
+            m^\star_{N - 1}
+          \end{pmatrix}
+          \;=\; \Delta_{30}\, \mathrm{Im}(E^{-1}\, \mathbf{v}^\star).
+        $$
+        <p>
+          Hence in principle, producing two
+          ciphertexts whose slots together hold all $N$
+          coefficients of $m^\star$ amounts to a single
+          $32768 \times 32768$ homomorphic matrix
+          multiplication by $E^{-1}$, with the real and
+          imaginary parts of the output giving the two
+          ciphertexts. However in practice, a $32768 \times
+          32768$ homomorphic matrix multiplication is
+          prohibitively expensive. The next subsection shows
+          how to factor $E^{-1}$ into a product of three
+          sparser matrices that produces the same two
+          ciphertexts within the three levels budgeted for
+          coefficients-to-slots.
+        </p>
+
+        <h3 id="factoring-the-matrix">Factoring the matrix</h3>
+
+        <p>
+          [TODO]
+        </p>
 
         <h2 id="mod-eval">Mod-eval</h2>
 
