@@ -45,8 +45,8 @@
             <strong>Coefficients-to-slots.</strong> Use
             <span class="lie" data-truth="only one transform is actually evaluated; the other's output is recovered from it via a single conjugation.">a pair</span>
             of homomorphic linear transforms to package the
-            $N = 65536$ coefficients of the (now corrupted)
-            plaintext polynomial into the $N/2 = 32768$ slots
+            $65536$ coefficients of the (now corrupted)
+            plaintext polynomial into the $32768$ slots
             of two ciphertexts.
           </li>
           <li>
@@ -227,7 +227,7 @@
           but the only operation CKKS gives us that acts
           non-linearly on the underlying plaintext is
           <em>slot-wise</em> polynomial evaluation. So we first
-          need to move the $N = 65536$ coefficients of
+          need to move the $65536$ coefficients of
           $m^\star$ into the slots of some ciphertexts.
         </p>
 
@@ -235,8 +235,8 @@
           As is, the level-$30$ ciphertext encrypts some
           (garbage) vector $\mathbf{v}^\star \in \mathbb{C}^{32768}$
           determined by the coefficients
-          $m^\star_0, m^\star_1, \ldots, m^\star_{N-1}$ of
-          $m^\star = \sum_{i=0}^{N-1} m^\star_i\, X^i$ via the
+          $m^\star_0, m^\star_1, \ldots, m^\star_{65535}$ of
+          $m^\star = \sum_{i=0}^{65535} m^\star_i\, X^i$ via the
           slot-decoding matrix identity
         </p>
         $$
@@ -245,30 +245,29 @@
             v^\star_1 \\
             v^\star_2 \\
             \vdots \\
-            v^\star_{N/2 - 1}
+            v^\star_{32767}
           \end{pmatrix}
           \;=\;
           \frac{1}{\Delta_{30}}
           \begin{pmatrix}
-            1 & \zeta & \zeta^{2} & \cdots & \zeta^{N-1} \\
-            1 & \zeta^{5} & \zeta^{2 \cdot 5} & \cdots & \zeta^{(N-1) \cdot 5} \\
-            1 & \zeta^{5^2} & \zeta^{2 \cdot 5^2} & \cdots & \zeta^{(N-1) \cdot 5^2} \\
+            1 & \zeta & \zeta^{2} & \cdots & \zeta^{65535} \\
+            1 & \zeta^{5} & \zeta^{2 \cdot 5} & \cdots & \zeta^{65535 \cdot 5} \\
+            1 & \zeta^{5^2} & \zeta^{2 \cdot 5^2} & \cdots & \zeta^{65535 \cdot 5^2} \\
             \vdots & \vdots & \vdots & \ddots & \vdots \\
-            1 & \zeta^{5^{N/2 - 1}} & \zeta^{2 \cdot 5^{N/2 - 1}} & \cdots & \zeta^{(N-1) \cdot 5^{N/2 - 1}}
+            1 & \zeta^{5^{32767}} & \zeta^{2 \cdot 5^{32767}} & \cdots & \zeta^{65535 \cdot 5^{32767}}
           \end{pmatrix}
           \begin{pmatrix}
             m^\star_0 \\
             m^\star_1 \\
             m^\star_2 \\
             \vdots \\
-            m^\star_{N-1}
+            m^\star_{65535}
           \end{pmatrix},
         $$
         <p>
-          where $\zeta = e^{2\pi i / 2N}$ is the primitive
-          $2N$-th root of unity from
-          <a href="encryption.html#encoding-vectors">Section&nbsp;3.2</a>.
-          Call the $(N/2) \times N$ matrix above $\Sigma$.
+          where $\zeta = e^{2\pi i / 131072}$ is a primitive
+          $131072$-th root of unity. Call the $32768 \times
+          65536$ matrix above $\Sigma$.
         </p>
 
         <h3 id="motivation">Motivation</h3>
@@ -278,41 +277,42 @@
           $m^\star_i$ from the $v^\star_j$, but $\Sigma$ isn't
           square. The missing equations come from complex
           conjugation, since the coefficients of $m^\star$ are
-          integers and hence real. Letting
+          integers and hence real. Let
         </p>
         $$
           E \;=\;
           \begin{pmatrix}
-            1 & \zeta & \zeta^{2} & \cdots & \zeta^{N/2-1} \\
-            1 & \zeta^{5} & \zeta^{2 \cdot 5} & \cdots & \zeta^{(N/2-1) \cdot 5} \\
-            1 & \zeta^{5^2} & \zeta^{2 \cdot 5^2} & \cdots & \zeta^{(N/2-1) \cdot 5^2} \\
+            1 & \zeta & \zeta^{2} & \cdots & \zeta^{32767} \\
+            1 & \zeta^{5} & \zeta^{2 \cdot 5} & \cdots & \zeta^{32767 \cdot 5} \\
+            1 & \zeta^{5^2} & \zeta^{2 \cdot 5^2} & \cdots & \zeta^{32767 \cdot 5^2} \\
             \vdots & \vdots & \vdots & \ddots & \vdots \\
-            1 & \zeta^{5^{N/2 - 1}} & \zeta^{2 \cdot 5^{N/2 - 1}} & \cdots & \zeta^{(N/2-1) \cdot 5^{N/2 - 1}}
+            1 & \zeta^{5^{32767}} & \zeta^{2 \cdot 5^{32767}} & \cdots & \zeta^{32767 \cdot 5^{32767}}
           \end{pmatrix}
         $$
         <p>
-          be the left $(N/2) \times (N/2)$ half of $\Sigma$.
+          be the left $32768 \times 32768$ half of $\Sigma$.
         </p>
         <div class="exercise-body">
           <b>Exercise:</b> show that the right half of $\Sigma$
           equals $i$ times $E$.
         </div>
         <p>
-          Hence the identity $\Sigma\, \mathbf{m}^\star =
-          \Delta_{30}\, \mathbf{v}^\star$ becomes
+          Using the exercise, the identity $\Sigma\,
+          \mathbf{m}^\star = \Delta_{30}\, \mathbf{v}^\star$
+          can be rewritten as
         </p>
         $$
           E\!\left[
           \begin{pmatrix}
             m^\star_0 \\
             \vdots \\
-            m^\star_{N/2 - 1}
+            m^\star_{32767}
           \end{pmatrix}
           \,+\, i
           \begin{pmatrix}
-            m^\star_{N/2} \\
+            m^\star_{32768} \\
             \vdots \\
-            m^\star_{N - 1}
+            m^\star_{65535}
           \end{pmatrix}
           \right]
           \;=\; \Delta_{30}\, \mathbf{v}^\star,
@@ -325,29 +325,32 @@
             m^\star_0 \\
             m^\star_1 \\
             \vdots \\
-            m^\star_{N/2 - 1}
+            m^\star_{32767}
           \end{pmatrix}
-          \;=\; \Delta_{30}\, \mathrm{Re}(E^{-1}\, \mathbf{v}^\star),
-          \qquad
+          \;=\; \Delta_{30}\, \mathrm{Re}(E^{-1}\, \mathbf{v}^\star)
+          \;=\; \frac{\Delta_{30}}{2}\bigl(E^{-1}\, \mathbf{v}^\star \,+\, \overline{E^{-1}\, \mathbf{v}^\star}\bigr),
+        $$
+        $$
           \begin{pmatrix}
-            m^\star_{N/2} \\
-            m^\star_{N/2 + 1} \\
+            m^\star_{32768} \\
+            m^\star_{32769} \\
             \vdots \\
-            m^\star_{N - 1}
+            m^\star_{65535}
           \end{pmatrix}
-          \;=\; \Delta_{30}\, \mathrm{Im}(E^{-1}\, \mathbf{v}^\star).
+          \;=\; \Delta_{30}\, \mathrm{Im}(E^{-1}\, \mathbf{v}^\star)
+          \;=\; \frac{\Delta_{30}}{2i}\bigl(E^{-1}\, \mathbf{v}^\star \,-\, \overline{E^{-1}\, \mathbf{v}^\star}\bigr).
         $$
         <p>
           Hence in principle, producing two
-          ciphertexts whose slots together hold all $N$
+          ciphertexts whose slots together hold all $65536$
           coefficients of $m^\star$ amounts to a single
           $32768 \times 32768$ homomorphic matrix
           multiplication by $E^{-1}$, with the real and
           imaginary parts of the output giving the two
           ciphertexts. However in practice, a $32768 \times
           32768$ homomorphic matrix multiplication is
-          prohibitively expensive. The next subsection shows
-          how to factor $E^{-1}$ into a product of three
+          prohibitively expensive. The next two subsections
+          show how to factor $E^{-1}$ into a product of three
           sparser matrices that produces the same two
           ciphertexts within the three levels budgeted for
           coefficients-to-slots.
@@ -356,7 +359,228 @@
         <h3 id="factoring-the-matrix">Factoring the matrix</h3>
 
         <p>
-          [TODO]
+          $E^{-1}$ doesn't factor sparsely, but miraculously,
+          a column reordering of $E$ does. Define
+        </p>
+        $$
+          \widetilde E \;=\;
+          \begin{pmatrix}
+            1 & \zeta^{\mathrm{rev}_{15}(1)} & \zeta^{\mathrm{rev}_{15}(2)} & \cdots & \zeta^{\mathrm{rev}_{15}(32767)} \\
+            1 & \zeta^{\mathrm{rev}_{15}(1) \cdot 5} & \zeta^{\mathrm{rev}_{15}(2) \cdot 5} & \cdots & \zeta^{\mathrm{rev}_{15}(32767) \cdot 5} \\
+            1 & \zeta^{\mathrm{rev}_{15}(1) \cdot 5^2} & \zeta^{\mathrm{rev}_{15}(2) \cdot 5^2} & \cdots & \zeta^{\mathrm{rev}_{15}(32767) \cdot 5^2} \\
+            \vdots & \vdots & \vdots & \ddots & \vdots \\
+            1 & \zeta^{\mathrm{rev}_{15}(1) \cdot 5^{32767}} & \zeta^{\mathrm{rev}_{15}(2) \cdot 5^{32767}} & \cdots & \zeta^{\mathrm{rev}_{15}(32767) \cdot 5^{32767}}
+          \end{pmatrix},
+        $$
+        <p>
+          where $\mathrm{rev}_{15}(x)$ is the integer whose
+          $15$-bit binary representation is the reverse of
+          $x$'s. With this reordering, the recovery equations
+          from the previous subsection become
+        </p>
+        $$
+          \begin{pmatrix}
+            m^\star_{\mathrm{rev}_{15}(0)} \\
+            m^\star_{\mathrm{rev}_{15}(1)} \\
+            \vdots \\
+            m^\star_{\mathrm{rev}_{15}(32767)}
+          \end{pmatrix}
+          \;=\; \Delta_{30}\, \mathrm{Re}(\widetilde E^{-1}\, \mathbf{v}^\star)
+          \;=\; \frac{\Delta_{30}}{2}\bigl(\widetilde E^{-1}\, \mathbf{v}^\star \,+\, \overline{\widetilde E^{-1}\, \mathbf{v}^\star}\bigr),
+        $$
+        $$
+          \begin{pmatrix}
+            m^\star_{\mathrm{rev}_{15}(0) + 32768} \\
+            m^\star_{\mathrm{rev}_{15}(1) + 32768} \\
+            \vdots \\
+            m^\star_{\mathrm{rev}_{15}(32767) + 32768}
+          \end{pmatrix}
+          \;=\; \Delta_{30}\, \mathrm{Im}(\widetilde E^{-1}\, \mathbf{v}^\star)
+          \;=\; \frac{\Delta_{30}}{2i}\bigl(\widetilde E^{-1}\, \mathbf{v}^\star \,-\, \overline{\widetilde E^{-1}\, \mathbf{v}^\star}\bigr).
+        $$
+        <p>
+          Now, $\widetilde E$ admits a sparse factorization
+          into $15$ factors:
+        </p>
+        $$
+          \widetilde E \;=\; F_{14}\, F_{13} \cdots F_1\, F_0,
+        $$
+        <p>
+          where each $F_l$ has nonzero entries only on three
+          diagonals: the main diagonal and the two diagonals
+          at offsets $+2^l$ and $-2^l$. Specifically, for each $i
+          \in \{0, 1, \ldots, 32767\}$ with $\lfloor i / 2^l
+          \rfloor$ even, the $2 \times 2$ submatrix of $F_l$
+          at rows and columns $\{i, i + 2^l\}$ is
+        </p>
+        $$
+          \begin{pmatrix}
+            1 & \zeta^{5^i \cdot 2^{14 - l}} \\
+            1 & \zeta^{5^{i + 2^l} \cdot 2^{14 - l}}
+          \end{pmatrix},
+        $$
+        <p>
+          and all other entries of $F_l$ are zero.
+        </p>
+        <div class="example-body">
+          <b>Example.</b> For $N = 16$, the three factors are
+          $$
+            F_2 \;=\;
+            \begin{pmatrix}
+              1 & & & & \zeta & & & \\
+               & 1 & & & & \zeta^{5} & & \\
+               & & 1 & & & & \zeta^{25} & \\
+               & & & 1 & & & & \zeta^{29} \\
+              1 & & & & \zeta^{17} & & & \\
+               & 1 & & & & \zeta^{21} & & \\
+               & & 1 & & & & \zeta^{9} & \\
+               & & & 1 & & & & \zeta^{13}
+            \end{pmatrix},
+          $$
+          $$
+            F_1 \;=\;
+            \begin{pmatrix}
+              1 & & \zeta^{2} & & & & & \\
+               & 1 & & \zeta^{10} & & & & \\
+              1 & & \zeta^{18} & & & & & \\
+               & 1 & & \zeta^{26} & & & & \\
+               & & & & 1 & & \zeta^{2} & \\
+               & & & & & 1 & & \zeta^{10} \\
+               & & & & 1 & & \zeta^{18} & \\
+               & & & & & 1 & & \zeta^{26}
+            \end{pmatrix},
+          $$
+          $$
+            F_0 \;=\;
+            \begin{pmatrix}
+              1 & \zeta^{4} & & & & & & \\
+              1 & \zeta^{20} & & & & & & \\
+               & & 1 & \zeta^{4} & & & & \\
+               & & 1 & \zeta^{20} & & & & \\
+               & & & & 1 & \zeta^{4} & & \\
+               & & & & 1 & \zeta^{20} & & \\
+               & & & & & & 1 & \zeta^{4} \\
+               & & & & & & 1 & \zeta^{20}
+            \end{pmatrix},
+          $$
+          and
+          $$
+            \widetilde E \;=\; F_2\, F_1\, F_0 \;=\;
+            \begin{pmatrix}
+              1 & \zeta^{4} & \zeta^{2} & \zeta^{6} & \zeta & \zeta^{5} & \zeta^{3} & \zeta^{7} \\
+              1 & \zeta^{20} & \zeta^{10} & \zeta^{30} & \zeta^{5} & \zeta^{25} & \zeta^{15} & \zeta^{3} \\
+              1 & \zeta^{4} & \zeta^{18} & \zeta^{22} & \zeta^{25} & \zeta^{29} & \zeta^{11} & \zeta^{15} \\
+              1 & \zeta^{20} & \zeta^{26} & \zeta^{14} & \zeta^{29} & \zeta^{17} & \zeta^{23} & \zeta^{11} \\
+              1 & \zeta^{4} & \zeta^{2} & \zeta^{6} & \zeta^{17} & \zeta^{21} & \zeta^{19} & \zeta^{23} \\
+              1 & \zeta^{20} & \zeta^{10} & \zeta^{30} & \zeta^{21} & \zeta^{9} & \zeta^{31} & \zeta^{19} \\
+              1 & \zeta^{4} & \zeta^{18} & \zeta^{22} & \zeta^{9} & \zeta^{13} & \zeta^{27} & \zeta^{31} \\
+              1 & \zeta^{20} & \zeta^{26} & \zeta^{14} & \zeta^{13} & \zeta & \zeta^{7} & \zeta^{27}
+            \end{pmatrix}.
+          $$
+        </div>
+        <div class="exercise-body">
+          <b>Exercise:</b> verify that $F_{14} \cdots F_0 =
+          \widetilde E$ for $N = 65536$.
+        </div>
+        <p>
+          The butterfly factorization gives
+        </p>
+        $$
+          \widetilde E^{-1} \;=\; F_0^{-1}\, F_1^{-1} \cdots F_{14}^{-1},
+        $$
+        <p>
+          and each $F_l^{-1}$ has the same sparsity pattern as
+          $F_l$, since $F_l$ is block-diagonal with invertible
+          $2 \times 2$ blocks in the butterfly basis.
+          Explicitly, $F_l^{-1}$ has, for each $i \in \{0, 1,
+          \ldots, 32767\}$ with $\lfloor i / 2^l \rfloor$
+          even, the $2 \times 2$ submatrix at rows and columns
+          $\{i, i + 2^l\}$ equal to
+        </p>
+        $$
+          \frac{1}{2}
+          \begin{pmatrix}
+            1 & 1 \\
+            \zeta^{-5^i \cdot 2^{14 - l}} & -\zeta^{-5^i \cdot 2^{14 - l}}
+          \end{pmatrix},
+        $$
+        <p>
+          and all other entries zero.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> verify that $F_l^{-1}$ is the
+          matrix described above.
+        </div>
+        <p>
+          <b>Remark.</b> This is not the same as the standard
+          FFT butterfly decomposition. In the standard FFT, the
+          rows of the matrix being factored are indexed by
+          integers in the natural order; here, the row
+          exponents instead are powers of $5$ modulo $131072$.
+        </p>
+
+        <h3 id="grouping-factors">Grouping factors</h3>
+
+        <p>
+          To apply $\widetilde E^{-1}$ within the $3$-level
+          coefficients-to-slots budget, we combine the $15$
+          factors in groups of $5$ and apply each group as a
+          single sparse matrix via baby-step giant-step.
+          Define
+        </p>
+        $$
+          \begin{aligned}
+            G_0 &\;=\; F_4^{-1}\, F_3^{-1}\, F_2^{-1}\, F_1^{-1}\, F_0^{-1}, \\
+            G_1 &\;=\; F_9^{-1}\, F_8^{-1}\, F_7^{-1}\, F_6^{-1}\, F_5^{-1}, \\
+            G_2 &\;=\; F_{14}^{-1}\, F_{13}^{-1}\, F_{12}^{-1}\, F_{11}^{-1}\, F_{10}^{-1},
+          \end{aligned}
+        $$
+        <p>
+          so that $\widetilde E^{-1} = G_0\, G_1\, G_2$. The
+          nonzero diagonals of $G_0$, $G_1$, and $G_2$ are:
+        </p>
+        <ul>
+          <li>
+            <b>$G_0$:</b> every integer in $\{-31, -30, \ldots,
+            30, 31\}$ ($63$ diagonals).
+          </li>
+          <li>
+            <b>$G_1$:</b> every multiple of $32$ in $\{-992,
+            -960, \ldots, 960, 992\}$ ($63$ diagonals).
+          </li>
+          <li>
+            <b>$G_2$:</b> every multiple of $1024$ in
+            $\{-31744, -30720, \ldots, 30720, 31744\}$ ($63$
+            diagonals).
+          </li>
+        </ul>
+        <p>
+          Each of $G_0$, $G_1$, and $G_2$ can be applied to a
+          ciphertext using baby-step giant-step:
+        </p>
+        <ul>
+          <li>
+            <b>$G_0$:</b> baby steps $\{0, 1, 2, 3, 4, 5, 6,
+            7\}$; giant steps $\{-32, -24, -16, -8, 0, 8, 16,
+            24\}$.
+          </li>
+          <li>
+            <b>$G_1$:</b> baby steps $\{0, 32, 64, 96, 128,
+            160, 192, 224\}$; giant steps $\{-1024, -768,
+            -512, -256, 0, 256, 512, 768\}$.
+          </li>
+          <li>
+            <b>$G_2$:</b> baby steps $\{0, 1024, 2048, 3072,
+            4096, 5120, 6144, 7168\}$; giant steps $\{0,
+            8192, 16384, 24576\}$.
+          </li>
+        </ul>
+        <p>
+          Applying $G_2$, then $G_1$, then $G_0$ to
+          $\mathbf{v}^\star$ produces $\widetilde E^{-1}\,
+          \mathbf{v}^\star$, whose real and imaginary parts
+          give the $m^\star_i$ in the bit-reversed order from
+          the recovery equations above, in exactly $3$ levels.
         </p>
 
         <h2 id="mod-eval">Mod-eval</h2>

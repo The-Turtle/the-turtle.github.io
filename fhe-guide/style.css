@@ -322,6 +322,20 @@ main > .post-list li:hover {
     color: var(--fhe-fg);
 }
 
+/* --- Examples: worked-out illustrations rendered as a tinted box,
+   styled like .exercise-body but with a muted accent so they're
+   visually distinguishable. Markup is:
+     <div class="example-body">example content</div> */
+.example-body {
+    background: var(--fhe-tint);
+    border-left: 3px solid var(--fhe-fg-muted);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-style: normal;
+    color: var(--fhe-fg);
+}
+
 /* --- Page table of contents ---
    A wiki-style sticky sidebar on the left listing the h2 headings
    of the current page. Built by renderPageToc() in layout.js,
