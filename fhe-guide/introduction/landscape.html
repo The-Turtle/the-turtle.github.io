@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="../../files/images/turtleicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <header id="site-header"></header>
+
+    <main>
+      <p class="post-breadcrumb" id="post-breadcrumb"></p>
+      <article>
+        <h1>The FHE landscape</h1>
+
+        <p>
+          This page gives a brief history of FHE and a tour of the
+          schemes and libraries in use today.
+        </p>
+
+        <h2>History</h2>
+
+        <p>
+          The question of whether computation could be performed
+          directly on encrypted data was first posed by Ronald
+          Rivest, Leonard Adleman, and Michael Dertouzos in their
+          <b>1978</b> paper <i>On Data Banks and Privacy
+          Homomorphisms</i>, just one year after the same Rivest and
+          Adleman (with Shamir) had introduced RSA. They observed
+          that RSA itself is multiplicatively homomorphic (the
+          product of two ciphertexts decrypts to the product of the
+          underlying plaintexts) and asked whether a "privacy
+          homomorphism" supporting <i>all</i> operations could exist.
+        </p>
+
+        <p>
+          The first construction came from Craig Gentry's PhD thesis
+          at Stanford in <b>2009</b>. The key idea was
+          bootstrapping: every ciphertext carries a small
+          amount of "noise" that grows with each homomorphic
+          operation, and once the noise exceeds a threshold, the
+          ciphertext can no longer be decrypted. Gentry's insight
+          was that if a scheme is powerful enough to evaluate its
+          own decryption circuit homomorphically, then one can take
+          a noisy ciphertext, homomorphically decrypt it under an
+          <i>encrypted</i> secret key, and recover a fresh ciphertext
+          of the same plaintext with the noise reset. Combined with a
+          <i>somewhat</i> homomorphic scheme based on ideal lattices,
+          this gave the first fully homomorphic encryption scheme. The
+          thesis itself contained no implementation; the scheme was
+          a proof of concept that such a thing could exist at all.
+        </p>
+
+        <p>
+          The next few years saw a rapid simplification of the
+          construction, but the more consequential change was a
+          shift in algebraic foundation. The early post-Gentry
+          schemes were based on the Learning With Errors
+          (LWE) problem, where a ciphertext is a vector of integers
+          and a homomorphic multiplication requires tensoring two
+          such vectors. The approach was conceptually clean, but
+          ciphertexts ran to millions of bits and operations were
+          correspondingly slow. The breakthrough was the
+          switch to polynomial rings. In <b>2011</b>,
+          Brakerski and Vaikuntanathan built FHE from
+          Ring Learning With Errors (RLWE), where a ciphertext is a
+          pair of polynomials in $(\mathbb{Z}/q\mathbb{Z})[X]/(X^N + 1)$
+          rather than a long vector of integers. This replaced the
+          quadratic-cost vector tensoring with polynomial
+          multiplication (computable in $O(N \log N)$ via the
+          number-theoretic transform), and
+          &mdash; most importantly for performance &mdash; enabled
+          SIMD batching, where a single ciphertext encodes a vector
+          of plaintext slots and a single homomorphic operation acts
+          on all slots in parallel. Combined with this packing, the
+          amortized ciphertext size per plaintext value dropped by a
+          factor of $N$. The follow-up scheme by
+          Brakerski, Gentry, and Vaikuntanathan in <b>2012</b>, now
+          known as <b>BGV</b>, refined this with a "modulus
+          switching" technique that controlled noise growth without
+          bootstrapping. Every FHE scheme used in practice today is
+          built on RLWE.
+        </p>
+
+        <p>
+          The first actual implementation came in <b>2011</b>, from
+          Gentry and Halevi, and confirmed that the construction was
+          not yet a practical tool: bootstrapping a single bit at
+          usable security parameters took roughly half an hour. The
+          first widely-used FHE library, <b>HElib</b> (IBM, around
+          <b>2013</b>), implemented BGV and brought bootstrapping
+          down dramatically over the next several years, from
+          minutes per ciphertext to seconds per slot via SIMD
+          batching, though bootstrapping a single bit was still
+          measured in seconds. The next milestone was the <b>FHEW</b> scheme in
+          <b>2014</b> (Ducas and Micciancio), which broke the
+          sub-second bootstrap barrier for the first time. Two years
+          later, in <b>2016</b>, <b>TFHE</b> (Chillotti, Gama,
+          Georgieva, and Izabach&egrave;ne) brought single-bit
+          bootstrapping down to the tens of milliseconds on a single
+          CPU core. This is the point at which FHE crossed from
+          "theoretical breakthrough" to "actually usable":
+          computations that previously took hours could now be
+          performed in seconds, and computations that were
+          previously infeasible became possible.
+        </p>
+
+        <p>
+          In <b>2017</b>, Cheon, Kim, Kim, and Song introduced
+          <b>CKKS</b>, a scheme designed not for exact integer
+          arithmetic but for <i>approximate</i> arithmetic over real
+          and complex numbers, treating the ciphertext noise as
+          ordinary floating-point rounding error rather than
+          something that must be controlled exactly. CKKS made FHE
+          practical for the workloads people actually wanted to run
+          on encrypted data: statistics, regression, and neural
+          network inference.
+        </p>
+
+        <p>
+          Even with TFHE and CKKS, single-core CPU bootstrapping was
+          still the dominant cost of any nontrivial FHE program. The
+          natural next step was hardware acceleration. The first GPU
+          implementations of TFHE appeared around <b>2018</b>. The
+          first GPU implementation of CKKS bootstrapping followed in
+          <b>2021</b> (Jung et al.), reporting roughly two orders of
+          magnitude speedup over single-threaded CPU. By <b>2024</b>,
+          production CUDA backends (notably Zama's for TFHE-rs) had
+          brought TFHE gate bootstrapping into the sub-millisecond
+          regime; a full CKKS bootstrap, which refreshes tens of
+          thousands of slots at once, now runs in tens of
+          milliseconds on a high-end GPU (a few microseconds
+          amortized per slot). GPUs are now the default deployment
+          target for serious FHE workloads, and FPGA and ASIC
+          accelerators are in active development.
+        </p>
+
+        <h2>Existing FHE schemes</h2>
+
+        <p>
+          The schemes in current use fall into three families,
+          distinguished by what kinds of plaintext they encode and
+          what kinds of computation they are efficient at.
+        </p>
+
+        <h3>Exact integer arithmetic: BGV and BFV</h3>
+
+        <p>
+          BGV (Brakerski-Gentry-Vaikuntanathan, 2012) and BFV
+          (Brakerski / Fan-Vercauteren, 2012) both encrypt integers
+          modulo a small prime $p$, typically anywhere from $2$ (for
+          bit-level computation) to around $2^{30}$ (for batched
+          arithmetic on small integers). Addition and multiplication
+          of ciphertexts produce encryptions of the sum and product
+          of the underlying plaintexts $\bmod\, p$. SIMD batching
+          packs a vector of up to $N$ independent plaintext slots
+          ($N$ is a power of two, typically $2^{13}$ to $2^{15}$)
+          into a single ciphertext, and a single homomorphic
+          operation acts elementwise on all slots; a slot-rotation
+          operation cyclically shifts the vector so that values in
+          different slots can be combined.
+        </p>
+
+        <p>
+          The two schemes differ in technical details of how noise
+          is managed but are interchangeable in practice; the choice
+          between them is usually driven by library support. Both
+          are the right fit when the computation is naturally over
+          integers (counting, voting, exact statistics) and
+          exactness is required.
+        </p>
+
+        <p>
+          BGV and BFV are <i>leveled</i> schemes: each homomorphic
+          multiplication consumes one "level" of a fixed budget set
+          at parameter-selection time, and bootstrapping is required
+          only when the computation's multiplicative depth exceeds
+          that budget. Many deployments run entirely in leveled mode
+          and never bootstrap; when bootstrapping is needed it is
+          supported but expensive, typically seconds to minutes per
+          ciphertext on CPU.
+        </p>
+
+        <h3>Approximate real arithmetic: CKKS</h3>
+
+        <p>
+          CKKS (Cheon-Kim-Kim-Song, 2017) encrypts vectors of up to
+          $N/2$ real or complex numbers (with $N$ a power of two,
+          typically $2^{14}$ to $2^{16}$), treating ciphertext noise
+          the way floating-point arithmetic treats rounding error:
+          as a bounded perturbation rather than something to be
+          eliminated. Addition, multiplication, and slot-rotation
+          act on ciphertexts to produce approximate encryptions of
+          the same operations applied to the underlying plaintext
+          vectors.
+        </p>
+
+        <p>
+          This makes CKKS dramatically more efficient than BGV/BFV
+          for workloads where approximate results are acceptable
+          &mdash; which is most numerical computation, and in
+          particular almost all machine learning inference. It is
+          the scheme used for encrypted linear regression, encrypted
+          neural network inference, and encrypted statistics in
+          production today.
+        </p>
+
+        <p>
+          Like BGV and BFV, CKKS is leveled: each multiplication
+          consumes one level, and bootstrapping is required only
+          once the level budget is exhausted. Shallow numerical
+          workloads typically fit in the level budget and skip
+          bootstrapping entirely; deeper computations bootstrap when
+          needed, at a cost of seconds per ciphertext on
+          CPU and tens of milliseconds on GPU.
+        </p>
+
+        <h3>Boolean and programmable bootstrapping: TFHE</h3>
+
+        <p>
+          TFHE (Chillotti-Gama-Georgieva-Izabach&egrave;ne, 2016)
+          encrypts a single bit (or a small integer) per ciphertext.
+          Unlike BGV, BFV, and CKKS, TFHE bootstraps after
+          <i>every</i> operation as part of normal evaluation: the
+          programmable bootstrap and the gate evaluation are the
+          same step. The user supplies an arbitrary lookup-table
+          function and TFHE evaluates it homomorphically on the
+          encrypted plaintext while simultaneously refreshing the
+          noise. The result is that Boolean gates and arbitrary
+          small-integer functions are available as primitive
+          operations, each costing one bootstrap: milliseconds on
+          CPU, sub-millisecond on GPU.
+        </p>
+
+        <p>
+          In practice this means TFHE is the right scheme for
+          computations dominated by control flow, comparisons, and
+          non-arithmetic operations: encrypted decision trees,
+          encrypted string processing, or any program with many
+          if-statements. It is comparatively slow
+          for bulk arithmetic, where its single-bit ciphertexts
+          cannot match the SIMD batching of BGV, BFV, or CKKS.
+        </p>
+
+        <h2>Existing libraries</h2>
+
+        <p>
+          A handful of libraries implement these schemes; all are
+          open-source except for the commercial HEaaN. Among them,
+          only Lattigo and OpenFHE support multiparty FHE &mdash;
+          where the secret key is split across several parties
+          &mdash; while the rest are single-key.
+        </p>
+
+        <h3>Microsoft SEAL</h3>
+
+        <p>
+          SEAL, the open-source library maintained by Microsoft
+          Research since 2015, implements BGV, BFV, and CKKS in C++
+          with bindings in several languages. It is the most widely
+          used FHE library outside of research and has the most
+          polished API of the
+          choices listed here. It does not implement TFHE and does
+          not ship a GPU backend. CKKS multiplication on SEAL is in
+          the millisecond range; notably, SEAL does not implement
+          bootstrapping for any scheme, so it is used purely in
+          leveled mode, with the multiplicative depth fixed at
+          parameter-selection time.
+        </p>
+
+        <h3>OpenFHE</h3>
+
+        <p>
+          OpenFHE, released in 2022 as the successor to PALISADE,
+          is an open-source C++ library that implements essentially
+          every scheme in production use: BGV, BFV, CKKS, and the
+          FHEW/TFHE family. It is the broadest FHE library available
+          and the default choice when a project needs more than one
+          scheme. It also provides threshold (multiparty) FHE for
+          BGV, BFV, and CKKS. Performance is competitive with SEAL on
+          CKKS and BFV, and competitive with TFHE-rs on Boolean
+          operations: roughly
+          millisecond-range multiplications and tens of milliseconds
+          per gate bootstrap. Like SEAL, the mainline library is
+          CPU-only and does not ship an official GPU backend.
+        </p>
+
+        <h3>TFHE-rs</h3>
+
+        <p>
+          TFHE-rs, developed by Zama since around 2022, is the
+          modern, open-source reference implementation of TFHE.
+          Written in Rust, it supports both Boolean and small-integer
+          ciphertexts with programmable bootstrapping, and ships a
+          production CUDA backend that brings gate bootstrapping into
+          the sub-millisecond regime. It is the standard choice for
+          any TFHE workload today. (The core library is single-key;
+          threshold key generation and decryption are provided
+          separately by Zama's MPC stack.)
+        </p>
+
+        <h3>Lattigo</h3>
+
+        <p>
+          Lattigo, developed at EPFL and Tune Insight, is an
+          open-source, pure-Go implementation of BGV, BFV, and CKKS.
+          It offers particularly strong, first-class support for
+          multiparty FHE, where the secret key is shared across
+          several participants and decryption requires all of them,
+          making it a natural fit for FHE-based secure multi-party
+          computation.
+          Single-party performance is in the same range as SEAL and
+          OpenFHE. As a pure-Go library, it is CPU-only and ships no
+          GPU backend.
+        </p>
+
+        <h3>HEAAN and HEaaN</h3>
+
+        <p>
+          HEAAN was the original CKKS implementation, released by
+          the Seoul National University group that designed the
+          scheme. The open-source library, which is CPU-only, is no
+          longer maintained and is now primarily of historical
+          interest. Its successor is <b>HEaaN</b>, a closed-source
+          commercial product developed by the same team at
+          CryptoLab, and one of the strongest-performing CKKS
+          implementations available today, with both multi-threaded
+          CPU and Nvidia CUDA GPU acceleration. New open-source CKKS
+          projects typically use SEAL, OpenFHE, or Lattigo;
+          commercial deployments wanting maximum CKKS performance
+          often license HEaaN.
+        </p>
+
+        <h3>HElib</h3>
+
+        <p>
+          HElib, released by IBM in 2013 as the first practical
+          open-source FHE library, implements BGV and (later) CKKS.
+          It pioneered the SIMD batching and bootstrapping techniques
+          that the rest
+          of the field built on, and remains maintained, but is
+          rarely chosen for new projects today. It is CPU-only, and
+          is included here as the historical landmark that it is.
+        </p>
+      </article>
+      <nav class="post-nav" id="post-nav"></nav>
+    </main>
+
+    <script>window.PAGE = { kind: 'post', section: 'introduction', slug: 'landscape' };</script>
+    <script src="../posts.js"></script>
+    <script src="../layout.js"></script>
+  </body>
+</html>

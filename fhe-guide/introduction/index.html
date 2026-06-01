@@ -44,21 +44,47 @@
         that no party was willing to do.
       </p>
       <p>
-        Mathematically, an encryption scheme is
-        <i>fully homomorphic</i> if, for any function $f$, there is a
-        corresponding operation $\textsf{Eval}_f$ on ciphertexts such
-        that
+        Mathematically, fix a <i>plaintext space</i> $\mathcal{M}$,
+        the set of values the scheme operates on. An encryption
+        scheme is <i>fully homomorphic</i> if, for any function
+        $f : \mathcal{M}^n \to \mathcal{M}$ of any number of inputs,
+        there is a corresponding operation $\textsf{Eval}_f$ that
+        transforms ciphertexts such that
       </p>
       $$
-        \textsf{Dec}_\mathrm{sk}(\textsf{Eval}_f(\textsf{Enc}_\mathrm{pk}(m))) = f(m).
+        \textsf{Dec}_\mathrm{sk}\bigl(\textsf{Eval}_f(\textsf{Enc}_\mathrm{pk}(m_1), \ldots, \textsf{Enc}_\mathrm{pk}(m_n))\bigr) = f(m_1, \ldots, m_n)
       $$
       <p>
-        In other words, computation on the ciphertext produces the
-        same result as computation on the plaintext, just encrypted.
+        for all plaintexts $m_1, \ldots, m_n \in \mathcal{M}$. In
+        other words, computing on the ciphertexts produces the same
+        result as computing on the plaintexts, just encrypted.
       </p>
+      <p>
+        The plaintext space $\mathcal{M}$ can take many forms. Some
+        examples that real schemes use are:
+      </p>
+      <ul>
+        <li>
+          a single bit, $\mathcal{M} = \{0, 1\}$ (or a small integer
+          modulo $p$);
+        </li>
+        <li>
+          a vector of $k$ integers modulo a prime $p$, with $k$
+          typically a few thousand,
+          $\mathcal{M} = (\mathbb{Z}/p\mathbb{Z})^k$;
+        </li>
+        <li>
+          a vector of $k$ real or complex numbers,
+          $\mathcal{M} = \mathbb{C}^k$ &mdash; in which case the
+          equality above typically holds only <i>approximately</i>,
+          with decryption recovering the result up to a small
+          rounding error, much like ordinary floating-point
+          arithmetic.
+        </li>
+      </ul>
       <p>In this section, we'll cover:</p>
       <ul>
-        <li>FHE from its origins to today's libraries (<a href="history.html">1.1</a>),</li>
+        <li>the FHE landscape, from its origins to today's schemes and libraries (<a href="landscape.html">1.1</a>),</li>
         <li>a taste of what 0xPARC is currently capable of building with FHE (<a href="use-cases.html">1.2</a>),</li>
         <li>a comparison to similar technologies (<a href="alternatives.html">1.3</a>), and</li>
         <li>an honest look at what FHE struggles to do (<a href="limitations.html">1.4</a>).</li>

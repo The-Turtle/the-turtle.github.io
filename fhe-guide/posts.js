@@ -19,7 +19,7 @@ const SECTIONS = [
         slug: 'introduction',
         title: 'What is FHE?',
         posts: [
-            { slug: 'history',      title: 'A brief history of FHE' },
+            { slug: 'landscape',    title: 'The FHE landscape' },
             { slug: 'use-cases',    title: 'What can you do with FHE?' },
             { slug: 'alternatives', title: 'Alternatives to FHE' },
             { slug: 'limitations',  title: 'Limitations of FHE' }
