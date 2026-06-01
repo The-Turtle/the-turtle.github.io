@@ -115,6 +115,18 @@
           \frac{\Delta_{17}^{\,\text{actual}}}{\Delta_{17}^{\,\text{predicted}}}
             \;=\; 2^{-15}.
         $$
+        <p>
+          <b>Remark.</b> The choice of $\Delta \approx 2^{55}$
+          at the bootstrap levels (rather than the standard
+          $\Delta_0 = 2^{40}$) is essential for precision. The
+          matrix transforms in coefficients-to-slots and
+          slots-to-coefficients, and the polynomial
+          approximation in mod-eval, all introduce noise; at
+          the lower scale $\Delta_0 = 2^{40}$ this noise would
+          accumulate to overwhelm the small $m_k/q_0$ signal
+          mod-eval must extract, and the bootstrap would fail
+          to recover the coefficients of $m$.
+        </p>
 
         <h2 id="sparse-secret-encapsulation">Sparse secret encapsulation</h2>
 
@@ -530,9 +542,9 @@
         </p>
         $$
           \begin{aligned}
-            G_0 &\;=\; F_4^{-1}\, F_3^{-1}\, F_2^{-1}\, F_1^{-1}\, F_0^{-1}, \\
-            G_1 &\;=\; F_9^{-1}\, F_8^{-1}\, F_7^{-1}\, F_6^{-1}\, F_5^{-1}, \\
-            G_2 &\;=\; F_{14}^{-1}\, F_{13}^{-1}\, F_{12}^{-1}\, F_{11}^{-1}\, F_{10}^{-1},
+            G_0 &\;=\; F_0^{-1}\, F_1^{-1}\, F_2^{-1}\, F_3^{-1}\, F_4^{-1}, \\
+            G_1 &\;=\; F_5^{-1}\, F_6^{-1}\, F_7^{-1}\, F_8^{-1}\, F_9^{-1}, \\
+            G_2 &\;=\; F_{10}^{-1}\, F_{11}^{-1}\, F_{12}^{-1}\, F_{13}^{-1}\, F_{14}^{-1},
           \end{aligned}
         $$
         <p>
@@ -560,136 +572,185 @@
         </p>
         <ul>
           <li>
-            <b>$G_0$:</b> baby steps $\{0, 1, 2, 3, 4, 5, 6,
-            7\}$; giant steps $\{-32, -24, -16, -8, 0, 8, 16,
-            24\}$.
+            <b>$G_0$:</b>
+            baby steps $\{0, 1, 2, 3$, $4, 5, 6, 7\}$;
+            giant steps $\{-32, -24, -16, -8$, $0, 8, 16, 24\}$.
           </li>
           <li>
-            <b>$G_1$:</b> baby steps $\{0, 32, 64, 96, 128,
-            160, 192, 224\}$; giant steps $\{-1024, -768,
-            -512, -256, 0, 256, 512, 768\}$.
+            <b>$G_1$:</b>
+            baby steps $\{0, 32, 64, 96$, $128, 160, 192, 224\}$;
+            giant steps $\{-1024, -768, -512, -256$, $0, 256, 512, 768\}$.
           </li>
           <li>
-            <b>$G_2$:</b> baby steps $\{0, 1024, 2048, 3072,
-            4096, 5120, 6144, 7168\}$; giant steps $\{0,
-            8192, 16384, 24576\}$.
+            <b>$G_2$:</b>
+            baby steps $\{0, 1024, 2048, 3072$, $4096, 5120, 6144, 7168\}$;
+            giant steps $\{0, 8192$, $16384, 24576\}$.
           </li>
         </ul>
         <p>
-          Applying $G_2$, then $G_1$, then $G_0$ to
-          $\mathbf{v}^\star$ produces $\widetilde E^{-1}\,
-          \mathbf{v}^\star$, whose real and imaginary parts
-          give the $m^\star_i$ in the bit-reversed order from
-          the recovery equations above, in exactly $3$ levels.
+          Applying $\sqrt[3]{\tfrac{\Delta_{30}}{2 q_0}}\, G_2$,
+          then $\sqrt[3]{\tfrac{\Delta_{30}}{2 q_0}}\, G_1$,
+          then $\sqrt[3]{\tfrac{\Delta_{30}}{2 q_0}}\, G_0$ to
+          $\mathbf{v}^\star$ via the homomorphic matrix
+          multiplication procedure of
+          <a href="composite.html#matrix-multiplication">Section&nbsp;3.4</a>
+          produces a ciphertext encrypting
+          $\tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\,
+          \mathbf{v}^\star$ in $3$ levels of multiplicative
+          depth. Plugging into the recovery equations gives
         </p>
-
+        $$
+          m^\star_L \;=\;
+          \frac{1}{q_0}
+          \begin{pmatrix}
+            m^\star_{\mathrm{rev}_{15}(0)} \\
+            m^\star_{\mathrm{rev}_{15}(1)} \\
+            \vdots \\
+            m^\star_{\mathrm{rev}_{15}(32767)}
+          \end{pmatrix}
+          \;=\; \tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\, \mathbf{v}^\star \,+\, \overline{\tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\, \mathbf{v}^\star},
+        $$
+        $$
+          m^\star_H \;=\;
+          \frac{1}{q_0}
+          \begin{pmatrix}
+            m^\star_{\mathrm{rev}_{15}(0) + 32768} \\
+            m^\star_{\mathrm{rev}_{15}(1) + 32768} \\
+            \vdots \\
+            m^\star_{\mathrm{rev}_{15}(32767) + 32768}
+          \end{pmatrix}
+          \;=\; -i\bigl(\tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\, \mathbf{v}^\star \,-\, \overline{\tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\, \mathbf{v}^\star}\bigr).
+        $$
+        <div class="exercise-body">
+          <b>Exercise:</b> why does multiplication by $-i$ on
+          a ciphertext not consume a level?
+        </div>
         <h2 id="mod-eval">Mod-eval</h2>
 
         <p>
           After coefficients-to-slots, the two slot-packed
-          ciphertexts $\boxed{\cdot}_1$ and $\boxed{\cdot}_2$ sit
-          at level $27$ and have slot values of the form
+          ciphertexts $m^\star_L$ and $m^\star_H$ sit at level
+          $27$ and have slot values of the form
         </p>
         $$
           \frac{m^\star_k}{q_0} \;=\; \frac{m_k}{q_0} \,+\, t_k,
         $$
         <p>
-          where the index $k$ runs through bit-reversed
-          even-then-odd coefficients of $m^\star$ as before, and
-          where the coefficients-to-slots step folded a scale
-          factor of $1/q_0$ into its output so that the slots
-          contain $m^\star_k/q_0$ rather than $m^\star_k$. The
-          integer part of each slot is $t_k \in \{-16, \ldots,
-          16\}$; the fractional part is $m_k/q_0$, the
+          The integer part of each slot is $t_k \in \{-16,
+          \ldots, 16\}$; the fractional part is $m_k/q_0$, the
           "useful" content. Applying the function
         </p>
         $$
           x \;\longmapsto\; x \bmod 1
         $$
         <p>
-          slot-wise (where $x \bmod 1$ means $x$ minus its
-          nearest integer) would strip off the $t_k$ and leave
+          slot-wise would strip off the $t_k$ and leave
           $m_k/q_0$ behind, which is exactly the coefficient we
-          want back. Mod-eval is the homomorphic slot-wise
-          evaluation of this function.
+          want back. Implementing this homomorphically requires
+          a polynomial approximation.
         </p>
 
-        <h3 id="how-accurate-the-approximation-needs-to-be">How accurate the approximation needs to be</h3>
+        <h3 id="where-the-approximation-needs-to-be-accurate">Where the approximation needs to be accurate</h3>
 
         <p>
-          The function $x \bmod 1$ isn't a polynomial &mdash;
-          it's not even continuous &mdash; so it has to be
-          replaced by a polynomial approximation. We have two
-          parameters that control how hard the approximation has
-          to work:
-        </p>
-        <ul>
-          <li>
-            the size of the interval the approximation must
-            cover, which is $[-16, 16]$ (from the bound on $t$
-            above), and
-          </li>
-          <li>
-            the <em>neighborhood radius</em> $\delta$ around
-            each integer in $[-16, 16]$ within which the slot
-            values actually live: by the previous derivation,
-            slot values land at distance at most
-            $\delta = \max_k |m_k|/q_0$ from the integer
-            $t_k$.
-          </li>
-        </ul>
-        <p>
-          So the polynomial doesn't need to approximate
-          $x \bmod 1$ everywhere on $[-16, 16]$ &mdash; only on
-          the union of small neighborhoods
+          The function $x \bmod 1$ isn't a polynomial, so it
+          has to be replaced by a polynomial approximation. We
+          know that $t_k \in \{-16, -15, \ldots, 16\}$ and that
+          $m_k / q_0$ always lies between $-\delta$ and
+          $\delta$, where $\delta = \max_k |m_k| / q_0$. So the
+          polynomial doesn't need to approximate $x \bmod 1$
+          everywhere on $[-16, 16]$ &mdash; only on the union
+          of small neighborhoods
         </p>
         $$
           I \;=\; \bigcup_{k=-16}^{16} \bigl[k - \delta,\, k + \delta\bigr]
         $$
         <p>
-          around the integers. This is a much weaker requirement
-          than uniform approximation on $[-16, 16]$, and it's
-          what lets a low-degree polynomial do the job. For the
-          encryptions we care about, with $\Delta_0 \approx
-          2^{40}$ and message magnitudes bounded by $1$, $|m_k|
-          \lesssim \Delta_0$, so $\delta \approx \Delta_0/q_0
-          \approx 2^{-15}$ &mdash; tiny.
+          around the integers.
         </p>
 
         <h3 id="the-polynomial">The polynomial</h3>
 
         <p>
-          On $I$, the function $x \bmod 1$ restricts to a
-          smooth function: on each subinterval
-          $[k - \delta, k + \delta]$ it's just $x - k$. The
-          Remez algorithm (described in any approximation theory
-          textbook) computes the unique polynomial of bounded
-          degree that minimizes the worst-case error on a given
-          target set, and for $I$ as above this produces a
-          polynomial that approximates $x \bmod 1$ to error
-          decaying exponentially in the degree.
-        </p>
-        <p>
           For our parameters, a degree-$127$ Remez polynomial on
-          $I$ achieves the precision we need. Evaluating a
-          degree-$127$ polynomial homomorphically on the
-          Chebyshev-like basis from
-          <a href="composite.html#high-degree-evaluation">Section&nbsp;3.4</a>
-          consumes $\lceil \log_2(127 + 1) \rceil = 7$ levels
-          &mdash; matching the mod-eval budget.
+          $I$ achieves the precision we need. The polynomial
+          can be
+          <span class="lie" data-truth="the input actually needs to be scaled to [-2, 2] first. Naively this takes a level to do the scaling, but this rescaling factor can be absorbed into the matrix multiplications from the previous step.">evaluated</span>
+          using the method from
+          <a href="composite.html#high-degree-evaluation">Section&nbsp;3.4</a>,
+          consuming $\lceil \log_2(127 + 1) \rceil = 7$ levels.
         </p>
         <p>
-          Applying this polynomial slot-wise to $\boxed{\cdot}_1$
-          and $\boxed{\cdot}_2$ produces two level-$20$
-          ciphertexts whose slots hold $m_k/q_0$ for the
-          bit-reversed even-then-odd indices $k$. That is, the
-          slots now hold the rescaled coefficients of $m$, with
-          the wrap-around term $t$ cleanly removed.
+          Applying this polynomial slot-wise to $m^\star_L$
+          and $m^\star_H$ produces two level-$20$ ciphertexts
+          encrypting
+        </p>
+        $$
+          m_L \;=\; \frac{1}{q_0}
+          \begin{pmatrix}
+            m_{\mathrm{rev}_{15}(0)} \\
+            m_{\mathrm{rev}_{15}(1)} \\
+            \vdots \\
+            m_{\mathrm{rev}_{15}(32767)}
+          \end{pmatrix}
+          \qquad \text{and} \qquad
+          m_H \;=\; \frac{1}{q_0}
+          \begin{pmatrix}
+            m_{\mathrm{rev}_{15}(0) + 32768} \\
+            m_{\mathrm{rev}_{15}(1) + 32768} \\
+            \vdots \\
+            m_{\mathrm{rev}_{15}(32767) + 32768}
+          \end{pmatrix},
+        $$
+        <p>
+          respectively.
         </p>
 
         <h2 id="slots-to-coefficients">Slots-to-coefficients</h2>
 
-        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Slots-to-coefficients inverts coefficients-to-slots,
+          packaging $m_L$ and $m_H$ back into a single
+          ciphertext whose plaintext polynomial is $m$. To do
+          this, first combine them into $m_L + i\, m_H$ via
+          one $i$-multiplication and one addition. The linear
+          transform we then need to apply is $\widetilde E =
+          G_2^{-1}\, G_1^{-1}\, G_0^{-1}$.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> why do $G_0^{-1}$, $G_1^{-1}$,
+          $G_2^{-1}$ have the same baby steps and giant steps
+          as $G_0$, $G_1$, $G_2$ from coefficients-to-slots?
+        </div>
+        <p>
+          Applying $\sqrt[3]{q_0/\Delta_{17}^{\,\text{predicted}}}\, G_0^{-1}$,
+          then $\sqrt[3]{q_0/\Delta_{17}^{\,\text{predicted}}}\, G_1^{-1}$,
+          then $\sqrt[3]{q_0/\Delta_{17}^{\,\text{predicted}}}\, G_2^{-1}$
+          to $m_L + i\, m_H$ via the homomorphic matrix
+          multiplication procedure of
+          <a href="composite.html#matrix-multiplication">Section&nbsp;3.4</a>
+          produces, in $3$ levels of multiplicative depth, a
+          level-$17$ ciphertext encrypting the vector
+        </p>
+        $$
+          \text{output} \;=\; \frac{\Delta_{17}^{\,\text{predicted}}}{\Delta_{17}^{\,\text{actual}}}
+          \cdot \frac{q_0}{\Delta_{17}^{\,\text{predicted}}}\, \widetilde E\, (m_L + i\, m_H)
+          \;=\; \frac{1}{\Delta_{17}^{\,\text{actual}}}\, \Sigma
+          \begin{pmatrix}
+            m_0 \\
+            m_1 \\
+            \vdots \\
+            m_{65535}
+          \end{pmatrix}.
+        $$
+        <p>
+          (The leading factor
+          $\Delta_{17}^{\,\text{predicted}} /
+          \Delta_{17}^{\,\text{actual}} \approx 2^{15}$ is
+          provided for free by the level-$18$-to-$17$
+          scale-factor jump.) In other words, the output is a
+          ciphertext encrypting the plaintext $m$, as desired.
+        </p>
 
       </article>
       <nav class="post-nav" id="post-nav"></nav>
