@@ -14,9 +14,96 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Alternatives to FHE</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
 
-        <p>When should you reach for FHE versus a trusted server, a TEE, or standard MPC? A comparison of the trust assumptions and performance tradeoffs.</p>
+        <p>
+          FHE is not the only way to let one party compute on data it
+          isn't allowed to see. There are three other common
+          approaches: handing the data to a trusted third party,
+          computing inside a trusted execution environment, and running
+          a standard multiparty computation protocol. We discuss the
+          benefits and tradeoffs of each one compared to FHE.
+        </p>
+
+        <h2>Trusted third party</h2>
+
+        <p>
+          The simplest alternative to FHE is to find a single party
+          everyone trusts, hand them all the data in the clear, and let
+          them compute the result. When such a party exists, it is hard
+          to beat, since there is no cryptographic overhead at all.
+        </p>
+
+        <p>
+          The trouble is that such a party often does not exist.
+          Sometimes the stakes are too high for anyone to be trusted
+          with everyone's raw data, as when governments pool
+          intelligence or competing companies combine their books.
+          Sometimes it is not even legal: data-protection and privacy
+          laws frequently forbid any single entity from seeing all of
+          the underlying data in the first place. And even when a
+          trusted party is both available and permitted, if the
+          computation is cheap to run under FHE, it can be worth doing
+          so anyway just to remove one more party who could be
+          compromised, coerced, or simply make a mistake.
+        </p>
+
+        <h2>Trusted execution environment</h2>
+
+        <p>
+          A trusted execution environment (TEE) is a hardware feature
+          that isolates a computation inside a protected enclave, so
+          that even the machine's owner and operating system cannot see
+          what happens inside. The data is decrypted and computed on in
+          the clear within the enclave, and the hardware is responsible
+          for keeping it sealed off. Like a trusted third party, a TEE
+          computes on plaintext, so it runs at close to native speed.
+        </p>
+
+        <p>
+          The catch is what you have to trust. A TEE asks you to trust
+          the hardware manufacturer and the integrity of its enclave,
+          rather than a mathematical assumption. And that trust is
+          fragile: TEEs have a long history of being pried open by
+          side-channel attacks that leak the very data they protect,
+          and the security community generally treats any particular
+          TEE design as something that will eventually be broken rather
+          than something that will hold forever.
+        </p>
+
+        <p>
+          So a TEE trades a clean mathematical guarantee for a hardware
+          one that tends to erode over time. When FHE is fast enough
+          for the workload, it offers the stronger guarantee.
+        </p>
+
+        <h2>Standard multiparty computation</h2>
+
+        <p>
+          Standard (non-FHE-based) multiparty computation (MPC) lets
+          several parties jointly compute a function of their private
+          inputs without any of
+          them revealing those inputs. It is mature and widely
+          deployed, and for some tasks it can be faster than FHE-based MPC.
+        </p>
+
+        <p>
+          Standard MPC does, however, have structural limitations that
+          FHE avoids. It is inherently interactive: the parties must be
+          online and communicating throughout the computation, which
+          rules out the encrypt-now, compute-later pattern that FHE
+          makes possible. That interaction is costly, since a protocol
+          must pay in either many rounds of communication or high
+          bandwidth, and at least one of the two grows with the
+          complexity of the computation. The back-and-forth is hard to
+          parallelize, and many protocols also require an expensive
+          offline precomputation phase before any real work can begin.
+        </p>
+
+        <p>
+          FHE-based MPC inherits FHE's non-interactive,
+          upload-once-compute-later, low-communication character, which
+          is exactly what standard MPC gives up.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>
