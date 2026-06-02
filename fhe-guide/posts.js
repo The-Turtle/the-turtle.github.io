@@ -22,7 +22,7 @@ const SECTIONS = [
             { slug: 'landscape',    title: 'The FHE landscape' },
             { slug: 'use-cases',    title: 'What can you do with FHE?' },
             { slug: 'alternatives', title: 'Alternatives to FHE' },
-            { slug: 'limitations',  title: 'Limitations of FHE', status: 'todo' }
+            { slug: 'limitations',  title: 'Limitations of FHE' }
         ]
     },
     {

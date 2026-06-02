@@ -14,9 +14,111 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Limitations of FHE</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
 
-        <p>What FHE can't do: data-dependent control flow, exact non-polynomial functions, and the assumptions (semi-honest parties, trusted compute server) that the security rests on.</p>
+        <p>
+          FHE is powerful, but it comes with real limitations. Two of
+          them are trust assumptions: clients must still trust the
+          server to run the agreed-upon computation, and, in the
+          multiparty setting, the parties supplying ciphertexts have to
+          trust each other to encrypt honest data. The other two are
+          limits on what can be computed at all: FHE cannot branch or
+          loop on encrypted values, and (for CKKS) it can only evaluate
+          polynomials.
+        </p>
+
+        <h2>Trusting the compute server</h2>
+
+        <p>
+          FHE hides the data from the server, but it does not force the
+          server to compute the right thing. A dishonest server could
+          run a different computation than the one requested, or simply
+          return garbage, and the client, holding only ciphertexts, has
+          no built-in way to tell.
+        </p>
+
+        <p>
+          There are zero-knowledge constructions that close this gap,
+          letting the server prove it carried out exactly the requested
+          computation, but they remain theoretical and are not yet
+          practical. In the meantime, a cheating server can usually be
+          caught by cruder means: interleaving dummy computations whose
+          answers are known in advance to check the server's work, or
+          having two non-colluding servers run the same computation and
+          comparing their results. In these scenarios, the server can
+          only cheat at most once.
+        </p>
+
+        <h2>Trusting the encryptors</h2>
+
+        <p>
+          FHE guarantees that the data stays private, but it says
+          nothing about whether that data is honest. In the multiparty
+          setting, where several parties each contribute encrypted
+          inputs, nothing in the basic scheme stops a participant from
+          encrypting garbage, or a value crafted to corrupt the result.
+          It is up to each party to verify that no other party can learn
+          information about their data by passing in malicious inputs.
+        </p>
+
+        <p>
+          As with the compute server, there are zero-knowledge
+          techniques that let an encryptor prove a ciphertext is a
+          well-formed encryption of a legitimate value, but these too
+          are still theoretical rather than practical.
+        </p>
+
+        <h2>No data-dependent logic</h2>
+
+        <p>
+          FHE cannot naively run logic that depends on the encrypted
+          data itself. For example, it cannot branch on whether some
+          encrypted value
+          is positive, take a different path depending on which records
+          exist, or loop a number of times given by an encrypted count.
+        </p>
+
+        <p>
+          This is not an accident of current implementations. If the
+          operations performed
+          depended on the hidden data, then an observer watching which
+          operations run, or simply how long the computation takes,
+          would learn something about that data, defeating the whole
+          point of FHE. Because the sequence of operations must be
+          independent of the encrypted values, control flow has to be
+          made oblivious:
+          every branch is evaluated and the results combined, and loops
+          must run a fixed number of times.
+        </p>
+
+        <h2>No exact non-polynomial functions</h2>
+
+        <p>
+          The CKKS scheme can only natively evaluate polynomials, built
+          from additions and multiplications of ciphertexts. Every
+          other function, including comparison, division, and modular
+          reduction, has to be approximated by a polynomial. For
+          workloads that genuinely need exact non-polynomial
+          operations, a different scheme is a better fit: TFHE
+          evaluates arbitrary functions exactly through lookup tables,
+          and BFV/BGV provide exact integer arithmetic.
+        </p>
+
+        <p>
+          A polynomial approximation is only good on a bounded range,
+          which has two consequences. Inside the range, the result is
+          an approximation rather than an exact value, carrying some
+          error. Outside the range, the approximating polynomial
+          diverges wildly and corrupts the ciphertext, so the
+          computation must be designed so that inputs to these
+          functions never leave the range they were fit on.
+        </p>
+
+        <p>
+          In practice this is usually not a real obstacle. The inputs to
+          these functions usually have known bounds, so the
+          approximation can be fit to a range that comfortably covers
+          every value it will see.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>
