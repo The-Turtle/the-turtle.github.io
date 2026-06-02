@@ -33,7 +33,7 @@
 
         <h2>Minesweeper</h2>
 
-        <video class="use-case-gif half-width" src="../files/minesweeper.mp4" autoplay loop muted playsinline controls aria-label="Minesweeper demo"></video>
+        <video class="use-case-gif half-width" src="../files/minesweeper.mp4" autoplay loop muted playsinline aria-label="Minesweeper demo"></video>
 
         <p>To start a Minesweeper game, the client chooses the board size and the number of mines, both in plaintext, and the server generates a random board that it keeps hidden from the client. The client plays by sending its moves to the server encrypted, and the server replies with the encrypted neighbor mine counts of the revealed cells, which the client decrypts to read. If any revealed cell is a mine, the reply comes back as a corrupted ciphertext instead of valid counts.</p>
 
@@ -41,7 +41,7 @@
 
         <h2>Conway's Game of Life</h2>
 
-        <video class="use-case-gif" src="../files/conways-game-of-life.mp4" autoplay loop muted playsinline controls aria-label="Conway's Game of Life demo"></video>
+        <video class="use-case-gif" src="../files/conways-game-of-life.mp4" autoplay loop muted playsinline aria-label="Conway's Game of Life demo"></video>
 
         <p>In the Conway's Game of Life demo, the server keeps an encrypted 128&times;128 Game of Life board. <span class="lie" data-truth="the 70 ms figure is only an average; in reality every third generation is slow because it requires bootstrapping, while the other two are very short">Every 70&nbsp;ms</span> it advances the board by one generation, computed entirely on the ciphertext, then sends the new board to the client to decrypt and display. The client therefore sees the board evolve continuously and in real time, while the server never learns which cells are alive.</p>
 
@@ -49,7 +49,7 @@
 
         <h2>Regression</h2>
 
-        <video class="use-case-gif" src="../files/regression.mp4" autoplay loop muted playsinline controls aria-label="Regression demo"></video>
+        <video class="use-case-gif" src="../files/regression.mp4" autoplay loop muted playsinline aria-label="Regression demo"></video>
 
         <p>The regression demo fits a regression model, either linear or logistic, over encrypted data contributed by many different people, without any of them revealing their data.</p>
 
@@ -68,7 +68,7 @@
 
         <h2>Image classification</h2>
 
-        <video class="use-case-gif half-width" src="../files/image-classification.mp4" autoplay loop muted playsinline controls aria-label="Image classification demo"></video>
+        <video class="use-case-gif half-width" src="../files/image-classification.mp4" autoplay loop muted playsinline aria-label="Image classification demo"></video>
 
         <p>For the image classification demo, the model must be trained ahead of time on ordinary, unencrypted data, and only inference runs under encryption. The specific demo in the clip above classifies handwritten digits from MNIST: the client encrypts a 28&times;28 grayscale image and sends it to the server, which evaluates the whole network on the ciphertext and produces the encrypted class logits. The client decrypts those and takes the largest as the predicted digit.</p>
 
@@ -82,7 +82,7 @@
 
         <h2>Language model inference</h2>
 
-        <video class="use-case-gif" src="../files/language-model-inference.mp4" autoplay loop muted playsinline controls aria-label="Language model inference demo"></video>
+        <video class="use-case-gif" src="../files/language-model-inference.mp4" autoplay loop muted playsinline aria-label="Language model inference demo"></video>
 
         <p>For the language model demo, the model is trained on unencrypted data, and at inference time it takes an encrypted text string as input. The tokenizer and the embedding matrix remain unencrypted, so the prompt is tokenized and embedded into vectors in the clear; everything from there on is encrypted.</p>
 
