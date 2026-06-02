@@ -415,22 +415,3 @@ main > .post-list li:hover {
     }
 }
 
-/* --- Pipeline diagram: a vertical stack of stages connected by
-   labeled down-arrows. Used in Part 3 for the client/server data
-   flow. Each child is either a .stage (a noun phrase) or an
-   .arrow (the transition label). */
-.pipeline {
-    margin: 24px auto;
-    text-align: center;
-    font-family: 'Source Code Pro', Consolas, 'Ubuntu Mono', Menlo, monospace;
-    font-size: 14px;
-}
-.pipeline .stage {
-    color: var(--fhe-fg);
-    padding: 4px 0;
-}
-.pipeline .arrow {
-    color: var(--fhe-fg-muted);
-    font-size: 13px;
-    padding: 2px 0;
-}
