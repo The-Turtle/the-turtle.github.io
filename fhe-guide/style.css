@@ -197,6 +197,23 @@ main > .post-list li:hover {
     background: var(--fhe-tint);
 }
 
+/* --- Landing page nested table of contents ---
+   The landing "Contents" lists every part with its sub-sections
+   nested underneath. Parts read as headers (no row highlight);
+   sub-sections keep the clickable-row hover. Pages that aren't
+   finished yet are tagged with a small [TODO] marker. */
+#sections > li:hover { background: transparent; }
+#sections > li > .post-title { font-weight: 700; }
+#sections .post-list { margin: 6px 0 14px; }
+
+.todo {
+    color: var(--fhe-fg-muted);
+    font-size: 0.72em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+}
+
 /* --- Per-post breadcrumb & nav --- */
 
 .post-breadcrumb {

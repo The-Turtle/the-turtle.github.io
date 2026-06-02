@@ -47,8 +47,10 @@
           a noisy ciphertext, homomorphically decrypt it under an
           <i>encrypted</i> secret key, and recover a fresh ciphertext
           of the same plaintext with the noise reset. Combined with a
-          <i>somewhat</i> homomorphic scheme based on ideal lattices,
-          this gave the first fully homomorphic encryption scheme. The
+          <i>somewhat</i> homomorphic scheme based on ideal lattices
+          (one that could evaluate only a bounded number of operations),
+          this gave the first fully
+          homomorphic encryption scheme. The
           thesis itself contained no implementation; the scheme was
           a proof of concept that such a thing could exist at all.
         </p>
@@ -61,8 +63,8 @@
           (LWE) problem, where a ciphertext is a vector of integers
           and a homomorphic multiplication requires tensoring two
           such vectors. The approach was conceptually clean, but
-          ciphertexts ran to millions of bits and operations were
-          correspondingly slow. The breakthrough was the
+          ciphertexts ran to millions of bits to encrypt a single
+          bit, and operations were correspondingly slow. The breakthrough was the
           switch to polynomial rings. In <b>2011</b>,
           Brakerski and Vaikuntanathan built FHE from
           Ring Learning With Errors (RLWE), where a ciphertext is a
@@ -108,7 +110,7 @@
         </p>
 
         <p>
-          In <b>2017</b>, Cheon, Kim, Kim, and Song introduced
+          In <b>2016</b>, Cheon, Kim, Kim, and Song introduced
           <b>CKKS</b>, a scheme designed not for exact integer
           arithmetic but for <i>approximate</i> arithmetic over real
           and complex numbers, treating the ciphertext noise as
@@ -333,17 +335,6 @@
           often license HEaaN.
         </p>
 
-        <h3>HElib</h3>
-
-        <p>
-          HElib, released by IBM in 2013 as the first practical
-          open-source FHE library, implements BGV and (later) CKKS.
-          It pioneered the SIMD batching and bootstrapping techniques
-          that the rest
-          of the field built on, and remains maintained, but is
-          rarely chosen for new projects today. It is CPU-only, and
-          is included here as the historical landmark that it is.
-        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>

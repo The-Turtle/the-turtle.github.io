@@ -113,7 +113,7 @@
         </p>
         $$
           \frac{\Delta_{17}^{\,\text{actual}}}{\Delta_{17}^{\,\text{predicted}}}
-            \;=\; 2^{-15}.
+            \;\approx\; 2^{-15}.
         $$
         <p>
           <b>Remark.</b> The choice of $\Delta \approx 2^{55}$
@@ -371,7 +371,7 @@
         <h3 id="factoring-the-matrix">Factoring the matrix</h3>
 
         <p>
-          $E^{-1}$ doesn't factor sparsely, but miraculously,
+          $E^{-1}$ doesn't factor diagonal-sparsely, but miraculously,
           a column reordering of $E$ does. Define
         </p>
         $$
@@ -411,6 +411,14 @@
           \;=\; \frac{\Delta_{30}}{2i}\bigl(\widetilde E^{-1}\, \mathbf{v}^\star \,-\, \overline{\widetilde E^{-1}\, \mathbf{v}^\star}\bigr).
         $$
         <p>
+          Reordering the columns of $E$ only permutes the
+          coefficient vector it multiplies, so $\widetilde E$
+          yields the same slot values as $E$ while delivering
+          the recovered coefficients in bit-reversed order;
+          this is harmless, since slots-to-coefficients applies
+          the same reordering in reverse at the end.
+        </p>
+        <p>
           Now, $\widetilde E$ admits a sparse factorization
           into $15$ factors:
         </p>
@@ -418,7 +426,7 @@
           \widetilde E \;=\; F_{14}\, F_{13} \cdots F_1\, F_0,
         $$
         <p>
-          where each $F_l$ has nonzero entries only on three
+          where each $F_l$ has nonzero entries only on <span class="lie" data-truth="this is three diagonals for every F_l except F_14: there the +2^14 and -2^14 offsets coincide modulo 32768, so F_14 has only two distinct diagonals">three</span>
           diagonals: the main diagonal and the two diagonals
           at offsets $+2^l$ and $-2^l$. Specifically, for each $i
           \in \{0, 1, \ldots, 32767\}$ with $\lfloor i / 2^l
@@ -561,9 +569,9 @@
             -960, \ldots, 960, 992\}$ ($63$ diagonals).
           </li>
           <li>
-            <b>$G_2$:</b> every multiple of $1024$ in
-            $\{-31744, -30720, \ldots, 30720, 31744\}$ ($63$
-            diagonals).
+            <b>$G_2$:</b> every multiple of $1024$ modulo
+            $32768$, i.e. $\{-15360, -14336, \ldots, 15360,
+            16384\}$ ($32$ diagonals).
           </li>
         </ul>
         <p>
@@ -584,7 +592,7 @@
           <li>
             <b>$G_2$:</b>
             baby steps $\{0, 1024, 2048, 3072$, $4096, 5120, 6144, 7168\}$;
-            giant steps $\{0, 8192$, $16384, 24576\}$.
+            giant steps $\{-16384, -8192$, $0, 8192\}$.
           </li>
         </ul>
         <p>
@@ -641,7 +649,7 @@
           "useful" content. Applying the function
         </p>
         $$
-          x \;\longmapsto\; x \bmod 1
+          x \;\longmapsto\; \bigl((x + \tfrac{1}{2}) \bmod 1\bigr) - \tfrac{1}{2}
         $$
         <p>
           slot-wise would strip off the $t_k$ and leave
@@ -653,12 +661,12 @@
         <h3 id="where-the-approximation-needs-to-be-accurate">Where the approximation needs to be accurate</h3>
 
         <p>
-          The function $x \bmod 1$ isn't a polynomial, so it
+          This function isn't a polynomial, so it
           has to be replaced by a polynomial approximation. We
           know that $t_k \in \{-16, -15, \ldots, 16\}$ and that
           $m_k / q_0$ always lies between $-\delta$ and
           $\delta$, where $\delta = \max_k |m_k| / q_0$. So the
-          polynomial doesn't need to approximate $x \bmod 1$
+          polynomial doesn't need to approximate it
           everywhere on $[-16, 16]$ &mdash; only on the union
           of small neighborhoods
         </p>
@@ -673,8 +681,9 @@
 
         <p>
           For our parameters, a degree-$127$ Remez polynomial on
-          $I$ achieves the precision we need. The polynomial
-          can be
+          $I$ recovers each $m_k/q_0$ to about $13$ bits past
+          the binary point, the precision a single bootstrap
+          delivers. The polynomial can be
           <span class="lie" data-truth="the input actually needs to be scaled to [-2, 2] first. Naively this takes a level to do the scaling, but this rescaling factor can be absorbed into the matrix multiplications from the previous step.">evaluated</span>
           using the method from
           <a href="composite.html#high-degree-evaluation">Section&nbsp;3.4</a>,

@@ -85,6 +85,52 @@
         why we chose to build CKKS.
       </p>
 
+      <h2>Other resources</h2>
+      <p>
+        In addition to this guide, here are some existing resources
+        for learning about CKKS.
+      </p>
+      <ul>
+        <li>
+          <a href="https://openmined.org/blog/ckks-explained-part-1-simple-encoding-and-decoding/" target="_blank">OpenMined's “CKKS explained” series</a>
+          (2020) covers CKKS specifically and is great for beginners: it implements the basic operations
+          from scratch, but doesn't cover any optimizations or
+          bootstrapping.
+        </li>
+        <li>
+          <a href="https://arxiv.org/abs/2503.05136" target="_blank">Ronny Ko's <i>The Beginner's Textbook for Fully Homomorphic Encryption</i></a>
+          (2025) is a general FHE textbook, very thorough on the
+          mathematics. It assumes little background, building up
+          modular arithmetic and rings from scratch, and covers many
+          schemes, but it does not get into any optimizations.
+        </li>
+        <li>
+          <a href="https://www.jeremykun.com/2024/05/04/fhe-overview/" target="_blank">Jeremy Kun's high-level technical overview</a>
+          (2024) is a general survey of FHE, but it mostly stays at
+          the API level and does not cover how the pieces are
+          implemented.
+        </li>
+        <li>
+          <a href="https://eprint.iacr.org/2022/1602" target="_blank">Marcolla et al.'s survey</a>
+          (2022) is a thorough but theory-heavy survey of FHE in general.
+        </li>
+        <li>
+          <a href="https://openfhe-development.readthedocs.io/" target="_blank">OpenFHE's documentation</a>
+          (2022) is a good place to learn by reading a production FHE
+          library that covers CKKS among other schemes, though it reads
+          like codebase documentation rather than an exposition.
+        </li>
+      </ul>
+      <p>
+        Each of these is great, and each strikes its own balance
+        between depth and breadth. This guide is meant to complement
+        them by doing three things that none of the above do: explain
+        CKKS with all of its optimizations in mind, show how everything
+        is actually built in practice, and explain how real programs
+        are built with CKKS. The goal of this guide is to convince you not
+        just that CKKS is possible, but that it is performant.
+      </p>
+
       <p>
         Please email
         <a href="mailto:hello@holdenmui.com">hello@holdenmui.com</a>

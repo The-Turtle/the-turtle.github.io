@@ -111,10 +111,20 @@
     const renderLanding = () => {
         const el = document.getElementById('sections');
         if (!el) return;
-        el.innerHTML = SECTIONS.map((s, i) => `
+        const tag = (st) => st === 'todo' ? ' <span class="todo">[TODO]</span>'
+                          : st === 'incomplete' ? ' <span class="todo">[INCOMPLETE]</span>'
+                          : '';
+        el.innerHTML = SECTIONS.map((s, i) => {
+            const sub = s.posts.length
+                ? `<ul class="post-list">${s.posts.map((p, j) => `
+                  <li><a class="post-title" href="${s.slug}/${p.slug}.html">${i + 1}.${j + 1} ${p.title}</a>${tag(p.status)}</li>`).join('')}</ul>`
+                : '';
+            return `
             <li>
-              <a class="post-title" href="${s.slug}/index.html">Part ${i + 1}. ${s.title}</a>
-            </li>`).join('');
+              <a class="post-title" href="${s.slug}/index.html">Part ${i + 1}. ${s.title}</a>${tag(s.status)}
+              ${sub}
+            </li>`;
+        }).join('');
     };
 
     /* ---- Section page ----

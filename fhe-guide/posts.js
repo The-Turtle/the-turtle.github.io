@@ -21,18 +21,18 @@ const SECTIONS = [
         posts: [
             { slug: 'landscape',    title: 'The FHE landscape' },
             { slug: 'use-cases',    title: 'What can you do with FHE?' },
-            { slug: 'alternatives', title: 'Alternatives to FHE' },
-            { slug: 'limitations',  title: 'Limitations of FHE' }
+            { slug: 'alternatives', title: 'Alternatives to FHE', status: 'todo' },
+            { slug: 'limitations',  title: 'Limitations of FHE', status: 'todo' }
         ]
     },
     {
         slug: 'building',
         title: 'How do you build with CKKS?',
         posts: [
-            { slug: 'interface',  title: 'Interface' },
-            { slug: 'cost',       title: 'Cost model' },
-            { slug: 'parameters', title: 'Parameter selection' },
-            { slug: 'examples',   title: 'Examples' }
+            { slug: 'interface',  title: 'Interface', status: 'todo' },
+            { slug: 'cost',       title: 'Cost model', status: 'todo' },
+            { slug: 'parameters', title: 'Parameter selection', status: 'todo' },
+            { slug: 'examples',   title: 'Examples', status: 'todo' }
         ]
     },
     {
@@ -44,26 +44,26 @@ const SECTIONS = [
             { slug: 'fundamental',   title: 'Fundamental operations' },
             { slug: 'composite',     title: 'Composite operations' },
             { slug: 'bootstrapping', title: 'Bootstrapping' },
-            { slug: 'multiparty',    title: 'Multiparty key generation' },
-            { slug: 'optimizations', title: 'Optimizations' }
+            { slug: 'multiparty',    title: 'Multiparty key generation', status: 'incomplete' },
+            { slug: 'optimizations', title: 'Optimizations', status: 'incomplete' }
         ]
     },
     {
         slug: 'implementation',
         title: 'How is CKKS implemented?',
         posts: [
-            { slug: 'computation-graphs',  title: 'Computation graphs' },
-            { slug: 'optimization-passes', title: 'Optimization passes' },
-            { slug: 'data-layout',         title: 'Data layout' }
+            { slug: 'computation-graphs',  title: 'Computation graphs', status: 'todo' },
+            { slug: 'optimization-passes', title: 'Optimization passes', status: 'todo' },
+            { slug: 'data-layout',         title: 'Data layout', status: 'todo' }
         ]
     },
     {
         slug: 'security',
         title: 'How secure is CKKS?',
         posts: [
-            { slug: 'models',  title: 'Security models' },
-            { slug: 'trust',   title: 'Trust assumptions' },
-            { slug: 'attacks', title: 'Attacks' }
+            { slug: 'models',  title: 'Security models', status: 'incomplete' },
+            { slug: 'trust',   title: 'Trust assumptions', status: 'incomplete' },
+            { slug: 'attacks', title: 'Attacks', status: 'incomplete' }
         ]
     },
     {
