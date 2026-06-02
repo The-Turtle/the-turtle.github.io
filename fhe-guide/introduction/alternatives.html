@@ -94,15 +94,20 @@
           makes possible. That interaction is costly, since a protocol
           must pay in either many rounds of communication or high
           bandwidth, and at least one of the two grows with the
-          complexity of the computation. The back-and-forth is hard to
-          parallelize, and many protocols also require an expensive
-          offline precomputation phase before any real work can begin.
+          complexity of the computation. The round-trips between
+          parties add network latency that local parallelism cannot
+          hide, and many protocols also require an expensive offline
+          precomputation phase before any real work can begin.
         </p>
 
         <p>
-          FHE-based MPC inherits FHE's non-interactive,
-          upload-once-compute-later, low-communication character, which
-          is exactly what standard MPC gives up.
+          FHE-based MPC keeps both the interaction and the
+          communication independent of the computation itself: each
+          party encrypts its inputs once and the server computes
+          without further input from them, with only a lightweight
+          setup and a final decryption requiring coordination. That
+          circuit-size-independent communication is exactly what
+          standard MPC gives up.
         </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>

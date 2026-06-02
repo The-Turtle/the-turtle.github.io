@@ -16,6 +16,9 @@
         border: 1px solid var(--fhe-rule);
         border-radius: 4px;
       }
+      .use-case-gif.half-width {
+        max-width: 50%;
+      }
     </style>
   </head>
   <body>
@@ -26,11 +29,11 @@
       <article>
         <h1>What can you do with FHE?</h1>
 
-        <p>Here are five demonstrations of programs that can be built in FHE. The first two, Minesweeper and Conway's Game of Life, are toy examples built for fun rather than realistic applications. The last three, regression, image classification, and language model inference, are genuine use cases whose purpose is to keep data private. Every GIF below runs in real time, reflecting the actual runtime of each FHE program under secure parameters. An explanation of how these demos work behind the scenes is given in <a href="../building/examples.html">section 2.4</a>.</p>
+        <p>Here are five demonstrations of programs that can be built in FHE. The first two, Minesweeper and Conway's Game of Life, are toy examples built for fun rather than realistic applications. The last three, regression, image classification, and language model inference, are genuine use cases whose purpose is to keep data private. Every clip below runs in real time, reflecting the actual runtime of each FHE program under secure parameters. An explanation of how these demos work behind the scenes is given in <a href="../building/examples.html">section 2.4</a>.</p>
 
         <h2>Minesweeper</h2>
 
-        <img class="use-case-gif" src="../files/minesweeper.gif" alt="Minesweeper demo" />
+        <video class="use-case-gif half-width" src="../files/minesweeper.mp4" autoplay loop muted playsinline controls aria-label="Minesweeper demo"></video>
 
         <p>To start a Minesweeper game, the client chooses the board size and the number of mines, both in plaintext, and the server generates a random board that it keeps hidden from the client. The client plays by sending its moves to the server encrypted, and the server replies with the encrypted neighbor mine counts of the revealed cells, which the client decrypts to read. If any revealed cell is a mine, the reply comes back as a corrupted ciphertext instead of valid counts.</p>
 
@@ -38,15 +41,15 @@
 
         <h2>Conway's Game of Life</h2>
 
-        <img class="use-case-gif" src="../files/conways-game-of-life.gif" alt="Conway's Game of Life demo" />
+        <video class="use-case-gif" src="../files/conways-game-of-life.mp4" autoplay loop muted playsinline controls aria-label="Conway's Game of Life demo"></video>
 
-        <p>In the Conway's Game of Life demo, the server keeps an encrypted 128&times;128 Game of Life board. <span class="lie" data-truth="the 100 ms figure is only an average; in reality every third generation is slow because it requires bootstrapping, while the other two are very short">Every 100&nbsp;ms</span> it advances the board by one generation, computed entirely on the ciphertext, then sends the new board to the client to decrypt and display. The client therefore sees the board evolve continuously and in real time, while the server never learns which cells are alive.</p>
+        <p>In the Conway's Game of Life demo, the server keeps an encrypted 128&times;128 Game of Life board. <span class="lie" data-truth="the 70 ms figure is only an average; in reality every third generation is slow because it requires bootstrapping, while the other two are very short">Every 70&nbsp;ms</span> it advances the board by one generation, computed entirely on the ciphertext, then sends the new board to the client to decrypt and display. The client therefore sees the board evolve continuously and in real time, while the server never learns which cells are alive.</p>
 
         <p>The client can also shape the simulation while it runs. At any moment the client can draw a 128&times;128 pattern of its own, encrypt the pattern, and send the encryption to the server, which merges the pattern into the live board by taking the encrypted union of the two. New patterns can be dropped in at any time without pausing the evolution.</p>
 
         <h2>Regression</h2>
 
-        <img class="use-case-gif" src="../files/regression.gif" alt="Regression demo" />
+        <video class="use-case-gif" src="../files/regression.mp4" autoplay loop muted playsinline controls aria-label="Regression demo"></video>
 
         <p>The regression demo fits a regression model, either linear or logistic, over encrypted data contributed by many different people, without any of them revealing their data.</p>
 
@@ -65,9 +68,9 @@
 
         <h2>Image classification</h2>
 
-        <img class="use-case-gif" src="../files/image-classification.gif" alt="Image classification demo" />
+        <video class="use-case-gif half-width" src="../files/image-classification.mp4" autoplay loop muted playsinline controls aria-label="Image classification demo"></video>
 
-        <p>For the image classification demo, the model must be trained ahead of time on ordinary, unencrypted data, and only inference runs under encryption. The specific demo in the animation above classifies handwritten digits from MNIST: the client encrypts a 28&times;28 grayscale image and sends it to the server, which evaluates the whole network on the ciphertext and produces the encrypted class logits. The client decrypts those and takes the largest as the predicted digit.</p>
+        <p>For the image classification demo, the model must be trained ahead of time on ordinary, unencrypted data, and only inference runs under encryption. The specific demo in the clip above classifies handwritten digits from MNIST: the client encrypts a 28&times;28 grayscale image and sends it to the server, which evaluates the whole network on the ciphertext and produces the encrypted class logits. The client decrypts those and takes the largest as the predicted digit.</p>
 
         <p>The network has about 17,000 parameters and is the following stack of layers:</p>
 
@@ -79,11 +82,11 @@
 
         <h2>Language model inference</h2>
 
-        <img class="use-case-gif" src="../files/language-model-inference.gif" alt="Language model inference demo" />
+        <video class="use-case-gif" src="../files/language-model-inference.mp4" autoplay loop muted playsinline controls aria-label="Language model inference demo"></video>
 
         <p>For the language model demo, the model is trained on unencrypted data, and at inference time it takes an encrypted text string as input. The tokenizer and the embedding matrix remain unencrypted, so the prompt is tokenized and embedded into vectors in the clear; everything from there on is encrypted.</p>
 
-        <p>In the specific demo in the animation above, the model is a 4-layer, GPT-2-style decoder-only transformer with embedding dimension $256$, vocabulary size $16384$, context length $128$, and $2$ attention heads of dimension $128$ each, for a total of $7{,}372{,}816$ parameters (the token embedding matrix is weight-tied with the LM head, so it is counted once). It is norm-free: rather than layer normalization, each sub-layer is gated by a learnable scalar that starts at zero (ReZero), so a block of the network computes</p>
+        <p>In the specific demo in the clip above, the model is a 4-layer, GPT-2-style decoder-only transformer with embedding dimension $256$, vocabulary size $16384$, context length $128$, and $2$ attention heads of dimension $128$ each, for a total of $7{,}372{,}816$ parameters (the token embedding matrix is weight-tied with the LM head, so it is counted once). It is norm-free: rather than layer normalization, each sub-layer is gated by a learnable scalar that starts at zero (ReZero), so a block of the network computes</p>
 
         <p>$$x \leftarrow x + \alpha_{\text{attn}}\,\text{Attn}(x), \qquad x \leftarrow x + \alpha_{\text{ffn}}\,\text{FFN}(x).$$</p>
 

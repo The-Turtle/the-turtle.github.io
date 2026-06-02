@@ -95,7 +95,7 @@
         <p>
           The CKKS scheme can only natively evaluate polynomials, built
           from additions and multiplications of ciphertexts. Every
-          other function, including comparison, division, and modular
+          other function, such as comparison, division, and modular
           reduction, has to be approximated by a polynomial. For
           workloads that genuinely need exact non-polynomial
           operations, a different scheme is a better fit: TFHE
@@ -117,7 +117,7 @@
           In practice this is usually not a real obstacle. The inputs to
           these functions usually have known bounds, so the
           approximation can be fit to a range that comfortably covers
-          every value it will see.
+          every value it will see to any desired accuracy.
         </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
