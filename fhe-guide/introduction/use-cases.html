@@ -19,6 +19,9 @@
       .use-case-gif.half-width {
         max-width: 50%;
       }
+      .use-case-gif.two-thirds-width {
+        max-width: 66.6667%;
+      }
     </style>
   </head>
   <body>
@@ -49,9 +52,23 @@
 
         <h2>Regression</h2>
 
-        <video class="use-case-gif" src="../files/regression.mp4" autoplay loop muted playsinline aria-label="Regression demo"></video>
+        <video class="use-case-gif two-thirds-width" src="../files/regression.mp4" autoplay loop muted playsinline aria-label="Regression demo"></video>
 
         <p>The regression demo fits a regression model, either linear or logistic, over encrypted data contributed by many different people, without any of them revealing their data.</p>
+
+        <p>Before encryption, each feature is standardized using a public mean and standard deviation, supplied as the expected means and expected standard deviations. These are not secret: they only need to be reasonable estimates of each feature's true mean and spread across the dataset. For the best accuracy they can themselves be computed under FHE and then decrypted, so that even these summary statistics are obtained without exposing any individual's data.</p>
+
+        <p>The model is fit by gradient descent. Writing $X$ for the standardized feature matrix, $y$ for the target vector, $\beta$ for the coefficients, and $n$ for the number of samples, each iteration applies the update</p>
+
+        <p>$$\beta \;\leftarrow\; \beta - \eta\left(\tfrac{1}{n}\,X^\top(\hat y - y) + \lambda\,\beta\right),$$</p>
+
+        <p>where $\hat y = X\beta$ for linear regression and $\hat y = \sigma(X\beta)$ for logistic regression. The learning rate $\eta$ controls the step size, the ridge parameter $\lambda$ penalizes large coefficients, and the update is repeated for a chosen number of iterations, all homomorphically on the encrypted data.</p>
+
+        <p>For logistic regression, the sigmoid $\sigma$ is not a polynomial, so CKKS cannot evaluate it directly. A cubic approximation is good enough: on the interval $[-8, 8]$ the sigmoid is closely matched by</p>
+
+        <p>$$\sigma(x) \;\approx\; 0.5 + 0.15012\,x - 0.001593\,x^3,$$</p>
+
+        <p>and this polynomial stands in for $\sigma$ at every step of training.</p>
 
         <p>In a deployment setting, the participants first run a multiparty protocol that produces a single shared public key. Each of them encrypts their own data under that key and uploads the ciphertext, the server runs the regression homomorphically over the combined encrypted data, and at the end the participants coordinate to decrypt only the final result: the fitted coefficients of the model.</p>
 
