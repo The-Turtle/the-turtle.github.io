@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="../../files/images/turtleicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <header id="site-header"></header>
+
+    <main>
+      <p class="post-breadcrumb" id="post-breadcrumb"></p>
+      <article>
+        <h1>What is FHE?</h1>
+
+        <p>
+          Today, encryption is ubiquitous: it's used to privately send
+          messages, store sensitive data, and secure online
+          transactions. Yet in traditional cryptography, in order to
+          use the encrypted data to do something useful, it must be
+          decrypted first. It seems obvious that it shouldn't be
+          possible to compute on encrypted data: after all, how could
+          data possibly be used without first decrypting it? Encryption
+          should destroy structure.
+        </p>
+        <p>
+          Fully homomorphic encryption (FHE) breaks this assumption. It
+          decouples the ownership of data from the infrastructure that
+          processes it: <i>computation in transit</i>, rather than
+          <i>computation at rest</i>. Using a fully homomorphic
+          encryption scheme, it is possible for:
+        </p>
+        <ul>
+          <li>medical researchers to draw conclusions from encrypted patient data,</li>
+          <li>banks to detect money laundering without sharing transaction data,</li>
+          <li>servers to perform biometric verification while preserving user privacy, and</li>
+          <li>buyers of bulk data to verify its quality before they purchase it.</li>
+        </ul>
+        <p>
+          More broadly, FHE unlocks computations that previously couldn't
+          happen at all, because they would have required data sharing
+          that no party was willing to do.
+        </p>
+
+        <h2 id="definition">Definition</h2>
+
+        <p>
+          Mathematically, fix a <i>plaintext space</i> $\mathcal{M}$,
+          the set of values the scheme operates on. An encryption
+          scheme is <i>fully homomorphic</i> if, for any function
+          $f : \mathcal{M}^n \to \mathcal{M}$ of any number of inputs,
+          there is a corresponding operation $\textsf{Eval}_f$ that
+          transforms ciphertexts such that
+        </p>
+        $$
+          \textsf{Dec}_\mathrm{sk}\bigl(\textsf{Eval}_f(\textsf{Enc}_\mathrm{pk}(m_1), \ldots, \textsf{Enc}_\mathrm{pk}(m_n))\bigr) = f(m_1, \ldots, m_n)
+        $$
+        <p>
+          for all plaintexts $m_1, \ldots, m_n \in \mathcal{M}$. In
+          other words, computing on the ciphertexts produces the same
+          result as computing on the plaintexts, just encrypted.
+        </p>
+        <p>
+          The plaintext space $\mathcal{M}$ can take many forms. Some
+          examples that real schemes use are:
+        </p>
+        <ul>
+          <li>
+            a single bit, $\mathcal{M} = \{0, 1\}$ (or a small integer
+            modulo $p$);
+          </li>
+          <li>
+            a vector of $k$ integers modulo a prime $p$, with $k$
+            typically a few thousand,
+            $\mathcal{M} = (\mathbb{Z}/p\mathbb{Z})^k$;
+          </li>
+          <li>
+            a vector of $k$ real or complex numbers,
+            $\mathcal{M} = \mathbb{C}^k$ &mdash; in which case the
+            equality above typically holds only <i>approximately</i>,
+            with decryption recovering the result up to a small
+            rounding error, much like ordinary floating-point
+            arithmetic.
+          </li>
+        </ul>
+        <p>
+          This definition is informal, and glosses over details such as
+          how keys are generated, what security the scheme provides, and
+          how the approximate case behaves precisely.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> attempt to formalize this definition so that
+          it rules out &ldquo;trivial&rdquo; constructions, such as a
+          scheme that isn't really homomorphic, one whose ciphertexts
+          hide nothing, or one that simply defers all of the computation
+          to decryption.
+        </div>
+
+        <h2 id="parties">Single vs. multiparty</h2>
+
+        <p>
+          Whether a deployment is single-party or multiparty comes
+          down to who holds the secret key.
+        </p>
+        <p>
+          In <i>single-party</i> FHE, one party owns both the data and
+          the secret key. It encrypts its data, sends the ciphertexts to
+          an untrusted server to compute on, and decrypts the result the
+          server returns. The server does the work but never sees
+          anything in the clear. This is the classic setting of
+          outsourcing a computation to a party you don't trust with the
+          data.
+        </p>
+        <p>
+          In <i>multiparty</i> FHE, the secret key is split across
+          several parties so that no single party ever holds the entire
+          key; as a result, no one can decrypt on their own. Several
+          parties, each wanting to keep their own data private,
+          can contribute their encrypted data, have a server compute
+          jointly over all of it, and recover the result only once
+          enough of them agree that releasing it preserves their
+          privacy. This makes it possible to compute over the combined
+          data of parties who are unwilling to reveal their inputs to
+          one another.
+        </p>
+        <p>
+          Both setups run the same underlying scheme and differ only in
+          how keys are generated and how decryption works.
+        </p>
+      </article>
+      <nav class="post-nav" id="post-nav"></nav>
+    </main>
+
+    <script>window.PAGE = { kind: 'post', section: 'introduction', slug: 'what-is-fhe' };</script>
+    <script src="../posts.js"></script>
+    <script src="../layout.js"></script>
+  </body>
+</html>
