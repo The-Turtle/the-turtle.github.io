@@ -14,9 +14,85 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Cost model</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
 
-        <p>What makes an FHE program fast or slow: multiplicative levels, ciphertext noise (which only ever grows), the relative cost of additions, multiplications, and rotations, and why operations at higher levels are more expensive.</p>
+        <p>
+          The cost of a CKKS program has two parts: the time it takes
+          to run and the space it needs to hold its keys and
+          ciphertexts. This page covers both at the default
+          parameters.
+        </p>
+
+        <h2>Time cost</h2>
+
+        <p>
+          It is most useful to reason about running time at three
+          increasing levels of granularity.
+        </p>
+
+        <h3 id="level-1">Level 1: minimize bootstrapping</h3>
+
+        <p>
+          In typical applications,
+          <a href="../internals/bootstrapping.html">bootstrapping</a>
+          accounts for roughly $50\%$ to $80\%$ of the total
+          computation time. The first-order rule is thus to minimize
+          the number of bootstraps. This mostly comes down to keeping
+          the multiplicative depth low so that fewer refreshes are
+          needed.
+        </p>
+
+        <h3 id="level-2">Level 2: minimize key-switching</h3>
+
+        <p>
+          Once bootstrapping is under control, the next dominant cost
+          is
+          <a href="../internals/fundamental.html#key-switching">key-switching</a>,
+          the subroutine underlying rotation and the multiplication of
+          two ciphertexts. A useful accounting is in terms of how many
+          key-switches each operation incurs:
+        </p>
+        <ul>
+          <li>A single rotation incurs one key-switch.</li>
+          <li>A dot product of two length-$k$ lists of ciphertexts, which computes the sum of pointwise products $\sum_{i=1}^{k} \mathbf{u}_i \odot \mathbf{v}_i$, incurs a single key-switch regardless of $k$.</li>
+          <li>Polynomial evaluation of degree $d$ costs about $\tfrac{3}{2}\sqrt{2d}$ key-switches.</li>
+          <li>Matrix multiplication costs about $2\sqrt{m}$ key-switches, where $m$ is the number of nonzero diagonals of the matrix.</li>
+        </ul>
+
+        <h3 id="level-3">Level 3: benchmark it</h3>
+
+        <p>
+          The heuristics above are only approximate. In particular,
+          every computation runs more slowly at a higher level than
+          the same computation at the lower level, and this
+          relationship is hard to capture in a simple formula. For
+          anything more precise, benchmark it directly.
+        </p>
+
+        <h2>Space cost</h2>
+
+        <p>
+          The space a program needs is the sum of two things: the keys
+          it has generated and the ciphertexts it holds live at any one
+          time.
+        </p>
+        <ul>
+          <li>
+            Each public key (a rotation, relinearization, or
+            conjugation key) is about $126$ MiB.
+          </li>
+          <li>
+            A ciphertext at level $\ell$ takes about $(\ell + 1)$ MiB.
+          </li>
+        </ul>
+
+        <p>
+          Adding these up gives the working set, which must fit in GPU
+          memory. A typical GPU has on the order of $16$ to $80$ GB.
+          When a computation's working set is too large for a single
+          GPU, whether from many keys or many large intermediate
+          ciphertexts held at once, the work can be sharded across
+          additional GPUs.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>

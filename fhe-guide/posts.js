@@ -30,7 +30,7 @@ const SECTIONS = [
         title: 'How do you build with CKKS?',
         posts: [
             { slug: 'interface',  title: 'Interface' },
-            { slug: 'cost',       title: 'Cost model', status: 'todo' },
+            { slug: 'cost',       title: 'Cost model' },
             { slug: 'parameters', title: 'Parameter selection', status: 'todo' },
             { slug: 'examples',   title: 'Examples', status: 'todo' }
         ]
