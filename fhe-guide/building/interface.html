@@ -14,9 +14,238 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Interface</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
 
-        <p>The CKKS API: vector encryption with 2<sup>N&minus;1</sup> slots, ciphertext-ciphertext and ciphertext-plaintext operations (add, multiply, rotate, conjugate, dot product), and the multiparty key-generation and decryption APIs.</p>
+        <p>
+          This section walks through the CKKS interface in the order
+          one would use it: choosing parameters, generating keys,
+          encrypting, computing, and decrypting. Throughout, we assume
+          the standard parameter set from
+          <a href="parameters.html">Section&nbsp;2.3</a>.
+        </p>
+
+        <h2>Parameter selection</h2>
+
+        <p>
+          The parameters (ring dimension, number of levels, precision,
+          and so on) are fixed once, ahead of time;
+          <a href="parameters.html">Section&nbsp;2.3</a> covers how to
+          choose them. The rest of this page assumes the standard
+          parameter set.
+        </p>
+
+        <h2>Key generation</h2>
+
+        <p>Key generation comes in two forms:</p>
+        <ul>
+          <li>
+            <b>Single-party.</b> Key generation happens once, on the
+            client that owns the data: the client samples a secret key
+            and derives the matching public and evaluation keys.
+          </li>
+          <li>
+            <b>Multiparty.</b> No single party may hold the whole
+            secret key, so the keys are produced by a three-round
+            ceremony among the $n$ parties (two rounds if the
+            computation never bootstraps; see
+            <a href="#bootstrapping">below</a>).
+          </li>
+        </ul>
+
+        <p>
+          One part of key generation deserves special attention: the
+          <a href="#rotation">rotation keys</a>. Every distinct
+          rotation needs its own rotation key, and these keys must be
+          generated ahead of time: a rotation whose key was never
+          generated simply cannot be performed. The catch is that each
+          key is roughly $126$ MB apiece at the standard parameters,
+          so generating a key for every conceivable rotation is not an
+          option. Users should generate only the rotation keys the
+          computation actually uses.
+        </p>
+
+        <h2>Encryption</h2>
+
+        <p>
+          A CKKS plaintext vector is a vector in $\mathbb{C}^{32768}$.
+          Each coordinate is called a <em>slot</em>. Encryption turns
+          such a plaintext vector into a ciphertext. At the standard
+          parameters, the ciphertext stores each slot to about $40$
+          bits of precision after the binary point, and the entries
+          should have magnitude at most about $2^{12}$.
+        </p>
+
+        <p>
+          Most computations don't have exactly $32768$ values to
+          encrypt, so users will have to decide how to lay the data
+          out across the slots. Three common strategies are:
+        </p>
+        <ul>
+          <li>
+            <b>Pad with zeros.</b> Place the data in the first few
+            slots and fill the rest with zeros. This is the simplest
+            option when there are fewer than $32768$ values.
+          </li>
+          <li>
+            <b>Space evenly.</b> Spread the values evenly around the
+            $32768$ slots, with zeros in between. This is convenient
+            when later operations (such as rotations) need the data
+            arranged at regular strides.
+          </li>
+          <li>
+            <b>Duplicate.</b> Repeat the values to fill the slots.
+            Replicating data is often useful for arranging the inputs
+            of a matrix multiplication or a batched computation.
+          </li>
+        </ul>
+
+        <p>
+          Attached to every ciphertext is a nonnegative integer
+          called its <em>level</em>. A fresh encryption is produced at
+          level $17$. The level is a budget: it starts high and can
+          only go down as the computation proceeds. The only way to
+          raise it again is <a href="#bootstrapping">bootstrapping</a>,
+          an expensive operation that turns a low-level ciphertext
+          back into a high-level one. The next section describes
+          exactly how each operation spends this budget.
+        </p>
+
+        <h2>Computation</h2>
+
+        <p>
+          CKKS exposes a small set of homomorphic operations. Each
+          one produces a new ciphertext and has a well-defined effect
+          on the level. The table below summarizes those effects;
+          $\ell$, $\ell_1$, and $\ell_2$ denote the levels of the
+          inputs.
+        </p>
+
+        <table>
+          <thead>
+            <tr><th>Operation</th><th>Resulting level</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Add (levels $\ell_1, \ell_2$)</td><td>$\min(\ell_1, \ell_2)$</td></tr>
+            <tr><td>Subtract (levels $\ell_1, \ell_2$)</td><td>$\min(\ell_1, \ell_2)$</td></tr>
+            <tr><td>Multiply by plaintext (level $\ell$)</td><td>$\ell - 1$ in general; $\ell$ if the plaintext is a scalar integer</td></tr>
+            <tr><td>Multiply by ciphertext (levels $\ell_1, \ell_2$)</td><td>$\min(\ell_1, \ell_2) - 1$</td></tr>
+            <tr><td>Rotation (level $\ell$)</td><td>$\ell$</td></tr>
+            <tr><td>Conjugation (level $\ell$)</td><td>$\ell$</td></tr>
+            <tr><td>Polynomial evaluation, degree $d$ (level $\ell$)</td><td>$\ell - \lceil \log_2(d + 1) \rceil$</td></tr>
+            <tr><td>Matrix multiplication (level $\ell$)</td><td>$\ell - 1$</td></tr>
+            <tr><td>Bootstrapping (level $0$)</td><td>$17$</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="arithmetic">Addition and subtraction</h3>
+
+        <p>
+          Addition and subtraction are the cheapest operations: they
+          combine two ciphertexts pointwise and leave the result at
+          the minimum of the two input levels.
+        </p>
+
+        <h3 id="multiplication">Multiplication</h3>
+
+        <p>Multiplication comes in two flavors, both pointwise (Hadamard):</p>
+        <ul>
+          <li>
+            <b>By a plaintext vector.</b> Multiplies each slot by the
+            corresponding plaintext entry and drops the level by one,
+            unless the plaintext is a
+            <span class="lie" data-truth="other special plaintexts cost no level either, such as the imaginary unit i.">constant
+            integer scalar</span>, in which case no level is consumed.
+          </li>
+          <li>
+            <b>By another ciphertext.</b> Multiplies the two encrypted
+            vectors pointwise and drops the level to one below the
+            minimum of the two inputs.
+          </li>
+        </ul>
+
+        <h3 id="rotation">Rotation</h3>
+
+        <p>
+          Rotation cyclically shifts the slots: rotating by $i$ sends
+          $$(v_0, v_1, \ldots, v_{32767}) \mapsto (v_i, v_{i+1}, \ldots, v_{i-1}),$$
+          with indices taken modulo $32768$. It is the only way to
+          move data between slots, and it leaves the level unchanged.
+          Each rotation amount needs its own rotation key, generated
+          ahead of time; a rotation whose key was not generated cannot
+          be performed.
+        </p>
+
+        <h3 id="conjugation">Conjugation</h3>
+
+        <p>
+          Conjugation replaces each slot by its complex conjugate,
+          sending
+          $$(v_0, v_1, \ldots, v_{32767}) \mapsto (\bar v_0, \bar v_1, \ldots, \bar v_{32767}).$$
+          It is pointwise and leaves the level unchanged.
+        </p>
+
+        <h3 id="polynomial-evaluation">Polynomial evaluation</h3>
+
+        <p>
+          <em>Polynomial evaluation</em> can be built out of the
+          operations above, but is exposed directly for convenience.
+          It applies a polynomial slotwise to an encrypted vector, and
+          a different polynomial can be applied to each slot if
+          desired. Evaluation costs $\lceil \log_2(d + 1) \rceil$
+          levels, where $d$ is the largest degree among the per-slot
+          polynomials. One caveat for
+          high-degree polynomials: they can only be evaluated
+          accurately when the encrypted values lie in the range
+          $[-2, 2]$, so inputs needs to be scaled into that range
+          first.
+        </p>
+
+        <h3 id="matrix-multiplication">Matrix multiplication</h3>
+
+        <p>
+          <em>Matrix multiplication</em> can also be built out of the
+          operations above, but is exposed directly for convenience.
+          It multiplies an encrypted vector by a plaintext matrix and
+          consumes a single level, regardless of the size of the
+          matrix.
+        </p>
+
+        <h3 id="bootstrapping">Bootstrapping</h3>
+
+        <p>
+          Bootstrapping takes a level-$0$ ciphertext and returns a
+          level-$17$ ciphertext encrypting the same vector, preserving
+          about $13$ bits of precision after the binary point. It
+          assumes its input lies within the $2^{12}$ magnitude range,
+          so intermediate values must be kept in this range before a
+          bootstrap.
+        </p>
+
+        <h2>Decryption</h2>
+
+        <p>Decryption always happens client-side, and comes in two forms:</p>
+        <ul>
+          <li>
+            <b>Single-party.</b> The client that generated the key
+            takes the final ciphertext and decrypts it directly to
+            recover the result vector.
+          </li>
+          <li>
+            <b>Multiparty.</b> No single party holds the whole secret
+            key, so at least $t$ of the $n$ parties must each compute
+            a partial decryption, called a <em>decryption share</em>,
+            and exchange those shares with one another; combining any
+            $t$ of them recovers the plaintext.
+          </li>
+        </ul>
+
+        <p>
+          At this stage, a small amount of <em>noise flooding</em> is
+          added if needed. If noise flooding is <em>not</em> performed,
+          decryption results must be kept private and never shared with
+          the computation server. Otherwise, the server, which has seen
+          the corresponding ciphertexts, can use the leaked information
+          to recover the secret key.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>
