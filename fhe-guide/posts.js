@@ -32,7 +32,7 @@ const SECTIONS = [
         posts: [
             { slug: 'interface',  title: 'Interface' },
             { slug: 'cost',       title: 'Cost model' },
-            { slug: 'parameters', title: 'Parameter selection', status: 'todo' },
+            { slug: 'parameters', title: 'Parameter selection' },
             { slug: 'examples',   title: 'Examples', status: 'todo' }
         ]
     },

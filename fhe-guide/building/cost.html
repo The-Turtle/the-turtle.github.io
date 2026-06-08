@@ -37,8 +37,7 @@
           accounts for roughly $50\%$ to $80\%$ of the total
           computation time. The first-order rule is thus to minimize
           the number of bootstraps. This mostly comes down to keeping
-          the multiplicative depth low so that fewer refreshes are
-          needed.
+          the multiplicative depth low.
         </p>
 
         <h3 id="level-2">Level 2: minimize key-switching</h3>
@@ -52,7 +51,7 @@
           key-switches each operation incurs:
         </p>
         <ul>
-          <li>A single rotation incurs one key-switch.</li>
+          <li>A single rotation or conjugation incurs one key-switch.</li>
           <li>A dot product of two length-$k$ lists of ciphertexts, which computes the sum of pointwise products $\sum_{i=1}^{k} \mathbf{u}_i \odot \mathbf{v}_i$, incurs a single key-switch regardless of $k$.</li>
           <li>Polynomial evaluation of degree $d$ costs about $\tfrac{3}{2}\sqrt{2d}$ key-switches.</li>
           <li>Matrix multiplication costs about $2\sqrt{m}$ key-switches, where $m$ is the number of nonzero diagonals of the matrix.</li>
@@ -78,10 +77,10 @@
         <ul>
           <li>
             Each public key (a rotation, relinearization, or
-            conjugation key) is about $126$ MiB.
+            conjugation key) is about $126$ MB.
           </li>
           <li>
-            A ciphertext at level $\ell$ takes about $(\ell + 1)$ MiB.
+            A ciphertext at level $\ell$ takes about $(\ell + 1)$ MB.
           </li>
         </ul>
 

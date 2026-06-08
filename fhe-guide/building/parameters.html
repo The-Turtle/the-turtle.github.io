@@ -14,9 +14,354 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Parameter selection</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
 
-        <p>How to choose <i>N</i>, depth, precision, range, and security level for a given workload, and the tradeoffs between them.</p>
+        <p>
+          Before a CKKS deployment, a handful of parameters have to be
+          fixed, such as the ring dimension, the number of levels, and
+          the security level. This page lists the parameters and their
+          defaults, states the constraints they must jointly satisfy,
+          and explains what changing each one does to runtime,
+          precision, and security.
+        </p>
+        <p>
+          If you are not a CKKS expert, you should use the default
+          parameter set. It is a well-tested, balanced choice, and most
+          of the parameters below won't make sense until you've read
+          <a href="../internals/index.html">Part&nbsp;3</a>. An expert
+          who tunes parameters carefully to a specific workload can
+          usually win a factor of about $1.5$ in performance.
+          The rest of this page is for readers who want to understand
+          the tradeoffs before reaching for the knobs.
+        </p>
+
+        <h2 id="default-parameters">The default parameters</h2>
+
+        <p>
+          The table below lists every tunable parameter with its
+          default value and a one-line description of what it controls.
+          Many of these are explained in full in
+          <a href="../internals/index.html">Part&nbsp;3</a>; here we
+          describe them only by their effect on the computation.
+        </p>
+
+        <table>
+          <thead>
+            <tr><th>Parameter</th><th>Default</th><th>Controls</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ring dimension $N$</td>
+              <td>$65536$</td>
+              <td>Controls the number of slots, which is $N/2 = 32768$. Must be a power of two.</td>
+            </tr>
+            <tr>
+              <td>Levels $L$</td>
+              <td>$17$</td>
+              <td>Multiplicative depth available for computation between bootstraps.</td>
+            </tr>
+            <tr>
+              <td>Security level</td>
+              <td>$128$-bit</td>
+              <td>How much work an attacker must do to break the encryption.</td>
+            </tr>
+            <tr>
+              <td>Multiparty $(t, n)$</td>
+              <td>$(1, 1)$</td>
+              <td>Number of key-holders $n$ and the threshold $t$ needed to decrypt. The default $t = 1$, $n = 1$ is ordinary single-party FHE, with no noise flooding.</td>
+            </tr>
+            <tr>
+              <td>Small prime size</td>
+              <td>$\approx 2^{40}$</td>
+              <td>Size of $q_1, \ldots, q_L$. Sets the precision of the computation (about $40$ bits after the binary point).</td>
+            </tr>
+            <tr>
+              <td>Big prime size</td>
+              <td>$\approx 2^{55}$</td>
+              <td>Size of the base prime $q_0$ (and the bootstrap primes).</td>
+            </tr>
+            <tr>
+              <td>Key decomposition parameter $d$</td>
+              <td>$3$</td>
+              <td>Block size used in <a href="../internals/fundamental.html#key-switching">key-switching</a>. Trades key-switching speed against noise and modulus budget.</td>
+            </tr>
+            <tr>
+              <td>Key-switching prime sizes</td>
+              <td>$\approx 2^{60}$</td>
+              <td>Size of the $d$ auxiliary primes used during key-switching.</td>
+            </tr>
+            <tr>
+              <td>Error distribution $\sigma$</td>
+              <td>$3.2$</td>
+              <td>Standard deviation of the noise added during encryption and key generation.</td>
+            </tr>
+            <tr>
+              <td>Max plaintext magnitude</td>
+              <td>$2^{12}$</td>
+              <td>Largest slot value a bootstrap can refresh; intermediate values must stay within this range.</td>
+            </tr>
+            <tr>
+              <td>Ephemeral key-switch Hamming weight</td>
+              <td>$32$</td>
+              <td>Number of nonzero coefficients of the sparse secret used internally during bootstrapping.</td>
+            </tr>
+            <tr>
+              <td>Coefficients-to-slots depth</td>
+              <td>$3$</td>
+              <td>Levels a bootstrap spends on its first linear transform.</td>
+            </tr>
+            <tr>
+              <td>Mod-eval degree</td>
+              <td>$127$</td>
+              <td>Degree of the polynomial a bootstrap uses to strip the mod-raise term.</td>
+            </tr>
+            <tr>
+              <td>Slots-to-coefficients depth</td>
+              <td>$3$</td>
+              <td>Levels a bootstrap spends on its last linear transform.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="constraints">Parameter constraints</h2>
+
+        <p>
+          The parameters are not independent: security imposes a
+          ceiling that ties several of them together. One key quantity
+          is the <em>maximum modulus</em> &mdash; the product of every
+          prime that ever appears in the modulus chain, including the
+          extra primes added during bootstrapping and the auxiliary
+          primes used for key-switching:
+        </p>
+        $$
+          Q_{\max}
+          \;=\;
+          \underbrace{q_0}_{\text{base}}
+          \cdot
+          \underbrace{q_1 \cdots q_L}_{\text{computation}}
+          \cdot
+          \underbrace{q_{L+1} \cdots q_{L+D}}_{\text{bootstrap}}
+          \cdot
+          \underbrace{p_0 \cdots p_{d-1}}_{\text{key-switching}}.
+        $$
+        <p>
+          Measuring everything in bits, this is approximately
+        </p>
+        $$
+          \log_2 Q_{\max}
+          \;\approx\;
+          \underbrace{40\,L}_{\text{small primes}}
+          \;+\;
+          \underbrace{55\,(1 + D)}_{\text{big primes}}
+          \;+\;
+          \underbrace{60\,d}_{\text{KS primes}},
+        $$
+        <p>
+          where $D$ is the <em>bootstrapping depth</em>, the number of
+          extra primes a bootstrap consumes:
+        </p>
+        $$
+          \begin{aligned}
+            D
+            &= (\text{coeff-to-slots depth})
+              + \bigl\lceil \log_2(\text{mod-eval degree} + 1) \bigr\rceil
+              + (\text{slots-to-coeff depth}) \\
+            &= 3 + 7 + 3 \\
+            &= 13.
+          \end{aligned}
+        $$
+        <p>
+          At the defaults ($L = 17$, $d = 3$), this gives
+          $\log_2 Q_{\max} \approx 40\cdot 17 + 55\cdot 14 + 60\cdot 3 = 1630$
+          bits.
+        </p>
+
+        <h3 id="security-ceiling">The security ceiling</h3>
+
+        <p>
+          The Ring-LWE problem is only hard if the modulus is small
+          relative to the ring dimension: for a fixed $N$ and security
+          level, there is a hard cap on $\log_2 Q_{\max}$. The table
+          below gives that cap at $128$-bit security; see
+          <a href="../security/index.html">Part&nbsp;5</a> for where
+          these numbers come from and how the security of a parameter
+          set is estimated.
+        </p>
+
+        <table>
+          <thead>
+            <tr><th>$N$</th><th>Max $\log_2 Q_{\max}$ (128-bit)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>$2^{12} = 4096$</td><td>$109$</td></tr>
+            <tr><td>$2^{13} = 8192$</td><td>$218$</td></tr>
+            <tr><td>$2^{14} = 16384$</td><td>$438$</td></tr>
+            <tr><td>$2^{15} = 32768$</td><td>$881$</td></tr>
+            <tr><td>$2^{16} = 65536$</td><td>$\approx 1760$</td></tr>
+            <tr><td>$2^{17} = 131072$</td><td>$\approx 3500$</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="other-constraints">Other security constraints</h3>
+
+        <ul>
+          <li>
+            The error $\sigma$ cannot be too small.
+            Shrinking the noise weakens Ring-LWE: with too little noise
+            it becomes vulnerable to the Arora&ndash;Ge algebraic
+            attack, which solves the problem outright.
+          </li>
+          <li>
+            The ephemeral Hamming weight cannot be too small.
+            The sparse secret used during bootstrapping must still
+            resist the sparse-secret variant of Ring-LWE.
+          </li>
+          <li>
+            The key-switching primes must be large enough.
+            Each one should exceed the big prime size.
+          </li>
+        </ul>
+
+        <h2 id="tuning">Tuning each parameter</h2>
+
+        <p>
+          Unless noted, assume every other parameter is held at its
+          default.
+        </p>
+
+        <h3 id="tuning-n">Ring dimension $N$</h3>
+        <p>
+          $N$ must be a power of two. It sets both the slot count
+          ($N/2$) and the cap on the maximum modulus.
+        </p>
+        <ul>
+          <li>
+            <strong>Larger $N$:</strong> more slots, and a much higher
+            modulus ceiling (so more levels are possible). The cost is
+            runtime, which grows like $N \log N$, and memory, which
+            grows like $N$.
+          </li>
+          <li>
+            <strong>Smaller $N$:</strong> faster and smaller, but the
+            modulus ceiling roughly halves with each halving of $N$, so
+            the number of available levels collapses. In particular,
+            bootstrapping alone needs about $950$ bits of modulus, so
+            it effectively requires $N \ge 2^{16}$ at the default prime
+            sizes.
+          </li>
+        </ul>
+        <p>
+          Combining the modulus formula with the security ceiling gives
+          a feel for how the available levels scale with $N$:
+        </p>
+        <table>
+          <thead>
+            <tr><th>$N$</th><th>Max computation levels</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>$2^{16}$</td><td>$\approx 20$</td></tr>
+            <tr><td>$2^{17}$</td><td>$\approx 63$</td></tr>
+            <tr><td>$2^{18}$</td><td>$\approx 150$</td></tr>
+          </tbody>
+        </table>
+
+        <h3 id="tuning-l">Levels $L$</h3>
+        <p>
+          More levels mean more multiplicative depth between
+          bootstraps, so this is almost always a win. Make $L$ as large
+          as the budget allows. The only limit is that the total
+          modulus must stay under the security ceiling.
+        </p>
+
+        <h3 id="tuning-security">Security level</h3>
+        <p>
+          Raising the target above $128$ bits lowers the modulus
+          ceiling for a given $N$, which means fewer levels &mdash; or,
+          to keep the same depth, a larger $N$ and a corresponding
+          slowdown. Reaching $256$-bit security with the default chain,
+          for instance, forces $N$ up to $2^{17}$.
+        </p>
+
+        <h3 id="tuning-multiparty">Multiparty $(t, n)$</h3>
+        <p>
+          Set $n$ and $t$ to whatever the application requires.
+          Any setting in which decryption results are revealed back to
+          the computing party (which includes most multiparty setups)
+          additionally requires <em>noise flooding</em>, which adds
+          overhead and reduces precision in every workload that needs
+          it.
+        </p>
+
+        <h3 id="tuning-precision">Small and big prime sizes</h3>
+        <p>
+          Together these set the dynamic range of a slot. The
+          <strong>small prime size</strong> ($\approx 2^{40}$) is the
+          scale factor, so it fixes the precision: values are
+          represented to roughly $40$ bits after the binary point. The
+          <strong>big prime size</strong> ($\approx 2^{55}$) sets the
+          headroom for the integer part, and hence the maximum
+          plaintext magnitude (about $2^{14}$ before raw overflow, and
+          $2^{12}$ in practice once bootstrapping headroom is
+          accounted for). Both feed directly into $Q_{\max}$, so larger
+          primes buy precision and range at the cost of security
+          budget.
+        </p>
+
+        <h3 id="tuning-decomposition">Key decomposition parameter $d$</h3>
+        <p>
+          $d$ is the block size used in
+          <a href="../internals/fundamental.html#key-switching">key-switching</a>:
+          a larger $d$ means fewer blocks, so key-switching (and
+          therefore rotation and ciphertext multiplication) runs
+          faster. The downside is that larger blocks introduce more
+          key-switching noise, and they require a larger auxiliary
+          modulus, which raises $Q_{\max}$ and so eats into the
+          security budget.
+        </p>
+
+        <h3 id="tuning-ks-primes">Key-switching prime sizes</h3>
+        <p>
+          These should be as large as possible without overflowing a
+          machine word or the security budget: larger auxiliary primes
+          mean less key-switching noise (better precision).
+        </p>
+
+        <h3 id="tuning-error">Error distribution $\sigma$</h3>
+        <p>
+          A smaller $\sigma$ weakens the Ring-LWE security guarantee; a
+          larger $\sigma$ adds more noise to every encryption and
+          key-switching, eroding precision. There is rarely a reason to
+          change $\sigma$.
+        </p>
+
+        <h3 id="tuning-bootstrap">Bootstrapping parameters</h3>
+        <ul>
+          <li>
+            <strong>Max plaintext magnitude</strong> ($2^{12}$): the
+            largest slot value a bootstrap can refresh.
+            Computations must keep their intermediate values inside
+            this range before every bootstrap.
+          </li>
+          <li>
+            <strong>Ephemeral Hamming weight</strong> ($32$): should be
+            as small as possible without dropping the sparse-secret
+            security below the security parameter. Smaller means a
+            smaller interval for mod-eval, which means a lower-degree
+            polynomial and thus a faster bootstrap.
+          </li>
+          <li>
+            <strong>Coefficients-to-slots / slots-to-coefficients depth</strong>
+            ($3$ each): spending more levels here makes each bootstrap
+            faster but consumes more of the bootstrap budget, leaving
+            fewer levels for computation.
+          </li>
+          <li>
+            <strong>Mod-eval degree</strong> ($127$): a higher degree
+            gives a more accurate (higher-precision) bootstrap, but
+            costs more levels &mdash; $\lceil \log_2(\text{degree}+1)\rceil$
+            of them &mdash; and more time, leaving fewer levels
+            for computation.
+          </li>
+        </ul>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>
