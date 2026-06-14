@@ -33,7 +33,7 @@ const SECTIONS = [
             { slug: 'interface',  title: 'Interface' },
             { slug: 'cost',       title: 'Cost model' },
             { slug: 'parameters', title: 'Parameter selection' },
-            { slug: 'examples',   title: 'Examples', status: 'todo' }
+            { slug: 'examples',   title: 'Examples' }
         ]
     },
     {

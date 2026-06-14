@@ -6,6 +6,16 @@
     <link rel="icon" href="../../files/images/turtleicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="../../style.css" />
     <link rel="stylesheet" href="../style.css" />
+    <style>
+      .arch-diagram {
+        display: block;
+        margin: 16px auto;
+        max-width: 100%;
+        height: auto;
+        border: 1px solid var(--fhe-rule);
+        border-radius: 4px;
+      }
+    </style>
   </head>
   <body>
     <header id="site-header"></header>
@@ -14,9 +24,397 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Examples</h1>
-        <p><b>[WORK IN PROGRESS]</b></p>
 
-        <p>Walking through how the demos were built using the API &mdash; including the math tricks that make ostensibly hard things tractable in FHE.</p>
+        <p>
+          <a href="../introduction/use-cases.html">Section&nbsp;1.3</a>
+          showed five demos; this section explains how each one is
+          actually built on top of the CKKS interface from
+          <a href="interface.html">Section&nbsp;2.1</a>.
+        </p>
+
+        <h2>Minesweeper</h2>
+
+        <p>
+          The game state is contained in two ciphertexts. The first,
+          $\mathbf{m}$, encodes the hidden board: a $1$ in every slot
+          that holds a mine and a $0$ everywhere else. The second,
+          $\mathbf{R}$, is a <em>cumulative reveal mask</em> that holds a
+          $1$ in every cell the client has revealed so far and a $0$ in
+          the rest; it starts at all-zeros and is updated in place by
+          every move.
+        </p>
+
+        <p>
+          Within the ciphertexts, the board is stored in row-major
+          order: the cells of each row are placed one after another,
+          row by row, and every slot past the board is padded with
+          zeros. Concretely, cell $(i, j)$ of a $\text{width}\times
+          \text{height}$ board lives in slot $i\,(\text{width}+1) + j$,
+          which leaves a one-cell margin: the extra column and extra row
+          are kept as zeros.
+        </p>
+
+        <p>
+          Counting the mines around each cell is a $3\times 3$ stencil,
+          which we apply to the whole board at once with rotations.
+          Writing $r = \text{width}+1$ for the row stride, we sum each
+          cell with the one above and below it, then sum that across the
+          three columns:
+        </p>
+
+        <p>
+          $$
+          \begin{aligned}
+          \mathbf{c} &= \text{rot}_{+r}(\mathbf{m}) + \mathbf{m} + \text{rot}_{-r}(\mathbf{m}), \\
+          \mathbf{n} &= \text{rot}_{+1}(\mathbf{c}) + \mathbf{c} + \text{rot}_{-1}(\mathbf{c}).
+          \end{aligned}
+          $$
+        </p>
+
+        <p>
+          A move arrives as a fresh mask $\mathbf{u}$: a ciphertext with
+          a $1$ in each cell the player is revealing on this move and a
+          $0$ everywhere else. The server folds it into $\mathbf{R}$ with
+          a Boolean OR,
+          $$\mathbf{R} \;\leftarrow\; \mathbf{R} + \mathbf{u} - \mathbf{R} \odot \mathbf{u},$$
+          so $\mathbf{R}$ accumulates a $1$ in every cell revealed across
+          all moves so far. The reply it returns is a single expression that
+          does the rest of the work at once:
+        </p>
+
+        <p>
+          $$
+          \text{result} \;=\; \mathbf{R} \odot (\mathbf{n} + 1) - 1
+          \;+\; \big(2^{16}\,\mathbf{R} \odot \mathbf{m}\big)^{2}.
+          $$
+        </p>
+
+        <p>Read slot by slot, this does three different things at once:</p>
+
+        <ul>
+          <li>
+            <b>Unrevealed cells.</b> $\mathbf{R}$ is $0$ there, so both
+            terms collapse and the slot decodes to $-1$.
+          </li>
+          <li>
+            <b>Safely revealed cells.</b> $\mathbf{R}$ is $1$ and
+            $\mathbf{m}$ is $0$, so the slot decodes to
+            $(\mathbf{n}+1) - 1 = \mathbf{n}$, the neighbor count in
+            $\{0, 1, \ldots, 8\}$.
+          </li>
+          <li>
+            <b>Revealed mines.</b> Both $\mathbf{R}$ and $\mathbf{m}$ are
+            $1$, so the poison term is $2^{32}$, which is too large for
+            the level-$0$ modulus and overflows on encoding, corrupting
+            every slot of the reply.
+          </li>
+        </ul>
+
+        <p>
+          The cumulative reveal mask is updated in place every move, and
+          the OR's multiply consumes one level each time, so $\mathbf{R}$
+          steadily loses levels and must be refreshed before it can no
+          longer afford a move. Refreshing drops it to level $0$ and
+          bootstraps it back to a high level, after which the
+          <em>bit cleaning polynomial</em>
+          $$S(x) = 3x^2 - 2x^3,$$
+          which fixes $S(0) = 0$ and $S(1) = 1$ and has
+          $S'(0) = S'(1) = 0$, is applied to the bootstrapped ciphertext
+          to pull each slot back to a clean $0$ or $1$ for numerical
+          stability.
+        </p>
+
+        <h2>Conway's Game of Life</h2>
+
+        <p>
+          For this demo, the entire state of the grid is contained in one
+          ciphertext $\mathbf{b}$, holding a $1$ for every live cell and a $0$ for
+          every dead one. The grid is $128\times 128$, laid out row by
+          row, with cell $(i, j)$ at slot $(128\,i + j)\cdot 2$. The
+          cyclic rotations wrap the 2D grid as a single 1D loop
+          &mdash; the right edge of one row
+          <span class="lie" data-truth="this linear wrapping is not a true 2D torus: the row seams and the four corners wrap to different cells than toroidal neighbors would">joins</span>
+          the left edge of the next.
+        </p>
+
+        <p>
+          Counting live neighbors is again a $3\times 3$ stencil, done
+          with a row-then-column reduction. The rows above and below are
+          formed first,
+          $$\mathbf{b}_\uparrow = \text{rot}_{256}(\mathbf{b}), \qquad \mathbf{b}_\downarrow = \text{rot}_{-256}(\mathbf{b}),$$
+          and their column sum
+          $\mathbf{c} = \mathbf{b}_\uparrow + \mathbf{b} + \mathbf{b}_\downarrow$
+          is reduced across the three columns, with the center removed to
+          leave the eight-neighbor count,
+          $$\mathbf{n} = \text{rot}_{2}(\mathbf{c}) + \mathbf{c} + \text{rot}_{-2}(\mathbf{c}) - \mathbf{b}.$$
+          Every slot of $\mathbf{n}$ then holds that cell's neighbor
+          count $n \in \{0, \ldots, 8\}$.
+        </p>
+
+        <p>
+          For the update rule, we need a single bivariate polynomial
+          $P(n, y)$ that reproduces the Game of Life transition at every
+          integer input, where $n \in \{0, \ldots, 8\}$ is the neighbor
+          count and $y \in \{0, 1\}$ is the current cell. It is built
+          around the degree-$7$ polynomial
+          $$q(n) = n(n-1)(n-4)(n-5)(n-6)(n-7)(n-8).$$
+          Only $n = 2$ and $n = 3$ survive, and the rest of $P$ is tuned
+          so that at $n = 2$ it returns $y$ (the cell persists) and at
+          $n = 3$ it returns $1$ (the cell is born or stays alive), with
+          higher-order terms that allow the polynomial to be numerically
+          stable.
+        </p>
+
+        <p>
+          Written out, the update polynomial is
+          $$P(n, y) = \frac{q(n)}{1440}\Big(y(n-3) - 2(n-2) - (n-2)(n-3)\,h(n, y)\Big),$$
+          where $h$ is the correction term
+          $h(n, y) = \sum_{i, j} c_{ij}\,(n-4)^i y^j$ with nonzero
+          coefficients
+          $$
+          \begin{aligned}
+          c_{00} &= -\tfrac{784787}{551250}, & c_{10} &= -\tfrac{969982}{826875}, & c_{20} &= \tfrac{454561}{661500}, & c_{30} &= \tfrac{97333}{661500}, \\
+          c_{40} &= -\tfrac{2055029}{26460000}, & c_{50} &= -\tfrac{67933}{13230000}, & c_{60} &= \tfrac{11}{4320}, \\
+          c_{01} &= \tfrac{269281}{275625}, & c_{11} &= -\tfrac{1438879}{6615000}, & c_{21} &= -\tfrac{81841}{294000}, & c_{31} &= \tfrac{508531}{5292000}, \\
+          c_{41} &= \tfrac{14321}{1102500}, & c_{51} &= -\tfrac{128209}{26460000}.
+          \end{aligned}
+          $$
+        </p>
+
+        <div class="exercise-body">
+          <b>Exercise:</b> show that $P$ can be evaluated in
+          multiplicative depth $4$.
+        </div>
+
+        <p>
+          The client can also inject a pattern while the game runs. The
+          drawn pattern is added to
+          the board, producing slots that are $0$, $1$, or $2$ (where the
+          two overlap), and a cleaning polynomial $f$ then collapses the
+          $2$ back to $1$. It is the degree-$7$ polynomial
+          $$f(x) = (x-1)^2(x-2)^2\!\left(\tfrac{15}{16}x^3 - \tfrac{91}{80}x^2 - \tfrac{3}{4}x - \tfrac{1}{4}\right) + 1,$$
+          which fixes $f(0) = 0$ and $f(1) = f(2) = 1$ with
+          $f'(0) = f'(1) = f'(2) = 0$, and spends its two remaining
+          degrees of freedom minimizing
+          $\max\big(|f''(0)|, |f''(1)|, |f''(2)|\big)$. Addition followed
+          by $f$ is therefore an encrypted union, and the flat
+          derivatives clean up noise at the same time.
+        </p>
+
+        <p>
+          Each generation spends four levels on $P$, so the level budget
+          runs out after a few steps and must be refilled by
+          bootstrapping. The parameters are chosen so that bootstrapping
+          returns a level-$15$ ciphertext. The cleaning polynomial $f$ is degree
+          $7$, so it costs
+          $\lceil \log_2 8 \rceil = 3$ levels and leaves $12$. Each
+          generation's polynomial $P$ then costs $4$, and $12$ divides
+          into exactly three of them: $12 \to 8 \to 4 \to 0$. Once the
+          board reaches level $0$ it is bootstrapped back to $15$ and the
+          cycle repeats.
+        </p>
+
+        <h2>Regression</h2>
+
+        <p>
+          The regression demo fits a linear or logistic model over many
+          parties' encrypted data, with the whole training loop run on
+          ciphertexts by gradient descent.
+        </p>
+
+        <p>
+          Each participant encrypts only their own rows, so the server
+          has to assemble those contributions into the shared per-feature
+          ciphertexts. A participant encrypts a value into a single slot
+          of a ciphertext, and the server repacks it into the slot
+          reserved for that sample with a mask-and-rotate: one
+          multiplication by a plaintext mask that is $1$ in the source
+          slot and $0$ everywhere else, to isolate the value, followed by
+          one rotation to slide it into its target slot. Each value
+          contributed therefore costs a single mask and rotation, and the
+          repacked pieces are accumulated into the $\mathbf{x}_i$ and
+          $\mathbf{y}$ ciphertexts by addition.
+        </p>
+
+        <p>
+          The data is packed one feature per ciphertext: with up to
+          $32768$ samples, feature $i$ of sample $j$ occupies slot $j$ of
+          a ciphertext $\mathbf{x}_i$, and sample $j$'s target occupies
+          slot $j$ of a ciphertext $\mathbf{y}$. Before encryption each
+          feature is standardized by a public mean and standard
+          deviation, $\mathbf{x}_i \leftarrow (\mathbf{x}_i - \mu_i)/s_i$,
+          so the features sit on a comparable scale; these statistics are
+          not secret and need only be rough estimates.
+        </p>
+
+        <p>
+          Training is gradient descent:
+          $$
+          \beta \;\leftarrow\; \beta - \eta\Big(\tfrac{1}{n}\,
+          X^\top(\hat{\mathbf{y}} - \mathbf{y}) + \lambda\beta\Big),
+          $$
+          where $\hat{\mathbf{y}} = X\beta$ for linear regression and
+          $\hat{\mathbf{y}} = \sigma(X\beta)$ for logistic.
+        </p>
+
+        <p>
+          Each iteration runs one gradient step directly on the
+          ciphertexts. Write $\Sigma$ for the all-slot sum &mdash; the
+          rotate-and-add reduction that adds a vector to copies of itself
+          rotated by $1, 2, 4, \ldots, 16384$, fifteen steps after which
+          every slot holds the total &mdash; and $\ell$ for a plaintext
+          mask carrying $\eta/n$ in the data slots and $0$ elsewhere.
+          Then one step is the following, where $\sigma$ is the identity
+          for linear regression and the cubic sigmoid for logistic:
+          $$
+          \begin{aligned}
+          \hat{\mathbf{y}} &= \sigma\!\Big(\alpha + \sum_i \beta_i \mathbf{x}_i\Big), \\
+          \mathbf{r} &= \hat{\mathbf{y}} - \mathbf{y}, \\
+          \alpha &\leftarrow \alpha - \Sigma(\ell \odot \mathbf{r}), \\
+          \beta_i &\leftarrow (1 - \eta\lambda)\,\beta_i - \Sigma(\ell \odot \mathbf{x}_i \odot \mathbf{r}).
+          \end{aligned}
+          $$
+          The mask $\ell$ folds the learning rate and the $1/n$ averaging
+          into a single multiply, and the $(1 - \eta\lambda)$ factor
+          applies the ridge decay. Its zeros outside the data slots also
+          matter: with fewer than $32768$ samples the padded slots still
+          carry a nonzero residual (there $\mathbf{x}_i = 0$, so
+          $\hat{\mathbf{y}} = \sigma(\alpha)$ while $\mathbf{y} = 0$), and
+          the mask is what keeps them out of the gradient sums.
+        </p>
+
+        <p>
+          Logistic regression has the extra wrinkle that the sigmoid is
+          not a polynomial. It is replaced by its Remez polynomial
+          approximant; the demo uses a cubic on $[-5, 5]$,
+          $$\sigma(x) \approx 0.5 + 0.1975\,x - 0.004266\,x^3,$$
+          accurate to about $0.04$ across the interval. That interval
+          matters, because a polynomial that hugs the sigmoid on
+          $[-5, 5]$ diverges wildly outside it, so the training has to
+          keep every logit in range.
+        </p>
+
+        <p>
+          The level cost is counted per iteration: a linear-regression
+          step spends two levels and a logistic step spends four, the
+          cubic activation accounting for the extra two. The CKKS depth
+          is then that per-iteration cost times the number of iterations,
+          and if a run needs more iterations than the depth allows, the
+          coefficients can be bootstrapped partway through to keep going.
+        </p>
+
+        <div class="exercise-body">
+          <b>Exercise:</b> using the gradient step above, check that each
+          iteration costs two levels for linear regression and four for
+          logistic.
+        </div>
+
+        <p>
+          At the end only the coefficients are decrypted, and they are
+          un-standardized back to the original feature scale with
+          $$
+          \beta_i = \frac{\tilde\beta_i}{s_i}, \qquad
+          \alpha = \tilde\alpha - \sum_i \frac{\tilde\beta_i\,\mu_i}{s_i},
+          $$
+          where $\tilde\beta, \tilde\alpha$ are the coefficients learned
+          in standardized space.
+        </p>
+
+        <h2>Image classification</h2>
+
+        <p>
+          The image classification demo runs a small convolutional
+          network over an encrypted handwritten digit, so the server
+          classifies the image without ever seeing it: the client
+          encrypts a $28\times 28$ image, the server evaluates the whole
+          network on the ciphertext, and the client decrypts the class
+          scores. The network is two convolutions, a $4\times 4$ average
+          pool, and two fully-connected layers, with the activation
+          $$\tanh_{\text{approx}}(x) = 0.785\,x - 0.056\,x^3,$$
+          a degree-$3$ polynomial approximating $\tanh$. It is trained in
+          the clear, and only inference runs on ciphertext.
+        </p>
+
+        <img class="arch-diagram" src="../files/image-classification-architecture.png" alt="Image classification model architecture diagram" />
+
+        <p>
+          The image sets the data layout for everything downstream. The
+          $28\times 28$ pixels, with values in $[0, 1]$, are zero-padded
+          into a $32\times 32$ grid, flattened row-major, and placed
+          every $k = 4$ slots apart, so pixel $(r, c)$ occupies slot
+          $(32r + c)\cdot k$. The spacing leaves gaps that later layers
+          use to hold multiple channels without collisions.
+        </p>
+
+        <p>
+          Write $\mathbf{x}$ for the encrypted image and $\text{rot}_\rho$
+          for a rotation by $\rho$ slots; plaintext weights, masks, and
+          biases are written without boldface. A convolution is a weighted
+          sum, over the nine kernel taps, of the input rotated to align
+          each tap. The first convolution (one input channel, four output
+          channels) is
+          $$\mathbf{h}_1 = \sum_{o=0}^{3}\ \sum_{p,q=0}^{2} w^{(1)}_{o,p,q}\,\text{rot}_{\rho_1(o,p,q)}(\mathbf{x}) \;+\; b_1, \qquad \rho_1(o,p,q) = \big((p-1)\,32 + (q-1)\big)k - 8192\,o.$$
+          The $-8192\,o$ in the rotation deposits output channel $o$ into
+          its own block of $8192$ slots, so all four channels are produced
+          at once. The $36$ rotate-and-scale terms are accumulated by one
+          batched dot product (a single rescale, one level), and the bias
+          plaintext $b_1$ carries channel $o$'s bias across its block.
+        </p>
+
+        <p>
+          The activation is applied slotwise, at a cost of two levels:
+          $$\mathbf{h}_2 = \tanh_{\text{approx}}(\mathbf{h}_1).$$
+        </p>
+
+        <p>
+          The second convolution (four input channels, eight output
+          channels) packs its outputs at stride $4096$ &mdash; half the
+          input's $8192$ &mdash; so the channels interleave. Rotating the
+          input by $4096\,j$ aligns output block $o$ with input channel
+          $i = (o+j)/2 \bmod 4$ when $o+j$ is even, and with an empty gap
+          when $o+j$ is odd. A per-slot plaintext mask $m^{(2)}_{j,p,q}$
+          supplies the weight $w^{(2)}_{o,i,p,q}$ in the even case and $0$
+          in the odd one, giving
+          $$\mathbf{h}_3 = \sum_{j=0}^{7}\ \sum_{p,q=0}^{2} m^{(2)}_{j,p,q}\odot \text{rot}_{\rho_2(j,p,q)}(\mathbf{h}_2) \;+\; b_2, \qquad \rho_2(j,p,q) = 4096\,j + \big((p-1)\,32 + (q-1)\big)k.$$
+          Its $72$ terms again collapse into one dot product at one level.
+          A second activation follows,
+          $$\mathbf{h}_4 = \tanh_{\text{approx}}(\mathbf{h}_3).$$
+        </p>
+
+        <p>
+          Average pooling sums each $4\times 4$ window by adding the
+          sixteen rotations of $\mathbf{h}_4$, then multiplies by a mask
+          $m_\text{pool}$ that is $\tfrac1{16}$ at the slots that survive
+          pooling and $0$ elsewhere:
+          $$\mathbf{h}_5 = m_\text{pool} \odot \sum_{p,q=0}^{3} \text{rot}_{(32p + q)k}(\mathbf{h}_4).$$
+          The mask multiply is the only rescale, so pooling costs one
+          level. The $512$ surviving values are then re-spaced to the
+          regular stride the dense layers expect; only the column spacing
+          changes, by rotating each column into place and masking it,
+          $$\mathbf{h}_6 = \sum_{c=0}^{7} m_c \odot \text{rot}_{-48\,c}(\mathbf{h}_5),$$
+          where $m_c$ selects column $c$'s target slots &mdash; eight
+          terms, one level.
+        </p>
+
+        <p>
+          The two dense layers are plaintext-matrix times
+          encrypted-vector products, each evaluated at one level with the
+          baby-step/giant-step method and finished with a plaintext bias,
+          and the first is followed by a third activation:
+          $$\mathbf{h}_7 = W^{(\mathrm{f}1)}\mathbf{h}_6 + b_3, \qquad \mathbf{h}_8 = \tanh_{\text{approx}}(\mathbf{h}_7), \qquad \mathbf{h}_9 = W^{(\mathrm{f}2)}\mathbf{h}_8 + b_4.$$
+          The output $\mathbf{h}_9$ holds the ten class logits, which the
+          client decrypts and reads off the largest.
+        </p>
+
+        <p>
+          Adding it up &mdash; one level per convolution, two per
+          activation, one for the pool, one for the rearrange, and one per
+          dense layer &mdash; the forward pass fits in twelve levels.
+        </p>
+
+        <h2>Language model inference</h2>
+
+        <p><b>[WORK IN PROGRESS]</b></p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>
