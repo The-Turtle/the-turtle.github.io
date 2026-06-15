@@ -65,8 +65,8 @@
         <p>
           $$
           \begin{aligned}
-          \mathbf{c} &= \text{rot}_{+r}(\mathbf{m}) + \mathbf{m} + \text{rot}_{-r}(\mathbf{m}), \\
-          \mathbf{n} &= \text{rot}_{+1}(\mathbf{c}) + \mathbf{c} + \text{rot}_{-1}(\mathbf{c}).
+          \mathbf{c} &= \mathrm{rot}_{+r}(\mathbf{m}) + \mathbf{m} + \mathrm{rot}_{-r}(\mathbf{m}), \\
+          \mathbf{n} &= \mathrm{rot}_{+1}(\mathbf{c}) + \mathbf{c} + \mathrm{rot}_{-1}(\mathbf{c}).
           \end{aligned}
           $$
         </p>
@@ -141,12 +141,12 @@
           Counting live neighbors is again a $3\times 3$ stencil, done
           with a row-then-column reduction. The rows above and below are
           formed first,
-          $$\mathbf{b}_\uparrow = \text{rot}_{256}(\mathbf{b}), \qquad \mathbf{b}_\downarrow = \text{rot}_{-256}(\mathbf{b}),$$
+          $$\mathbf{b}_\uparrow = \mathrm{rot}_{256}(\mathbf{b}), \qquad \mathbf{b}_\downarrow = \mathrm{rot}_{-256}(\mathbf{b}),$$
           and their column sum
           $\mathbf{c} = \mathbf{b}_\uparrow + \mathbf{b} + \mathbf{b}_\downarrow$
           is reduced across the three columns, with the center removed to
           leave the eight-neighbor count,
-          $$\mathbf{n} = \text{rot}_{2}(\mathbf{c}) + \mathbf{c} + \text{rot}_{-2}(\mathbf{c}) - \mathbf{b}.$$
+          $$\mathbf{n} = \mathrm{rot}_{2}(\mathbf{c}) + \mathbf{c} + \mathrm{rot}_{-2}(\mathbf{c}) - \mathbf{b}.$$
           Every slot of $\mathbf{n}$ then holds that cell's neighbor
           count $n \in \{0, \ldots, 8\}$.
         </p>
@@ -347,13 +347,13 @@
         </p>
 
         <p>
-          Write $\mathbf{x}$ for the encrypted image and $\text{rot}_\rho$
+          Write $\mathbf{x}$ for the encrypted image and $\mathrm{rot}_\rho$
           for a rotation by $\rho$ slots; plaintext weights, masks, and
           biases are written without boldface. A convolution is a weighted
           sum, over the nine kernel taps, of the input rotated to align
           each tap. The first convolution (one input channel, four output
           channels) is
-          $$\mathbf{h}_1 = \sum_{o=0}^{3}\ \sum_{p,q=0}^{2} w^{(1)}_{o,p,q}\,\text{rot}_{\rho_1(o,p,q)}(\mathbf{x}) \;+\; b_1, \qquad \rho_1(o,p,q) = \big((p-1)\,32 + (q-1)\big)k - 8192\,o.$$
+          $$\mathbf{h}_1 = \sum_{o=0}^{3}\ \sum_{p,q=0}^{2} w^{(1)}_{o,p,q}\,\mathrm{rot}_{\rho_1(o,p,q)}(\mathbf{x}) \;+\; b_1, \qquad \rho_1(o,p,q) = \big((p-1)\,32 + (q-1)\big)k - 8192\,o.$$
           The $-8192\,o$ in the rotation deposits output channel $o$ into
           its own block of $8192$ slots, so all four channels are produced
           at once. The $36$ rotate-and-scale terms are accumulated by one
@@ -375,7 +375,7 @@
           when $o+j$ is odd. A per-slot plaintext mask $m^{(2)}_{j,p,q}$
           supplies the weight $w^{(2)}_{o,i,p,q}$ in the even case and $0$
           in the odd one, giving
-          $$\mathbf{h}_3 = \sum_{j=0}^{7}\ \sum_{p,q=0}^{2} m^{(2)}_{j,p,q}\odot \text{rot}_{\rho_2(j,p,q)}(\mathbf{h}_2) \;+\; b_2, \qquad \rho_2(j,p,q) = 4096\,j + \big((p-1)\,32 + (q-1)\big)k.$$
+          $$\mathbf{h}_3 = \sum_{j=0}^{7}\ \sum_{p,q=0}^{2} m^{(2)}_{j,p,q}\odot \mathrm{rot}_{\rho_2(j,p,q)}(\mathbf{h}_2) \;+\; b_2, \qquad \rho_2(j,p,q) = 4096\,j + \big((p-1)\,32 + (q-1)\big)k.$$
           Its $72$ terms again collapse into one dot product at one level.
           A second activation follows,
           $$\mathbf{h}_4 = \tanh_{\text{approx}}(\mathbf{h}_3).$$
@@ -386,14 +386,13 @@
           sixteen rotations of $\mathbf{h}_4$, then multiplies by a mask
           $m_\text{pool}$ that is $\tfrac1{16}$ at the slots that survive
           pooling and $0$ elsewhere:
-          $$\mathbf{h}_5 = m_\text{pool} \odot \sum_{p,q=0}^{3} \text{rot}_{(32p + q)k}(\mathbf{h}_4).$$
+          $$\mathbf{h}_5 = m_\text{pool} \odot \sum_{p,q=0}^{3} \mathrm{rot}_{(32p + q)k}(\mathbf{h}_4).$$
           The mask multiply is the only rescale, so pooling costs one
           level. The $512$ surviving values are then re-spaced to the
           regular stride the dense layers expect; only the column spacing
           changes, by rotating each column into place and masking it,
-          $$\mathbf{h}_6 = \sum_{c=0}^{7} m_c \odot \text{rot}_{-48\,c}(\mathbf{h}_5),$$
-          where $m_c$ selects column $c$'s target slots &mdash; eight
-          terms, one level.
+          $$\mathbf{h}_6 = \sum_{c=0}^{7} m_c \odot \mathrm{rot}_{-48\,c}(\mathbf{h}_5),$$
+          where $m_c$ selects column $c$'s target slots.
         </p>
 
         <p>
@@ -406,15 +405,373 @@
           client decrypts and reads off the largest.
         </p>
 
-        <p>
-          Adding it up &mdash; one level per convolution, two per
-          activation, one for the pool, one for the rearrange, and one per
-          dense layer &mdash; the forward pass fits in twelve levels.
-        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> verify that the forward pass fits in twelve
+          levels.
+        </div>
 
         <h2>Language model inference</h2>
 
-        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          The language model demo runs a small GPT-2-style transformer
+          over an encrypted prompt: the prompt is tokenized and embedded
+          in the clear, the transformer blocks run on ciphertext, and the
+          encrypted next-token logits come back to the client to sample
+          from. As in
+          <a href="../introduction/use-cases.html">Section&nbsp;1.5</a>,
+          the model is a $4$-layer decoder-only transformer with
+          embedding dimension $d = 256$, $H = 2$ heads of dimension
+          $d_h = 128$, context length $T = 128$, and vocabulary
+          $V = 16384$, trained in the clear.
+        </p>
+
+        <p>
+          It is norm-free (ReZero) and uses sigmoid attention rather than
+          softmax. Writing $E$ for the weight-tied token embedding, the
+          residual stream starts at $\mathbf{h}_0 = E[t] + \text{PosEmb}(p)$,
+          and each block applies
+          $$\mathbf{x} \leftarrow \mathbf{x} + \alpha_{\text{attn}}\,\text{Attn}(\mathbf{x}), \qquad \mathbf{x} \leftarrow \mathbf{x} + \alpha_{\text{ffn}}\,\text{FFN}(\mathbf{x}),$$
+          with bias-less projections $Q = \mathbf{x}W_Q$, $K = \mathbf{x}W_K$,
+          $V = \mathbf{x}W_V$ and
+          $$\text{Attn}(\mathbf{x}) = \Big(\big(\sigma\big(\tfrac{QK^\top}{\sqrt{d_h}} + b\big) \odot M\big)\,V\Big)W_O, \qquad \text{FFN}(\mathbf{x}) = \text{GELU}(\mathbf{x}W_1)\,W_2,$$
+          where $b$ is a per-head bias, $M$ the causal mask, and
+          $W_1, W_2$ the $256 \to 1024 \to 256$ feed-forward weights.
+          The final LM head reuses the embedding, $\text{logits} = \mathbf{h}_N E^\top$.
+        </p>
+
+        <img class="arch-diagram" src="../files/language-model-architecture.png" alt="Language model architecture diagram" />
+
+        <p>
+          The forward pass is a long chain of linear maps, two
+          nonlinearities (the sigmoid and the GELU), and periodic
+          bootstraps to refresh levels. The rest of this section covers
+          how the residual stream is packed into slots, how the linear
+          maps and the two encrypted matrix products are realized, how the
+          nonlinearities become polynomials, and how the level budget is
+          balanced.
+        </p>
+
+        <h3>Packing the residual stream</h3>
+
+        <p>
+          The residual stream is a $T \times d = 128 \times 256$
+          activation matrix packed into a single $32768$-slot ciphertext.
+          The
+          attention scores and per-head quantities are instead
+          $128 \times 128$ matrices that use only the lower $16384$ slots
+          (the upper half is either zero or a duplicate, depending on how
+          it was produced).
+        </p>
+
+        <p>
+          Each matrix is stored in one of four slot encodings. Writing
+          $S[r,c]$ for the slot that holds entry $(r, c)$ (with
+          $r \in [0, 128)$, $c \in [0, 256)$ for the $128 \times 256$
+          activation matrix), they are
+          $$\begin{aligned}
+          \text{column-major:}\quad & S[r,c] = 16384\lfloor c/128\rfloor + 128\,(c \bmod 128) + r, \\
+          \text{shifted column-major:}\quad & S[r,c] = 16384\lfloor c/128\rfloor + 128\,((c-r) \bmod 128) + r, \\
+          \text{transpose:}\quad & S[r,c] = 16384\lfloor c/128\rfloor + 128\,r + (c \bmod 128), \\
+          \text{shifted transpose:}\quad & S[r,c] = 16384\lfloor c/128\rfloor + 128\,r + ((c-r) \bmod 128).
+          \end{aligned}$$
+        </p>
+
+        <p>
+          To see the layouts concretely, here is a scaled-down
+          $4 \times 8$ matrix (two $4$-wide head blocks, divided by the
+          bar), with each entry $(r, c)$ replaced by the slot it occupies:
+          $$\text{column-major}\qquad \begin{array}{cccc|cccc} 0 & 4 & 8 & 12 & 16 & 20 & 24 & 28 \\ 1 & 5 & 9 & 13 & 17 & 21 & 25 & 29 \\ 2 & 6 & 10 & 14 & 18 & 22 & 26 & 30 \\ 3 & 7 & 11 & 15 & 19 & 23 & 27 & 31 \end{array}$$
+          $$\text{shifted column-major}\qquad \begin{array}{cccc|cccc} 0 & 4 & 8 & 12 & 16 & 20 & 24 & 28 \\ 13 & 1 & 5 & 9 & 29 & 17 & 21 & 25 \\ 10 & 14 & 2 & 6 & 26 & 30 & 18 & 22 \\ 7 & 11 & 15 & 3 & 23 & 27 & 31 & 19 \end{array}$$
+          $$\text{transpose}\qquad \begin{array}{cccc|cccc} 0 & 1 & 2 & 3 & 16 & 17 & 18 & 19 \\ 4 & 5 & 6 & 7 & 20 & 21 & 22 & 23 \\ 8 & 9 & 10 & 11 & 24 & 25 & 26 & 27 \\ 12 & 13 & 14 & 15 & 28 & 29 & 30 & 31 \end{array}$$
+          $$\text{shifted transpose}\qquad \begin{array}{cccc|cccc} 0 & 1 & 2 & 3 & 16 & 17 & 18 & 19 \\ 7 & 4 & 5 & 6 & 23 & 20 & 21 & 22 \\ 10 & 11 & 8 & 9 & 26 & 27 & 24 & 25 \\ 13 & 14 & 15 & 12 & 29 & 30 & 31 & 28 \end{array}$$
+        </p>
+
+        <p>
+          A $128 \times 128$ head matrix uses the same encodings on a
+          single head block, filling the lower $16384$ slots and leaving
+          the upper half zero or duplicated. Its scaled-down $4 \times 4$
+          layouts (slots $0$ through $15$) are
+          $$\text{column-major}\quad \begin{array}{cccc} 0 & 4 & 8 & 12 \\ 1 & 5 & 9 & 13 \\ 2 & 6 & 10 & 14 \\ 3 & 7 & 11 & 15 \end{array} \qquad \text{shifted column-major}\quad \begin{array}{cccc} 0 & 4 & 8 & 12 \\ 13 & 1 & 5 & 9 \\ 10 & 14 & 2 & 6 \\ 7 & 11 & 15 & 3 \end{array}$$
+          $$\text{transpose}\quad \begin{array}{cccc} 0 & 1 & 2 & 3 \\ 4 & 5 & 6 & 7 \\ 8 & 9 & 10 & 11 \\ 12 & 13 & 14 & 15 \end{array} \qquad \text{shifted transpose}\quad \begin{array}{cccc} 0 & 1 & 2 & 3 \\ 7 & 4 & 5 & 6 \\ 10 & 11 & 8 & 9 \\ 13 & 14 & 15 & 12 \end{array}$$
+        </p>
+
+        <p>
+          Not every encoding pair can be converted cheaply; only three
+          conversions are built:
+        </p>
+
+        <table>
+          <thead>
+            <tr><th>Source</th><th>Target</th><th>Diagonal indices</th><th>Count</th><th>Key-switches</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>column-major</td><td>shifted column-major</td><td>$128m,\ |m| \le 127$</td><td>$255$</td><td>$30$</td></tr>
+            <tr><td>column-major</td><td>transpose</td><td>$127m,\ |m| \le 127$</td><td>$255$</td><td>$30$</td></tr>
+            <tr><td>transpose</td><td>shifted transpose</td><td>$m,\ |m| \le 127$</td><td>$255$</td><td>$30$</td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          These layouts exist to make the ciphertext&ndash;ciphertext
+          matrix multiplication efficient: the shifted encodings are
+          exactly what let that product reduce to a sum of rotations, as
+          the section on it below shows.
+        </p>
+
+        <h3>Linear layers</h3>
+
+        <p>
+          Every projection in the model ($W_Q, W_K, W_V, W_O, W_1, W_2$)
+          is a multiply by a fixed plaintext matrix,
+          $\mathbf{y} = \mathbf{x}W$, on a column-major input: the
+          standard baby-step/giant-step matrix-multiplication subroutine,
+          one level each. A full matrix uses all of its diagonals, while a
+          half-width matrix (for per-head projections) stores half and
+          recovers the rest with one extra fold rotation:
+        </p>
+
+        <table>
+          <thead>
+            <tr><th>Matrix</th><th>Diagonal indices</th><th>Count</th><th>Key-switches</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>$256 \times 256$</td><td>$128m,\ 0 \le m \le 255$</td><td>$256$</td><td>$30$</td></tr>
+            <tr><td>$256 \times 128$</td><td>$128m,\ 0 \le m \le 127$</td><td>$128$</td><td>$23$</td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          The weights can be pre-encoded so the result comes out in either
+          column-major or shifted column-major, so the column-major to
+          shifted column-major conversion is free when folded into a
+          projection.
+        </p>
+
+        <p>
+          The encoding conversions from the previous section are otherwise
+          the same matrix multiply, and chaining the three available
+          conversions reaches every encoding the matrix products below
+          require, such as the shifted transpose reached by going
+          column-major, then transpose, then shifted transpose.
+        </p>
+
+        <h3>Ciphertext&ndash;ciphertext multiplication</h3>
+
+        <p>
+          Attention needs two products of <em>encrypted</em> matrices: the
+          scores $QK^\top$ and the output $\text{attn}\,V$. Both run
+          through an encrypted matrix-multiplication routine, the
+          ciphertext&ndash;ciphertext version of the baby-step/giant-step
+          method with both operands encrypted, but they are two distinct
+          overloads, with slightly different wrap corrections and
+          different key-switch counts. Each requires its left operand
+          $\mathbf{A}$ in shifted column-major and its right operand
+          $\mathbf{B}$ in shifted transpose, and the shifted encodings turn
+          the contraction $\mathbf{A}\mathbf{B}^\top$ into a sum of
+          pointwise products of rotations.
+        </p>
+
+        <p>
+          A rotation can carry a slot's row index past the $128$-boundary,
+          so the right operand is wrap-corrected by a per-slot $0/1$ mask.
+          At a slot with within-block row index $\sigma = s \bmod 128$,
+          the mask $m_{b,g}$ is $1$ when $\sigma + l < 128$ (with
+          $l = b + 8g$) and $0$ otherwise (pre-rolled by $8g$ to match the
+          outer rotation), and it splices in a shifted copy
+          $\mathbf{B}' = \mathrm{rot}_{-128}(\mathbf{B})$ on the wrapped
+          slots:
+          $$\mathbf{B}_{b,g} = m_{b,g}\odot\mathrm{rot}_b(\mathbf{B}) + (1 - m_{b,g})\odot\mathrm{rot}_b(\mathbf{B}').$$
+          Throughout, $b \in \{0, \ldots, 7\}$ and
+          $g \in \{0, \ldots, 15\}$, and the masks are folded onto
+          whichever operand sits at the higher level.
+        </p>
+
+        <p>
+          The <b>output product</b> (a $128 \times 128$ head matrix times
+          a $128 \times 256$ activation matrix, contracting the $128$ key
+          positions) sidesteps any head-block wrap by pre-duplicating
+          $\mathbf{A}$'s two halves,
+          $\mathbf{A}_{\text{full}} = \mathbf{A} + \mathrm{rot}_{16384}(\mathbf{A})$,
+          and returns a $128 \times 256$ activation matrix in
+          column-major:
+          $$\mathbf{C} = \sum_{g=0}^{15} \mathrm{rot}_{8 g}\Big(\sum_{b=0}^{7} \mathrm{rot}_{128 b + 1016 g}(\mathbf{A}_{\text{full}}) \odot \mathbf{B}_{b,g}\Big).$$
+        </p>
+
+        <p>
+          The <b>query&ndash;key product</b> (two $128 \times 256$
+          activation matrices, contracting the full $256$-wide inner
+          dimension) instead corrects a second wrap, in the head-block
+          index $\tau = \lfloor s/128 \rfloor \bmod 128$: a mask $a_{b,g}$,
+          $1$ when $\tau + l < 128$, splices in the head-swapped copy
+          $\mathrm{rot}_{16384}(\mathbf{B}_{b,g})$, and a final fold sums
+          the two head blocks, returning a $128 \times 128$ head matrix in
+          column-major:
+          $$\mathbf{C}_0 = \sum_{g=0}^{15} \mathrm{rot}_{8 g}\Big(\sum_{b=0}^{7} \mathrm{rot}_{128 b + 1016 g}(\mathbf{A}) \odot \big(a_{b,g}\odot\mathbf{B}_{b,g} + (1 - a_{b,g})\odot\mathrm{rot}_{16384}(\mathbf{B}_{b,g})\big)\Big),$$
+          $$\mathbf{C} = \mathbf{C}_0 + \mathrm{rot}_{16384}(\mathbf{C}_0).$$
+        </p>
+
+        <table>
+          <thead>
+            <tr><th>Product</th><th>Left $\mathbf{A}$</th><th>Right $\mathbf{B}$</th><th>Output</th><th>Key-switches</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>query&ndash;key</td><td>$128 \times 256$, shifted column-major</td><td>$128 \times 256$, shifted transpose</td><td>$128 \times 128$, column-major</td><td>$190$</td></tr>
+            <tr><td>output</td><td>$128 \times 128$, shifted column-major</td><td>$128 \times 256$, shifted transpose</td><td>$128 \times 256$, column-major</td><td>$174$</td></tr>
+          </tbody>
+        </table>
+
+        <div class="exercise-body">
+          <b>Exercise:</b> count the key-switches in each overload, and
+          check that the query&ndash;key product costs $190$ key-switches
+          and the output product costs $174$.
+        </div>
+
+        <h3>Attention</h3>
+
+        <p>
+          Attention is computed head by head. Each head projects the
+          residual stream into queries, keys, and values,
+          $$Q_h = \mathbf{x}W_{Q,h}, \qquad K_h = \mathbf{x}W_{K,h}, \qquad V_h = \mathbf{x}W_{V,h},$$
+          three plaintext-matrix linears. The scores are an encrypted
+          matrix multiplication of $Q_h$ and $K_h$, after converting the
+          two operands to the shifted encodings the routine expects,
+          scaled by $1/\sqrt{d_h}$ and offset by the per-head bias:
+          $$\mathbf{s}_h = \tfrac{1}{\sqrt{d_h}}\,Q_h K_h^\top + b_h.$$
+          The masked sigmoid turns the scores into the attention weights
+          $\mathbf{a}_h = \sigma(\mathbf{s}_h) \odot M$ in one polynomial
+          evaluation. Each head's output
+          is a second encrypted product $\mathbf{a}_h V_h$, and the
+          per-head outputs are projected together by $W_O$:
+          $$\text{Attn}(\mathbf{x}) = \text{concat}_h\big(\mathbf{a}_h V_h\big)\,W_O.$$
+          The sublayer adds its ReZero-gated result to the stream,
+          $\mathbf{x} + \alpha_{\text{attn}}\,\text{Attn}(\mathbf{x})$.
+        </p>
+
+        <h3>Feed-forward</h3>
+
+        <p>
+          The feed-forward sublayer is
+          $\text{FFN}(\mathbf{x}) = \text{GELU}(\mathbf{x}W_1)\,W_2$ with a
+          $1024$-wide hidden layer. Since $1024$ columns do not fit in one
+          $128 \times 256$ tile, $W_1$ and $W_2$ are each split into four
+          $256 \times 256$ blocks, and the four hidden chunks are computed
+          independently and summed:
+          $$\mathbf{h}_i = \text{GELU}\big(\mathbf{x}W_1^{(i)}\big)\,W_2^{(i)}, \qquad \text{FFN}(\mathbf{x}) = \sum_{i=0}^{3} \mathbf{h}_i.$$
+          Each GELU input is first rescaled into $[-2, 2]$, the domain of
+          its polynomial approximant. The sublayer adds its ReZero-gated
+          result, $\mathbf{x} + \alpha_{\text{ffn}}\,\text{FFN}(\mathbf{x})$.
+        </p>
+
+        <h3>Polynomial activations</h3>
+
+        <p>
+          Both nonlinearities are degree-$63$ Remez minimax polynomials
+          (six levels each), evaluated on $[-2, 2]$ after the input is
+          rescaled from its working interval. The intervals are
+          $[-100, 18]$ for the sigmoid and $[-30, 16]$ for the GELU,
+          chosen wide enough to cover the trained model's activation
+          range.
+        </p>
+
+        <p>
+          The causal mask folds into the sigmoid for free. Polynomial
+          evaluation can apply a different polynomial to each slot, so the
+          sigmoid approximant is used at the lower-triangular slots
+          ($r \ge c$ in the lower $16384$) and the zero polynomial at the
+          strict upper triangle and the entire upper half. Evaluating this
+          per-slot polynomial produces $\sigma(\cdot)\odot M$ in a single
+          pass, with the mask costing nothing beyond the sigmoid itself.
+        </p>
+
+        <h3>Levels</h3>
+
+        <p>
+          Several compile-time fusions, all free at runtime since they
+          only rearrange plaintext weights, cut the depth down to fit:
+        </p>
+
+        <ul>
+          <li>
+            <b>Q@K.</b> The query&ndash;key product is precomputed per
+            head as $M_h = W_{Q,h}W_{K,h}^\top$, so the
+            scores are one linear and one multiply,
+            $\mathbf{x}M_h\mathbf{x}^\top$, rather than two projections and
+            a product.
+          </li>
+          <li>
+            <b>O@V.</b> The value and output projections fuse into
+            $W_{OV,h} = W_{V,h}W_{O,h}$; computing $\mathbf{x}W_{OV,h}$ on
+            the branch parallel to the sigmoid, then feeding it to the
+            multiply, emits the head contribution
+            $\mathbf{a}_h(\mathbf{x}W_{OV,h})$ directly and saves a level.
+          </li>
+          <li>
+            <b>ReZero gates.</b> $\alpha_{\text{attn}}$ and
+            $\alpha_{\text{ffn}}$ are absorbed into $W_{OV}$ and $W_2$.
+          </li>
+          <li>
+            <b>Scalar factors.</b> The $1/\sqrt{d_h}$ score scaling and
+            the activation rescales to $[-2, 2]$ are folded into $M_h$, the
+            attention bias, and $W_1$, so none of them needs its own
+            level-spending multiply.
+          </li>
+        </ul>
+
+        <p>
+          With those in place the level budget works out. The residual
+          stream stays in column-major throughout, the form the linears
+          consume; the shifted encodings appear only as transient operands
+          for the multiplies, each of which returns column-major again.
+          The context runs at depth $11$, so a bootstrap returns level
+          $11$, and each sublayer owns one bootstrap and one residual add.
+          Per head, attention runs through these steps, starting from
+          $\mathbf{x}$ at level $3$:
+        </p>
+
+        <ul>
+          <li>$\mathbf{x}M_h$, a linear, into shifted column-major (level $2$);</li>
+          <li>$\mathbf{x}$ converted to shifted transpose, two conversions (level $1$);</li>
+          <li>the scores $\mathbf{x}M_h\mathbf{x}^\top + b_h$, one multiply, back to column-major (level $0$);</li>
+          <li>a bootstrap to level $9$;</li>
+          <li>the masked sigmoid, six levels, preserving column-major (level $3$);</li>
+          <li>a conversion to shifted column-major, giving the attention weights (level $2$);</li>
+          <li>in parallel, $\mathbf{x}W_{OV,h}$, a column-major linear (level $2$), converted to shifted transpose (level $1$);</li>
+          <li>the output multiply, back to column-major (level $0$).</li>
+        </ul>
+
+        <p>
+          Summed over heads and added to $\mathbf{x}$, the attention
+          output lands at level $\min(3, 0) = 0$.
+        </p>
+
+        <p>
+          The feed-forward sublayer takes the level-$0$ stream and
+          bootstraps it once to $\mathbf{x}_\star$ at level $11$, reused
+          for both the FFN chain and the residual add. Each chunk then
+          runs, starting from $\mathbf{x}_\star$ at level $11$:
+        </p>
+
+        <ul>
+          <li>$\mathbf{x}_\star W_1^{(i)}$, a linear (level $10$);</li>
+          <li>GELU, six levels (level $4$);</li>
+          <li>a linear by $W_2^{(i)}$ (level $3$).</li>
+        </ul>
+
+        <p>
+          The final add $\mathbf{x}_\star + \sum_i \mathbf{h}_i$ lands at
+          level $\min(11, 3) = 3$, so the per-block cycle closes,
+          $$3 \;\xrightarrow{\ \text{MHA}\ }\; 0 \;\xrightarrow{\ \text{FFN}\ }\; 3,$$
+          exactly the next block's input level.
+        </p>
+
+        <p>
+          After the four blocks the residual stream is back at level $3$.
+          The LM head applies the tied embedding as one more linear,
+          $\text{logits} = \mathbf{h}_N E^\top$, and the client decrypts
+          the logits at the last real token, samples the next token,
+          appends it, re-embeds the rolling $128$-token window, and
+          re-encrypts to continue.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>
