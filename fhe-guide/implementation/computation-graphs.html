@@ -14,8 +14,48 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Computation graphs</h1>
+        <p>
+          A <em>computation graph</em> is a directed acyclic graph
+          whose nodes are operations and whose edges are the data
+          dependencies between them. Compilers favor this
+          representation because it makes a program's structure
+          explicit: independent subcomputations are easy to spot and
+          schedule, repeated subexpressions can be computed once and
+          shared, unused nodes can be pruned, and optimizations become
+          local graph rewrites that swap a node or subgraph for a
+          cheaper equivalent.
+        </p>
+        <p>
+          Our system represents a CKKS program at two levels of
+          abstraction. The compiler first builds a
+          <em>ciphertext graph</em>, whose nodes are the high-level
+          ciphertext operations the user wrote. It then <em>lowers</em>
+          this into a <em>polynomial graph</em>, whose nodes are the
+          ten polynomial operations that actually run on the hardware.
+          Both representations are described below, and the
+          optimization passes of the next section operate on each in
+          turn.
+        </p>
+
+        <h2 id="ciphertext-graphs">Ciphertext graphs</h2>
         <p><b>[WORK IN PROGRESS]</b></p>
-        <p>How user programs are represented as a graph of ciphertext operations &mdash; nodes for ops, edges for ciphertext flow.</p>
+        <p>
+          The high-level IR: a graph whose nodes are the ciphertext
+          operations the user wrote (additions, multiplications,
+          rotations, and the composite operations built on them), with
+          edges tracking how ciphertexts flow from one operation to the
+          next.
+        </p>
+
+        <h2 id="polynomial-graphs">Polynomial graphs</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          The lowered IR: each ciphertext node is expanded into the
+          underlying polynomial operations (NTTs and inverse NTTs,
+          modulus reductions, rescalings, and so on), exposing the
+          level drops, key-switches, and representation changes that the
+          ciphertext graph leaves implicit.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>

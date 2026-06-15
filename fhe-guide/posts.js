@@ -53,9 +53,9 @@ const SECTIONS = [
         slug: 'implementation',
         title: 'How is CKKS implemented?',
         posts: [
-            { slug: 'computation-graphs',  title: 'Computation graphs', status: 'todo' },
-            { slug: 'optimization-passes', title: 'Optimization passes', status: 'todo' },
-            { slug: 'data-layout',         title: 'Data layout', status: 'todo' }
+            { slug: 'computation-graphs',  title: 'Computation graphs', status: 'incomplete' },
+            { slug: 'optimization-passes', title: 'Optimization passes', status: 'incomplete' },
+            { slug: 'data-layout',         title: 'Data layout', status: 'incomplete' }
         ]
     },
     {

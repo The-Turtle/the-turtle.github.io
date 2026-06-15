@@ -14,13 +14,95 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Data layout</h1>
+        <p>
+          Once a CKKS program has been compiled, its polynomials have
+          to be stored somewhere in GPU memory. Almost all of the
+          running time is then spent in a handful of polynomial kernels
+          (NTTs, inverse NTTs, and pointwise additions and
+          multiplications) sweeping over arrays of $65536$
+          residues across many primes at once. These kernels are
+          limited as much by memory bandwidth as by arithmetic, so the
+          exact byte-level representation matters a great deal: the
+          right layout turns every modular multiply and memory access
+          into a cheap, regular operation, while the wrong one strands
+          the GPU on slow divisions and uncoalesced reads.
+        </p>
+        <p>
+          The sections below build the layout up from the bottom. We
+          start with how individual values are ordered and represented,
+          in bit-reversed evaluation form and signed Montgomery
+          form, then how a polynomial's RNS residues are
+          arranged, the precomputed constant tables the kernels read
+          alongside the data, and finally how everything moves between
+          host and device and is managed once it lives on the GPU.
+        </p>
+
+        <h2 id="bit-reversed-evaluation-form">Bit-reversed evaluation form</h2>
         <p><b>[WORK IN PROGRESS]</b></p>
         <p>
-          How ciphertexts are laid out across GPU memory &mdash;
-          ciphertext storage, on-device buffers, the host
-          &harr; device data flow, and the representation of
-          coefficients in <i>Montgomery form</i> for cheap modular
-          multiplication.
+          A polynomial in evaluation form is not stored with its
+          $65536$ values in the natural order
+          $p(\zeta), p(\zeta^3), p(\zeta^5), \ldots$; instead they sit
+          at bit-reversed indices. This is the order the fast NTT
+          produces (and the inverse NTT consumes) for free, so keeping
+          the data bit-reversed skips a separate permutation pass, and
+          the pointwise operations that dominate don't care about the
+          ordering anyway.
+        </p>
+
+        <h2 id="signed-montgomery-form">Signed Montgomery form</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Every residue modulo a prime $q_i$ is stored in
+          <em>signed Montgomery form</em>: scaled by a fixed power of
+          two and kept in a centered range around zero. Modular
+          multiplication is the workhorse of the NTT and of every
+          pointwise product, and this representation lets each one run
+          as a Montgomery reduction, with no divisions and a minimum of
+          conditional corrections.
+        </p>
+
+        <h2 id="rns-residue-ordering">RNS residue ordering</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          A level-$\ell$ polynomial is really a two-dimensional array:
+          $\ell + 1$ residues, each an array of $65536$ coefficients.
+          Storing it residue-major, with all of one prime's
+          coefficients laid out contiguously before the next prime's
+          begin, keeps each per-prime NTT and pointwise kernel
+          working on a single contiguous run, which is what the GPU
+          needs for coalesced, full-bandwidth memory access.
+        </p>
+
+        <h2 id="precomputed-constant-tables">Precomputed constant tables</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Many operations read fixed, prime-dependent constants: the
+          twiddle factors of the NTT and inverse NTT, and the modular
+          inverses and cross-residues used by rescaling, modulus
+          raising, and key-switching. These are computed once at setup
+          and kept resident on the device in the same signed Montgomery
+          form as the data they multiply.
+        </p>
+
+        <h2 id="host-device-data-flow">Host &harr; device data flow</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Ciphertexts and keys originate on the host but are operated
+          on by the GPU, so they have to cross the PCIe bus. Pinned
+          host buffers and staged, asynchronous transfers let these
+          copies overlap with computation, hiding most of the transfer
+          latency behind useful work.
+        </p>
+
+        <h2 id="on-device-buffer-management">On-device buffer management</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          A single polynomial runs to megabytes, and one operation can
+          spin up several short-lived intermediates, so allocating
+          fresh device memory each time would be ruinous. A memory pool
+          hands out and recycles scratch buffers instead, keeping
+          allocation off the critical path.
         </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>

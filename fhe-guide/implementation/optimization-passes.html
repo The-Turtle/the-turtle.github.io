@@ -14,8 +14,79 @@
       <p class="post-breadcrumb" id="post-breadcrumb"></p>
       <article>
         <h1>Optimization passes</h1>
+        <p>
+          With a program in hand as a computation graph, the compiler
+          makes it faster by applying a sequence of
+          <em>optimization passes</em>: graph-to-graph rewrites that
+          leave the computed result unchanged while lowering its cost.
+          Some are classic compiler transformations that would speed up
+          any program; others are specific to CKKS, where the costs
+          that matter most are multiplicative depth (which forces
+          expensive bootstraps), the level each ciphertext sits at, and
+          the sheer volume of polynomial arithmetic feeding the GPU.
+          The passes run at both levels of the IR: the first three
+          rewrite the ciphertext graph before it is lowered, and the
+          rest rewrite the polynomial graph afterward, closer to the
+          hardware.
+        </p>
+
+        <h2 id="classic-simplifications">Classic simplifications</h2>
         <p><b>[WORK IN PROGRESS]</b></p>
-        <p>The transformations we apply to a computation graph to make it faster: common-subexpression elimination, depth reduction, kernel fusion, and more.</p>
+        <p>
+          The standard compiler cleanups, applied to the ciphertext
+          graph: common-subexpression elimination so a repeated
+          computation runs only once, dead-code elimination to prune
+          nodes whose results are never used, and constant folding to
+          evaluate any plaintext-only subgraph ahead of time.
+        </p>
+
+        <h2 id="depth-reduction">Depth reduction</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Multiplicative depth is what forces bootstraps, so this pass
+          restructures the graph to use as little of it as possible,
+          for example by rebalancing chains of multiplications into
+          trees and computing products of many ciphertexts at optimal
+          depth.
+        </p>
+
+        <h2 id="level-and-scale-management">Level and scale management</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          This pass decides where level drops and rescales go, placing
+          them as late as the scale bookkeeping allows so that
+          ciphertexts spend more of the computation at lower levels,
+          where every polynomial operation is cheaper.
+        </p>
+
+        <h2 id="ntt-minimization">NTT and inverse-NTT minimization</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Working on the polynomial graph, this pass inserts a
+          transform only where an operation actually needs the other
+          representation, and removes redundant ones by keeping a
+          polynomial in evaluation form across consecutive
+          multiplications instead of converting back and forth.
+        </p>
+
+        <h2 id="kernel-fusion">Kernel fusion</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Adjacent pointwise polynomial operations are merged into a
+          single GPU kernel, so that intermediate results stay in
+          registers instead of being written out to memory and read
+          back, cutting the memory traffic that these bandwidth-bound
+          kernels are limited by.
+        </p>
+
+        <h2 id="scheduling-and-liveness">Scheduling and liveness</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          The order in which independent operations run determines how
+          many large polynomials are live at once, so this pass
+          schedules the graph to keep the peak working set within the
+          GPU's memory.
+        </p>
       </article>
       <nav class="post-nav" id="post-nav"></nav>
     </main>
