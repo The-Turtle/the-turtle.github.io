@@ -351,7 +351,29 @@
           the clear, and only inference runs on ciphertext.
         </p>
 
-        <img class="arch-diagram" src="../files/image-classification-architecture.png" alt="Image classification model architecture diagram" />
+        <table>
+          <thead>
+            <tr>
+              <th>Step</th>
+              <th>Output shape</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Input image</td><td>$28 \times 28 \times 1$</td><td>MNIST grayscale image</td></tr>
+            <tr><td>Pad and encrypt</td><td>$32 \times 32 \times 1$</td><td>Zero-padded and packed into ciphertext slots</td></tr>
+            <tr><td>Convolution 1</td><td>$32 \times 32 \times 4$</td><td>$3 \times 3$, one input channel to four output channels</td></tr>
+            <tr><td><code>tanh_approx</code></td><td>$32 \times 32 \times 4$</td><td>Slotwise polynomial activation</td></tr>
+            <tr><td>Convolution 2</td><td>$32 \times 32 \times 8$</td><td>$3 \times 3$, four input channels to eight output channels</td></tr>
+            <tr><td><code>tanh_approx</code></td><td>$32 \times 32 \times 8$</td><td>Slotwise polynomial activation</td></tr>
+            <tr><td>Average pool</td><td>$8 \times 8 \times 8$</td><td>$4 \times 4$ pooling, leaving $512$ values</td></tr>
+            <tr><td>Repack</td><td>$512$</td><td>Rearranges pooled values for dense layers</td></tr>
+            <tr><td>Dense 1</td><td>$32$</td><td>Hidden layer</td></tr>
+            <tr><td><code>tanh_approx</code></td><td>$32$</td><td>Slotwise polynomial activation</td></tr>
+            <tr><td>Dense 2</td><td>$10$</td><td>One logit per digit</td></tr>
+            <tr><td>Decrypt and argmax</td><td>$10 \to 1$</td><td>Client reads the predicted digit</td></tr>
+          </tbody>
+        </table>
 
         <p>
           The image sets the data layout for everything downstream. The
@@ -455,7 +477,7 @@
           The final LM head reuses the embedding, $\text{logits} = \mathbf{h}_N E^\top$.
         </p>
 
-        <img class="arch-diagram" src="../files/language-model-architecture.png" alt="Language model architecture diagram" />
+        <img class="arch-diagram" src="../files/language-model-architecture.svg" alt="Language model architecture diagram" />
 
         <p>
           The forward pass is a long chain of linear maps, two

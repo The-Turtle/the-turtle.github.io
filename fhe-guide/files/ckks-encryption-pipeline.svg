@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="120" viewBox="0 0 780 120">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#bcbdd0"/>
+    </marker>
+    <style>
+      .box{fill:#252936;stroke:#5fa8d3;stroke-width:1.5}
+      .text{fill:#bcbdd0;font:17px Open Sans,Arial,sans-serif;text-anchor:middle;dominant-baseline:middle}
+      .arrow{stroke:#bcbdd0;stroke-width:1.7;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+
+  <rect class="box" x="24" y="36" width="112" height="48" rx="6"/>
+  <text class="text" x="80" y="60">Encode</text>
+
+  <rect class="box" x="170" y="36" width="112" height="48" rx="6"/>
+  <text class="text" x="226" y="60">Encrypt</text>
+
+  <rect class="box" x="316" y="36" width="150" height="48" rx="6"/>
+  <text class="text" x="391" y="60">Do computation</text>
+
+  <rect class="box" x="500" y="36" width="112" height="48" rx="6"/>
+  <text class="text" x="556" y="60">Decrypt</text>
+
+  <rect class="box" x="646" y="36" width="112" height="48" rx="6"/>
+  <text class="text" x="702" y="60">Decode</text>
+
+  <path class="arrow" d="M136 60H170"/>
+  <path class="arrow" d="M282 60H316"/>
+  <path class="arrow" d="M466 60H500"/>
+  <path class="arrow" d="M612 60H646"/>
+</svg>

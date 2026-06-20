@@ -125,6 +125,21 @@ main blockquote {
     border-bottom: 1px solid var(--fhe-tint-hov);
 }
 
+.arch-diagram {
+    box-sizing: border-box;
+    display: block;
+    margin: 16px auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--fhe-rule);
+    border-radius: 4px;
+}
+
+.pipeline-diagram {
+    border: 0;
+    border-radius: 0;
+}
+
 /* Tables: small, centered, with a tinted header row.
    The dark theme has no default contrast on browser tables, so we
    draw explicit borders against the page background. */
@@ -431,4 +446,3 @@ main > .post-list li:hover {
         margin-right: auto;
     }
 }
-
