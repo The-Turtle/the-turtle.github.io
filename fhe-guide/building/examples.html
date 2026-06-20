@@ -132,9 +132,8 @@
           every dead one. The grid is $128\times 128$, laid out row by
           row, with cell $(i, j)$ at slot $(128\,i + j)\cdot 2$. The
           cyclic rotations wrap the 2D grid as a single 1D loop
-          &mdash; the right edge of one row
-          <span class="lie" data-truth="this linear wrapping is not a true 2D torus: the row seams and the four corners wrap to different cells than toroidal neighbors would">joins</span>
-          the left edge of the next.
+          &mdash; the right edge of one row joins the left edge of the
+          next, and the top edge matches with the bottom edge.
         </p>
 
         <p>
@@ -167,7 +166,7 @@
 
         <p>
           Written out, the update polynomial is
-          $$P(n, y) = \frac{q(n)}{1440}\Big(y(n-3) - 2(n-2) - (n-2)(n-3)\,h(n, y)\Big),$$
+          $$P(n, y) = \frac{q(n)}{1440}\Big((n-3)y - 2(n-2) - (n-2)(n-3)\,h(n, y)\Big),$$
           where $h$ is the correction term
           $h(n, y) = \sum_{i, j} c_{ij}\,(n-4)^i y^j$ with nonzero
           coefficients
@@ -223,6 +222,20 @@
         </p>
 
         <p>
+          Each model predicts a sample's target from its features through
+          an intercept $\alpha$ and per-feature weights $\beta_i$,
+          $$
+          y \approx \alpha + \sum_i \beta_i\,\mathbf{x}_i
+          \quad(\text{linear}),
+          \qquad
+          y \approx \sigma\!\Big(\alpha + \sum_i \beta_i\,\mathbf{x}_i\Big)
+          \quad(\text{logistic}),
+          $$
+          where $\sigma$ is the sigmoid; the two differ only in that
+          activation and otherwise share the same training loop.
+        </p>
+
+        <p>
           Each participant encrypts only their own rows, so the server
           has to assemble those contributions into the shared per-feature
           ciphertexts. A participant encrypts a value into a single slot
@@ -254,7 +267,10 @@
           X^\top(\hat{\mathbf{y}} - \mathbf{y}) + \lambda\beta\Big),
           $$
           where $\hat{\mathbf{y}} = X\beta$ for linear regression and
-          $\hat{\mathbf{y}} = \sigma(X\beta)$ for logistic.
+          $\hat{\mathbf{y}} = \sigma(X\beta)$ for logistic, $\eta$ is the
+          learning rate and $\lambda$ the ridge strength. Here $\beta$
+          collects the intercept $\alpha$ together with the weights, and
+          the penalty $\lambda\beta$ leaves the intercept untouched.
         </p>
 
         <p>
@@ -264,11 +280,11 @@
           rotated by $1, 2, 4, \ldots, 16384$, fifteen steps after which
           every slot holds the total &mdash; and $\ell$ for a plaintext
           mask carrying $\eta/n$ in the data slots and $0$ elsewhere.
-          Then one step is the following, where $\sigma$ is the identity
+          Then one step is the following, where $f$ is the identity
           for linear regression and the cubic sigmoid for logistic:
           $$
           \begin{aligned}
-          \hat{\mathbf{y}} &= \sigma\!\Big(\alpha + \sum_i \beta_i \mathbf{x}_i\Big), \\
+          \hat{\mathbf{y}} &= f\!\Big(\alpha + \sum_i \beta_i \mathbf{x}_i\Big), \\
           \mathbf{r} &= \hat{\mathbf{y}} - \mathbf{y}, \\
           \alpha &\leftarrow \alpha - \Sigma(\ell \odot \mathbf{r}), \\
           \beta_i &\leftarrow (1 - \eta\lambda)\,\beta_i - \Sigma(\ell \odot \mathbf{x}_i \odot \mathbf{r}).
@@ -279,7 +295,7 @@
           applies the ridge decay. Its zeros outside the data slots also
           matter: with fewer than $32768$ samples the padded slots still
           carry a nonzero residual (there $\mathbf{x}_i = 0$, so
-          $\hat{\mathbf{y}} = \sigma(\alpha)$ while $\mathbf{y} = 0$), and
+          $\hat{\mathbf{y}} = f(\alpha)$ while $\mathbf{y} = 0$), and
           the mask is what keeps them out of the gradient sums.
         </p>
 
@@ -496,8 +512,16 @@
         </p>
 
         <p>
-          Not every encoding pair can be converted cheaply; only three
-          conversions are built:
+          Each conversion only permutes which slot holds entry $(r, c)$,
+          so it is a linear map &mdash; a multiply by a fixed permutation
+          matrix &mdash; and is carried out with the
+          baby-step/giant-step matrix-multiplication routine. That routine builds a matrix multiply out
+          of the matrix's nonzero <em>diagonals</em>, each applied as a
+          rotation by its index, so the <b>diagonal indices</b> column
+          lists those rotation offsets, the <b>count</b> is how many there
+          are, and the <b>key-switches</b> column counts the rotation keys
+          the routine spends. Not every encoding pair can be converted
+          cheaply; only three conversions are built:
         </p>
 
         <table>
