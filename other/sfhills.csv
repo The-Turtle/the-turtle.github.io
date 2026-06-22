@@ -12,11 +12,11 @@ Mount Sutro,37.757978,-122.457226,895,210,In the Mount Sutro Open Space Reserve.
 Lincoln Heights,37.782134,-122.500210,365,210,
 Stony Hill (Hunters Point Ridge),37.734416,-122.384794,265,205,Next to a preschool. Residential. Better views at Hilltop Park close by (which also has a large sundial).
 Telegraph Hill,37.802186,-122.405656,285,200,In Pioneer Park. Views partially obstructed by trees on all sides. For good views ascend Coit Tower for a fee.
-Strawberry Hill,37.768706,-122.475802,410,175,An island inside Blue Heron Lake in Golden Gate Park. Partially obstructed views.
+Strawberry Hill,37.768706,-122.475802,410,175,An island inside Blue Heron Lake in Golden Gate Park. Mostly unobstructed views to the north and south.
 Nob Hill,37.793672,-122.415196,355,175,Hilltop is on the pedestrian-only Priest Street. No view as it is obstructed by buildings.
 Edgehill Heights,37.742696,-122.459188,715,160,Residential.
 Mount St. Joseph,37.734074,-122.397052,240,160,Residential. Small public area nearby between 290 and 300 Bayview Circle with 90 degree views.
-Lone Mountain,37.779020,-122.452654,400,155,
+Lone Mountain,37.779020,-122.452654,400,155,On the University of San Francisco campus. 180 degree views to the south.
 Lafayette Heights,37.791836,-122.427580,365,130,In Lafayette Park. Mostly unobstructed views if you walk past the trees on the top.
 Gold Mine Hill,37.741400,-122.437930,650,125,Residential. Some partially obstructed views.
 Presidio Hill,37.793312,-122.463940,380,115,Inside the Presidio of San Francisco. Inaccessible due to a municipal water storage basin and WVY transmitter station on the summit. Nearest public access is from the Presidio Golf Course with decent southward views; nearest free access is along the Bay Area Ridge Trail.
@@ -35,9 +35,9 @@ Grand View Hill,37.756178,-122.471770,655,65,In Grandview Park. 360 degree views
 Red Rock Hill,37.746134,-122.441656,640,60,Inside the Diamond Heights Village Association. No view.
 Fairmount Heights,37.738664,-122.432440,520,60,Residential. 180 degree views.
 ,37.717550,-122.454454,485,60,
-Anza Hill,37.780010,-122.444140,340,60,
-Laurel Hill,37.784204,-122.448910,325,60,
-Prayerbrook Cross Hill,37.771622,-122.478250,305,60,
+Anza Hill,37.780010,-122.444140,340,60,Residential.
+Laurel Hill,37.784204,-122.448910,325,60,Residential.
+Prayerbrook Cross Hill,37.771622,-122.478250,305,60,In Golden Gate Park. Prayerbrook Cross is at the top, and Rainbow Falls descends down its southern slope. Partially obstructed views to the south.
 Holly Hill,37.737152,-122.420092,290,60,Flat top but can get views from all directions by walking around it.
 ,37.715210,-122.484226,150,60,
 La Portezuela,37.708082,-122.463976,455,55,
@@ -71,10 +71,10 @@ Irish Hill,37.758860,-122.386504,65,35,
 Pacheco Peak,37.753226,-122.470096,740,30,Residential.
 ,37.750220,-122.456344,515,30,
 ,37.729538,-122.462248,485,30,
-Mount Lick,37.773548,-122.455048,335,30,
+Mount Lick,37.773548,-122.455048,335,30,In Golden Gate Park. Views obstructed by trees.
 Battery Dynamite,37.801610,-122.476324,310,30,
-Chicken Point,37.770488,-122.462644,285,30,
-Casino Hill,37.772648,-122.462464,275,30,
+Chicken Point,37.770488,-122.462644,285,30,In Golden Gate Park. Views obstructed by trees.
+Casino Hill,37.772648,-122.462464,275,30,In Golden Gate Park. Views obstructed by trees.
 ,37.722212,-122.505340,115,30,
 Fort Mason Hill,37.806884,-122.427922,105,30,
 Cathedral Hill,37.784230,-122.425370,210,0,
@@ -84,8 +84,8 @@ Alcatraz Island,37.826250,-122.422167,135,135,
 Sutro Heights,37.777940,-122.512120,195,25,
 Tank Hill,37.759900,-122.447700,645,0,In Tank Hill Park. 270 degree views.
 Hawk Hill,37.746674,-122.469369,620,0,Inaccessible as of May 2026.
-Heidelberg Hill,37.768200,-122.469100,240,0,
+Heidelberg Hill,37.768200,-122.469100,240,0,Inside the San Francisco Botanical Garden in Golden Gate Park. Partially obstructed views to the south.
 Hermit Rock,37.785726,-122.509619,25,25,
 Alta Plaza Park,37.791371,-122.437839,290,5,In Alta Plaza Park. Southward views; northward views obstructed by buildings.
 Duncan Hill,37.745983,-122.433400,420,5,In Duncan & Castro Open Space. 180 degree views.
-Ignatius Heights,37.776319,-122.451083,350,5,
+Ignatius Heights,37.776319,-122.451083,350,5,On the University of San Francisco campus. No views.
