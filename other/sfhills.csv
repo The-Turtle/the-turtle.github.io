@@ -2,7 +2,7 @@ name,latitude,longitude,elevation_ft,prominence_ft,notes
 Mt. Davidson,37.738232,-122.454832,915,625,In Mt. Davidson Park. Mount Davidson Cross is at the top. 270 degree views close by at Mount Davidson Vista Point.
 Noe Peak,37.751552,-122.447758,905,330,South Twin Peak. 360 degree views.
 Signal Point,37.809746,-122.366074,330,330,In Signal Point Park. 360 degree views by walking around the park.
-Bayview Hill (Candlestick Hill),37.715102,-122.393452,450,320,
+Bayview Hill (Candlestick Hill),37.715102,-122.393452,450,320,In Bayview Park. Views at the summit are obstructed by trees but the loop trail near the top offers good views in all directions.
 Forest Hill,37.748204,-122.467306,775,300,Residential. Off-limits water tank at the top.
 Visitacion Knob (McLaren Ridge),37.719224,-122.421748,515,275,In John McLaren Park. Views mostly obscured by trees.
 Potrero Hill,37.756718,-122.399626,310,270,Residential.
@@ -49,8 +49,8 @@ Martha Hill,37.733642,-122.439388,385,45,In Dorothy W. Erskine Park. 180 degree 
 Crocker Amazon Hill,37.713950,-122.425456,315,45,In John McLaren Park. 360 degree views.
 Horner's Hill,37.750670,-122.425618,210,45,Residential.
 Pasadena Hill,37.709090,-122.419138,160,45,Inaccessible due to private property. Closest access is on Pasadena St.
-Hunter's Point Shipyard Hill,37.727846,-122.368918,140,45,
-Little Bayview Hill (Tubsinte Hill),37.709540,-122.398906,80,45,
+Hunter's Point Shipyard Hill,37.727846,-122.368918,140,45,Residential. Southwestward views from nearby Hillpoint Park.
+Little Bayview Hill (Tubsinte Hill),37.709540,-122.398906,80,45,Residential. Next to Little Hollywood Park.
 Monterey Heights,37.733840,-122.460718,590,40,Residential.
 City College Hill,37.725326,-122.450926,350,40,
 Amuctac Hill,37.711862,-122.424610,315,40,In John McLaren Park. 180 degree views to the south.
@@ -84,7 +84,7 @@ Alcatraz Island,37.826250,-122.422167,135,135,
 Sutro Heights,37.777940,-122.512120,195,25,
 Tank Hill,37.759900,-122.447700,645,0,In Tank Hill Park. 270 degree views.
 Hawk Hill,37.746674,-122.469369,620,0,Inaccessible as of May 2026.
-Heidelberg Hill,37.768200,-122.469100,240,0,Inside the San Francisco Botanical Garden in Golden Gate Park. Partially obstructed views to the south.
+Heidelberg Hill,37.768200,-122.469100,240,0,Inside the San Francisco Botanical Garden in Golden Gate Park. Requires paying the garden entrance fee (free for San Francisco residents). Partially obstructed views to the south.
 Hermit Rock,37.785726,-122.509619,25,25,
 Alta Plaza Park,37.791371,-122.437839,290,5,In Alta Plaza Park. Southward views; northward views obstructed by buildings.
 Duncan Hill,37.745983,-122.433400,420,5,In Duncan & Castro Open Space. 180 degree views.
