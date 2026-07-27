@@ -216,14 +216,53 @@
         <script>
             // Parse CSV text into an array of objects
             function parseCSV(text) {
-                const lines = text.trim().split("\n");
-                const headers = lines[0].split(",");
-                return lines.slice(1).map((line) => {
-                    const values = line.split(",");
-                    const obj = {};
-                    headers.forEach((h, i) => (obj[h.trim()] = values[i]));
-                    return obj;
-                });
+                const rows = [];
+                let row = [];
+                let field = "";
+                let inQuotes = false;
+
+                for (let i = 0; i < text.length; i++) {
+                    const character = text[i];
+
+                    if (inQuotes) {
+                        if (character === '"' && text[i + 1] === '"') {
+                            field += '"';
+                            i++;
+                        } else if (character === '"') {
+                            inQuotes = false;
+                        } else {
+                            field += character;
+                        }
+                    } else if (character === '"') {
+                        inQuotes = true;
+                    } else if (character === ",") {
+                        row.push(field);
+                        field = "";
+                    } else if (character === "\n") {
+                        row.push(field);
+                        rows.push(row);
+                        row = [];
+                        field = "";
+                    } else if (character !== "\r") {
+                        field += character;
+                    }
+                }
+
+                if (field || row.length) {
+                    row.push(field);
+                    rows.push(row);
+                }
+
+                const headers = rows.shift().map((header) => header.trim());
+                return rows
+                    .filter((values) => values.some((value) => value.trim()))
+                    .map((values) => {
+                        const obj = {};
+                        headers.forEach(
+                            (header, i) => (obj[header] = values[i] ?? ""),
+                        );
+                        return obj;
+                    });
             }
 
             // Map will be initialized after loading data to compute bounds

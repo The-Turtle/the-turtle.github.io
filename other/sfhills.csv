@@ -7,7 +7,7 @@ Forest Hill,37.748204,-122.467306,775,300,Residential. Off-limits water tank at 
 Visitacion Knob (McLaren Ridge),37.719224,-122.421748,515,275,In John McLaren Park. Views mostly obscured by trees.
 Potrero Hill,37.756718,-122.399626,310,270,Residential.
 Bernal Hill,37.743182,-122.415376,450,265,In Bernal Heights Park. Telecommunications tower equipment on top but can get 360 degree views by walking around it.
-Merced Heights,37.718108,-122.462644,525,230,
+Merced Heights,37.718108,-122.462644,525,230,In Lakeview and Ashton Mini Park. 360 degree views.
 Mount Sutro,37.757978,-122.457226,895,210,In the Mount Sutro Open Space Reserve. Forested.
 Lincoln Heights,37.782134,-122.500210,365,210,
 Stony Hill (Hunters Point Ridge),37.734416,-122.384794,265,205,Next to a preschool. Residential. Better views at Hilltop Park close by (which also has a large sundial).
@@ -34,13 +34,12 @@ Dolores Heights,37.755944,-122.431450,385,70,Residential.
 Grand View Hill,37.756178,-122.471770,655,65,In Grandview Park. 360 degree views with few trees.
 Red Rock Hill,37.746134,-122.441656,640,60,Inside the Diamond Heights Village Association. No view.
 Fairmount Heights,37.738664,-122.432440,520,60,Residential. 180 degree views.
-,37.717550,-122.454454,485,60,
+,37.717550,-122.454454,485,60,Residential.
 Anza Hill,37.780010,-122.444140,340,60,Residential.
 Laurel Hill,37.784204,-122.448910,325,60,Residential.
-Prayerbrook Cross Hill,37.771622,-122.478250,305,60,In Golden Gate Park. Prayerbrook Cross is at the top, and Rainbow Falls descends down its southern slope. Partially obstructed views to the south.
+Prayerbrook Cross Hill,37.771622,-122.478250,305,60,"In Golden Gate Park. Prayerbrook Cross is at the top, and Rainbow Falls descends down its southern slope. Partially obstructed views to the south."
 Holly Hill,37.737152,-122.420092,290,60,Flat top but can get views from all directions by walking around it.
-,37.715210,-122.484226,150,60,
-La Portezuela,37.708082,-122.463976,455,55,
+La Portezuela,37.708082,-122.463976,455,55,Residential. Views to the northeast from the end of the road. The summit is only a few feet from the city boundary so whether it lies in San Francisco or Daly City is debatable.
 Madrid Hill,37.718576,-122.435662,310,55,Residential.
 Alamo Heights (Hayes Hill),37.775240,-122.434168,260,55,Near Alamo Square and the Painted Ladies.
 Macaroon Hill,37.736666,-122.456632,815,45,Residential.
@@ -52,7 +51,7 @@ Pasadena Hill,37.709090,-122.419138,160,45,Inaccessible due to private property.
 Hunter's Point Shipyard Hill,37.727846,-122.368918,140,45,Residential. Southwestward views from nearby Hillpoint Park.
 Little Bayview Hill (Tubsinte Hill),37.709540,-122.398906,80,45,Residential. Next to Little Hollywood Park.
 Monterey Heights,37.733840,-122.460718,590,40,Residential.
-City College Hill,37.725326,-122.450926,350,40,
+City College Hill,37.725326,-122.450926,350,40,"On the City College of San Francisco campus. Science Hall occupies the summit. Walking around the building provides views to the west, north, and east."
 Amuctac Hill,37.711862,-122.424610,315,40,In John McLaren Park. 180 degree views to the south.
 George Sterling Park,37.801250,-122.420362,310,40,By Lombard Street. Residential.
 Battery Davis,37.718630,-122.503522,215,40,
@@ -76,11 +75,11 @@ Battery Dynamite,37.801610,-122.476324,310,30,
 Chicken Point,37.770488,-122.462644,285,30,In Golden Gate Park. Views obstructed by trees.
 Casino Hill,37.772648,-122.462464,275,30,In Golden Gate Park. Views obstructed by trees.
 ,37.722212,-122.505340,115,30,
-Fort Mason Hill,37.806884,-122.427922,105,30,
-Cathedral Hill,37.784230,-122.425370,210,0,
+Fort Mason Hill,37.806884,-122.427922,105,30,In Fort Mason Park. Views in all directions are available by walking around the park.
+Cathedral Hill,37.784230,-122.425370,210,0,At the Cathedral of Saint Mary of the Assumption. The cathedral's decks offer views to the south that are partially obstructed by buildings.
 Kite Hill,37.758330,-122.441360,435,0,In Kite Hill. 180 degree views.
 Billy Goat Hill,37.741410,-122.433270,505,0,In Billy Goat Hill. 180 degree views.
-Alcatraz Island,37.826250,-122.422167,135,135,
+Alcatraz Island,37.826250,-122.422167,135,135,Access requires a paid ferry ticket. The summit is near the lighthouse. Good views in all directions are available by walking around the island.
 Sutro Heights,37.777940,-122.512120,195,25,
 Tank Hill,37.759900,-122.447700,645,0,In Tank Hill Park. 270 degree views.
 Hawk Hill,37.746674,-122.469369,620,0,Inaccessible as of May 2026.
