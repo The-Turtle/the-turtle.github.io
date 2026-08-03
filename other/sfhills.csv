@@ -9,7 +9,7 @@ Potrero Hill,37.756718,-122.399626,310,270,Residential.
 Bernal Hill,37.743182,-122.415376,450,265,In Bernal Heights Park. Telecommunications tower equipment on top but can get 360 degree views by walking around it.
 Merced Heights,37.718108,-122.462644,525,230,In Lakeview and Ashton Mini Park. 360 degree views.
 Mount Sutro,37.757978,-122.457226,895,210,In the Mount Sutro Open Space Reserve. Forested.
-Lincoln Heights,37.782134,-122.500210,365,210,
+Lincoln Heights,37.782134,-122.500210,365,210,In Lincoln Park Golf Course. Views obstructed by trees.
 Stony Hill (Hunters Point Ridge),37.734416,-122.384794,265,205,Next to a preschool. Residential. Better views at Hilltop Park close by (which also has a large sundial).
 Telegraph Hill,37.802186,-122.405656,285,200,In Pioneer Park. Views partially obstructed by trees on all sides. For good views ascend Coit Tower for a fee.
 Strawberry Hill,37.768706,-122.475802,410,175,An island inside Blue Heron Lake in Golden Gate Park. Mostly unobstructed views to the north and south.
@@ -56,7 +56,7 @@ Amuctac Hill,37.711862,-122.424610,315,40,In John McLaren Park. 180 degree views
 George Sterling Park,37.801250,-122.420362,310,40,By Lombard Street. Residential.
 Battery Davis,37.718630,-122.503522,215,40,
 Torpedo Point,37.813886,-122.359684,65,40,Below Interstate 80. Top is inaccessible due to military use. Closest public access is along the pedestrian pathway on the southeast side of the hill.
-Seal Rocks,37.778372,-122.516554,40,40,An island. Inaccessible but can be viewed from Sutro Baths.
+Seal Rocks,37.778372,-122.516554,40,40,An island. Inaccessible but can be viewed from the shore.
 Larsen Peak (Sunset Heights),37.749770,-122.469358,745,35,In Golden Gate Heights Park. Views partially obstructed by trees on all sides.
 ,37.718468,-122.420614,500,35,
 ,37.717298,-122.466802,480,35,
@@ -71,7 +71,7 @@ Pacheco Peak,37.753226,-122.470096,740,30,Residential.
 ,37.750220,-122.456344,515,30,
 ,37.729538,-122.462248,485,30,
 Mount Lick,37.773548,-122.455048,335,30,In Golden Gate Park. Views obstructed by trees.
-Battery Dynamite,37.801610,-122.476324,310,30,
+Battery Dynamite,37.801610,-122.476324,310,30,In the Presidio of San Francisco. Restricted access. Closest access is from Ralston Avenue.
 Chicken Point,37.770488,-122.462644,285,30,In Golden Gate Park. Views obstructed by trees.
 Casino Hill,37.772648,-122.462464,275,30,In Golden Gate Park. Views obstructed by trees.
 ,37.722212,-122.505340,115,30,
@@ -80,11 +80,11 @@ Cathedral Hill,37.784230,-122.425370,210,0,At the Cathedral of Saint Mary of the
 Kite Hill,37.758330,-122.441360,435,0,In Kite Hill. 180 degree views.
 Billy Goat Hill,37.741410,-122.433270,505,0,In Billy Goat Hill. 180 degree views.
 Alcatraz Island,37.826250,-122.422167,135,135,Access requires a paid ferry ticket. The summit is near the lighthouse. Good views in all directions are available by walking around the island.
-Sutro Heights,37.777940,-122.512120,195,25,
+Sutro Heights,37.777940,-122.512120,195,25,In Sutro Heights Park. 180 degree views to the south.
 Tank Hill,37.759900,-122.447700,645,0,In Tank Hill Park. 270 degree views.
 Hawk Hill,37.746674,-122.469369,620,0,Inaccessible as of May 2026.
 Heidelberg Hill,37.768200,-122.469100,240,0,Inside the San Francisco Botanical Garden in Golden Gate Park. Requires paying the garden entrance fee (free for San Francisco residents). Partially obstructed views to the south.
-Hermit Rock,37.785726,-122.509619,25,25,
+Hermit Rock,37.785726,-122.509619,25,25,An island. Inaccessible but can be viewed from the shore.
 Alta Plaza Park,37.791371,-122.437839,290,5,In Alta Plaza Park. Southward views; northward views obstructed by buildings.
 Duncan Hill,37.745983,-122.433400,420,5,In Duncan & Castro Open Space. 180 degree views.
 Ignatius Heights,37.776319,-122.451083,350,5,On the University of San Francisco campus. No views.
