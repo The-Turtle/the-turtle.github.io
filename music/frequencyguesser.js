@@ -375,7 +375,7 @@ function submitGuess() {
     });
 
     document.getElementById("feedback").textContent =
-        `Your guess: ${rawGuess} · Correct answer: ${formatCorrectAnswer(currentFreq, guess.format)}`;
+        `Correct answer: ${formatCorrectAnswer(currentFreq, guess.format)}`;
 
     drawGraph();
 
