@@ -546,6 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .addEventListener("click", nextRound);
     document.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
+            e.preventDefault();
             if (roundActive) submitGuess();
             else if (document.getElementById("nextBtn").style.display !== "none") nextRound();
         }
