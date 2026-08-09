@@ -227,7 +227,7 @@ function parseGuess(raw) {
     let m = s.match(/^([\d.]+)\s*bpm$/i);
     if (m) {
         const v = parseFloat(m[1]);
-        return v > 0 ? v / 60 : null;
+        return v > 0 ? { hz: v / 60, format: "bpm" } : null;
     }
 
     /* --- Note name  (e.g. C#4, A4+25c, Bb3-10 cents) --- */
@@ -256,24 +256,77 @@ function parseGuess(raw) {
         const hz =
             getRefA() *
             Math.pow(2, (midi - 69 + cents / 100) / 12);
-        return hz > 0 ? hz : null;
+        return hz > 0 ? { hz, format: "note" } : null;
     }
 
     /* --- kHz --- */
     m = s.match(/^([\d.]+)\s*khz$/i);
     if (m) {
         const v = parseFloat(m[1]) * 1000;
-        return v > 0 ? v : null;
+        return v > 0 ? { hz: v, format: "khz" } : null;
     }
 
     /* --- Hz  (requires "Hz" suffix) --- */
     m = s.match(/^([\d.]+)\s*hz$/i);
     if (m) {
         const v = parseFloat(m[1]);
-        return v > 0 ? v : null;
+        return v > 0 ? { hz: v, format: "hz" } : null;
     }
 
     return null;
+}
+
+function formatSignificant(value, digits = 3) {
+    if (value === 0) return "0";
+
+    const exponent = Math.floor(Math.log10(Math.abs(value)));
+    const decimalPlaces = digits - exponent - 1;
+
+    if (decimalPlaces > 0) return value.toFixed(decimalPlaces);
+
+    const placeValue = Math.pow(10, -decimalPlaces);
+    return String(Math.round(value / placeValue) * placeValue);
+}
+
+function formatNote(freq) {
+    const midiValue = 69 + 12 * Math.log2(freq / getRefA());
+    const nearestMidi = Math.round(midiValue);
+    const pitchClass = ((nearestMidi % 12) + 12) % 12;
+    const octave = Math.floor(nearestMidi / 12) - 1;
+    const cents = Math.round((midiValue - nearestMidi) * 100);
+
+    const exactNames = [
+        "C", "C#", "D", "Eb", "E", "F",
+        "F#", "G", "G#", "A", "Bb", "B",
+    ];
+
+    if (cents === 0) return `${exactNames[pitchClass]}${octave}`;
+
+    const sharpNames = [
+        "C", "C#", "D", "D#", "E", "F",
+        "F#", "G", "G#", "A", "A#", "B",
+    ];
+    const flatNames = [
+        "C", "Db", "D", "Eb", "E", "F",
+        "Gb", "G", "Ab", "A", "Bb", "B",
+    ];
+    const noteName = cents < 0
+        ? sharpNames[pitchClass]
+        : flatNames[pitchClass];
+    const sign = cents < 0 ? "−" : "+";
+
+    return `${noteName}${octave}${sign}${Math.abs(cents)} cents`;
+}
+
+function formatCorrectAnswer(freq, format) {
+    if (format === "bpm") {
+        return `${formatSignificant(freq * 60)} BPM`;
+    }
+    if (format === "khz") {
+        return `${formatSignificant(freq / 1000)} kHz`;
+    }
+    if (format === "note") return formatNote(freq);
+    return `${formatSignificant(freq)} Hz`;
 }
 
 /* ======================================================
@@ -301,8 +354,9 @@ function submitGuess() {
     if (!roundActive) return;
 
     const inp = document.getElementById("guessInput");
-    const hz = parseGuess(inp.value);
-    if (hz == null) {
+    const rawGuess = inp.value.trim();
+    const guess = parseGuess(rawGuess);
+    if (guess == null) {
         document.getElementById("feedback").innerHTML =
             '<span style="color:#c62828">Invalid input. Try: 440 Hz, 120 BPM, or C#4+25c</span>';
         return;
@@ -310,16 +364,18 @@ function submitGuess() {
 
     roundActive = false;
     stopTone(true);  // fade out on submit
+    document.getElementById("toggleBtn").disabled = true;
 
     /* Error in octaves (log₂ ratio) */
-    const err = Math.log2(hz / currentFreq);
+    const err = Math.log2(guess.hz / currentFreq);
     guessData.push({
         freq: currentFreq,
-        guessHz: hz,
+        guessHz: guess.hz,
         error: err,
     });
 
-    document.getElementById("feedback").textContent = "";
+    document.getElementById("feedback").textContent =
+        `Your guess: ${rawGuess} · Correct answer: ${formatCorrectAnswer(currentFreq, guess.format)}`;
 
     drawGraph();
 
