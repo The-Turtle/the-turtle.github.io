@@ -20,8 +20,13 @@
                 height: 500px;
                 width: 100%;
                 border-radius: 10px;
-                margin-bottom: 20px;
+                margin-bottom: 10px;
                 z-index: 0;
+            }
+
+            .map-options {
+                text-align: right;
+                margin-bottom: 20px;
             }
 
             .leaflet-popup-content-wrapper {
@@ -181,6 +186,12 @@
                 5 feet. The Farallon Islands are excluded.
             </p>
             <div id="map"></div>
+            <div class="map-options">
+                <label>
+                    <input type="checkbox" id="include-honorable" />
+                    Include honorable mentions
+                </label>
+            </div>
             <h2>Hills by Prominence</h2>
             <table id="hills-table">
                 <thead>
@@ -421,7 +432,7 @@
                     function updateLabels() {
                         const zoom = map.getZoom();
                         const showLabels = zoom >= 15;
-                        hills.forEach((hill) => {
+                        hills.concat(honorable).forEach((hill) => {
                             if (!hill.marker) return;
                             if (showLabels && !hill.marker._permanentTooltip) {
                                 hill.marker.unbindTooltip();
@@ -477,7 +488,22 @@
                     );
                     const htbody = document.getElementById("honorable-tbody");
                     const hillsCount = hills.length;
+                    const honorableLayer = L.layerGroup();
+                    const includeHonorable = document.getElementById("include-honorable");
                     honorable.forEach((h, i) => {
+                        h.marker = L.circleMarker([h.lat, h.lng], {
+                            radius: 6,
+                            fillColor: "#999",
+                            color: "#666",
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.8,
+                        }).addTo(honorableLayer);
+                        h.marker.bindTooltip(h.name, {
+                            direction: "top",
+                            offset: [0, -8],
+                        });
+
                         const row = document.createElement("tr");
                         row.innerHTML =
                             "<td>" +
@@ -502,6 +528,17 @@
                         htbody.appendChild(row);
                     });
 
+                    function updateHonorable() {
+                        if (includeHonorable.checked) {
+                            honorableLayer.addTo(map);
+                            updateLabels();
+                        } else {
+                            map.removeLayer(honorableLayer);
+                        }
+                    }
+                    includeHonorable.addEventListener("change", updateHonorable);
+                    updateHonorable();
+
                     // Click handler for honorable mentions -> fly to location with temp marker
                     htbody.addEventListener("click", (e) => {
                         if (e.target.classList.contains("honorable-link")) {
@@ -520,6 +557,10 @@
                                 });
                                 // Show a temporary marker that fades after 3 seconds
                                 setTimeout(() => {
+                                    if (includeHonorable.checked) {
+                                        honorable.find((h) => h.lat === lat && h.lng === lng).marker.openTooltip();
+                                        return;
+                                    }
                                     const tempMarker = L.circleMarker([lat, lng], {
                                         radius: 6,
                                         fillColor: "#999",
