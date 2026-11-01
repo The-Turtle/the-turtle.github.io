@@ -93,6 +93,25 @@
                 text-align: right;
             }
 
+            .hill-picture img {
+                display: block;
+                width: 96px;
+                height: 96px;
+                max-width: none;
+                object-fit: cover;
+                border-radius: 6px;
+            }
+
+            .hill-picture a {
+                display: inline-block;
+                border-radius: 6px;
+            }
+
+            .hill-picture a:focus-visible {
+                outline: 2px solid var(--turtle-green);
+                outline-offset: 3px;
+            }
+
             #hills-table tr:hover,
             #honorable-table tr:hover {
                 background-color: #e0f7fa;
@@ -200,6 +219,7 @@
                         <th>Name</th>
                         <th>Elevation (ft)</th>
                         <th>Prominence (ft)</th>
+                        <th>Photo</th>
                         <th>Notes</th>
                     </tr>
                 </thead>
@@ -213,6 +233,7 @@
                         <th>Name</th>
                         <th>Elevation (ft)</th>
                         <th>Prominence (ft)</th>
+                        <th>Photo</th>
                         <th>Notes</th>
                     </tr>
                 </thead>
@@ -274,6 +295,50 @@
                         );
                         return obj;
                     });
+            }
+
+            const placeholderImages = new Set([
+                "unnamed-hill-1",
+                "anza-hill",
+                "laurel-hill",
+                "madrid-hill",
+                "macaroon-hill",
+                "crocker-amazon-hill",
+                "amuctac-hill",
+                "pacheco-peak",
+                "mount-lick",
+                "casino-hill",
+            ]);
+
+            function createPictureCell(name) {
+                const cell = document.createElement("td");
+                cell.className = "hill-picture";
+                const filename = name.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-")
+                    .replace(/^-+|-+$/g, "");
+                const imageUrl = "../files/images/sfhills/" + filename + ".jpg?v=512";
+                const link = document.createElement("a");
+                link.href = imageUrl;
+                link.target = "_blank";
+                link.rel = "noopener";
+                link.title = "View larger image of " + name;
+
+                const image = document.createElement("img");
+                image.src = imageUrl;
+                image.alt = placeholderImages.has(filename)
+                    ? name + " — illustrated placeholder; photo needed"
+                    : name;
+                image.width = 96;
+                image.height = 96;
+                image.loading = "lazy";
+                image.decoding = "async";
+                image.addEventListener("error", () => {
+                    cell.textContent = "Photo needed";
+                });
+
+                link.appendChild(image);
+                cell.appendChild(link);
+                return cell;
             }
 
             // Map will be initialized after loading data to compute bounds
@@ -424,6 +489,7 @@
                             hill.prominence +
                             "</td>" +
                             "<td>" + (hill.notes || "") + "</td>";
+                        row.insertBefore(createPictureCell(hill.name), row.children[4]);
                         tbody.appendChild(row);
 
                     });
@@ -525,6 +591,7 @@
                             h.prominence +
                             "</td>" +
                             "<td>" + (h.notes || "") + "</td>";
+                        row.insertBefore(createPictureCell(h.name), row.children[4]);
                         htbody.appendChild(row);
                     });
 
