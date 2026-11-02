@@ -377,7 +377,6 @@
                     link.href = imageUrl;
                     link.target = "_blank";
                     link.rel = "noopener";
-                    link.title = "View larger image of " + name;
                     link.addEventListener("mouseenter", () => {
                         if (window.matchMedia("(hover: hover)").matches) showPhotoPreview(image);
                     });
@@ -478,7 +477,6 @@
 
                     function linkToHill(link, hill) {
                         link.href = "#map";
-                        link.title = "Show " + hill.name + " on the map";
                         link.addEventListener("click", (event) => {
                             event.preventDefault();
                             showHillOnMap(hill);
