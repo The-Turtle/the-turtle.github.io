@@ -1,25 +1,25 @@
 name,latitude,longitude,elevation_ft,prominence_ft,notes
-Mt. Davidson,37.738232,-122.454832,915,625,In Mt. Davidson Park. Mount Davidson Cross is at the top. 270 degree views close by at Mount Davidson Vista Point.
+Mt. Davidson,37.73834032,-122.45476066,932.49,630.01,In Mt. Davidson Park. Mount Davidson Cross is at the top. 270 degree views close by at Mount Davidson Vista Point.
 Noe Peak,37.75155752,-122.44778591,921.7,335.18,South Twin Peak. 360 degree views.
 Signal Point,37.80979009,-122.36582818,344.29,344.29,In Signal Point Park. 360 degree views by walking around the park.
 Bayview Hill (Candlestick Hill),37.71513832,-122.39355476,467.42,325.63,In Bayview Park. Views at the summit are obstructed by trees but the loop trail near the top offers good views in all directions.
 Forest Hill,37.74819796,-122.4671347,788.91,303.81,Residential. Off-limits water tank at the top.
 Visitacion Knob (McLaren Ridge),37.71921181,-122.42178789,529.56,279.83,In John McLaren Park. Views mostly obscured by trees.
-Potrero Hill,37.756718,-122.399626,310,270,Residential.
+Potrero Hill,37.7571057,-122.39961388,328.11,276.21,Residential.
 Bernal Hill,37.7432568,-122.41522089,466.18,272.52,In Bernal Heights Park. Telecommunications tower equipment on top but can get 360 degree views by walking around it.
 Merced Heights,37.7180883,-122.46266754,540.51,237.73,In Lakeview and Ashton Mini Park. 360 degree views.
-Mount Sutro,37.757978,-122.457226,895,210,In the Mount Sutro Open Space Reserve. Forested.
-Lincoln Heights,37.782134,-122.500210,365,210,In Lincoln Park Golf Course. Views obstructed by trees.
+Mount Sutro,37.75836182,-122.45718476,916.78,218.22,In the Mount Sutro Open Space Reserve. Forested.
+Lincoln Heights,37.78474708,-122.50041056,383.09,218.33,In Lincoln Park Golf Course. Views obstructed by trees.
 Stony Hill (Hunters Point Ridge),37.734545,-122.38462045,278.28,204.99,Next to a preschool. Residential. Better views at Hilltop Park close by (which also has a large sundial).
 Telegraph Hill,37.80234302,-122.40593619,301.06,207.26,In Pioneer Park. Views partially obstructed by trees on all sides. For good views ascend Coit Tower for a fee.
 Strawberry Hill,37.7685491,-122.47567434,429.5,182.74,An island inside Blue Heron Lake in Golden Gate Park. Mostly unobstructed views to the north and south.
 Nob Hill,37.79359786,-122.4152115,379.67,187.95,Hilltop is on the pedestrian-only Priest Street. No view as it is obstructed by buildings.
 Edgehill Heights,37.74264217,-122.45902125,729.81,163.67,Residential.
 Mount St. Joseph,37.73426743,-122.39704,256.58,166.58,Residential. Small public area nearby between 290 and 300 Bayview Circle with 90 degree views.
-Lone Mountain,37.779020,-122.452654,400,155,On the University of San Francisco campus. 180 degree views to the south.
+Lone Mountain,37.77955708,-122.4517552,416.33,161.55,On the University of San Francisco campus. 180 degree views to the south.
 Lafayette Heights,37.79198815,-122.4275589,378.66,131.84,In Lafayette Park. Mostly unobstructed views if you walk past the trees on the top.
 Gold Mine Hill,37.74136477,-122.43779649,662.65,129.31,Residential. Some partially obstructed views.
-Presidio Hill,37.793312,-122.463940,380,115,Inside the Presidio of San Francisco. Inaccessible due to a municipal water storage basin and WVY transmitter station on the summit. Nearest public access is from the Presidio Golf Course with decent southward views; nearest free access is along the Bay Area Ridge Trail.
+Presidio Hill,37.79401884,-122.46416213,394.57,119.16,Inside the Presidio of San Francisco. Inaccessible due to a municipal water storage basin and WVY transmitter station on the summit. Nearest public access is from the Presidio Golf Course with decent southward views; nearest free access is along the Bay Area Ridge Trail.
 Buena Vista Heights,37.76780154,-122.44154885,574.23,112.44,In Buena Vista Park. View almost completely obstructed by trees.
 Corona Heights,37.76499037,-122.43935595,501.1,97.07,In Corona Heights Park. 360 degree views.
 Castro Hill,37.75463572,-122.43582268,418.17,104.89,Residential.
@@ -32,15 +32,15 @@ Eureka Peak,37.75333465,-122.44742557,914.44,76.68,North Twin Peak. 360 degree v
 Clarendon Heights,37.75498566,-122.45294044,859.72,87.64,Sutro Tower at the top is off-limits. Closest access is from the Sutro Tower Trail.
 Dolores Heights,37.75604737,-122.43143935,398.41,74.51,Residential.
 Grand View Hill,37.75616394,-122.47178912,670.04,66.97,In Grandview Park. 360 degree views with few trees.
-Red Rock Hill,37.746134,-122.441656,640,60,Inside the Diamond Heights Village Association. No view.
+Red Rock Hill,37.74660642,-122.44116832,654.98,62.86,Inside the Diamond Heights Village Association. No view.
 Fairmount Heights,37.73867923,-122.4324619,533.18,60.59,Residential. 180 degree views.
 Anza Hill,37.78020114,-122.44430867,354.63,61.41,Residential.
 Laurel Hill,37.78441325,-122.44876688,342.42,66.89,Residential.
 Prayerbrook Cross Hill,37.77162977,-122.47831714,318.53,64.89,"In Golden Gate Park. Prayerbrook Cross is at the top, and Rainbow Falls descends down its southern slope. Partially obstructed views to the south."
 Holly Hill,37.73738164,-122.4202154,304.24,64.17,Flat top but can get views from all directions by walking around it.
-La Portezuela,37.70811895,-122.46400118,469.72,62.3,Residential. Views to the northeast from the end of the road. The summit is only a few feet from the city boundary so whether it lies in San Francisco or Daly City is debatable.
+La Portezuela,37.70811895,-122.46400118,469.72,62.3,Residential. Views to the northeast from the end of the road. The summit is only a few meters from the city boundary so whether it lies in San Francisco or Daly City is debatable.
 Madrid Hill,37.71861292,-122.43562256,323.41,60.15,Residential.
-Alamo Heights (Hayes Hill),37.775240,-122.434168,260,55,Near Alamo Square and the Painted Ladies.
+Alamo Heights (Hayes Hill),37.77560537,-122.43443956,276.69,62.61,Near Alamo Square and the Painted Ladies.
 Macaroon Hill,37.73661489,-122.45662393,827.04,41.9,Residential.
 Blue Tower Hill,37.72316767,-122.42446894,509.71,51.27,In John McLaren Park. 180 degree views to the northwest.
 Martha Hill,37.73373603,-122.43948805,399.62,51.5,In Dorothy W. Erskine Park. 180 degree views.
@@ -65,9 +65,9 @@ Chicken Point,37.77069321,-122.46297445,301.91,35.36,In Golden Gate Park. Views 
 Casino Hill,37.77271141,-122.46243282,287.91,30.48,In Golden Gate Park. Views obstructed by trees.
 Fort Mason Hill,37.80746886,-122.42794031,119.78,33.5,In Fort Mason Park. Views in all directions are available by walking around the park.
 Cathedral Hill,37.78423,-122.42537,204.95,0,At the Cathedral of Saint Mary of the Assumption. The cathedral's decks offer views to the south that are partially obstructed by buildings.
-Kite Hill,37.758330,-122.441360,435,0,In Kite Hill. 180 degree views.
+Kite Hill,37.75824557,-122.44167469,368.34,0,In Kite Hill. 180 degree views.
 Billy Goat Hill,37.7413417,-122.43334055,395.2,6.97,In Billy Goat Hill. 180 degree views.
-Alcatraz Island,37.826250,-122.422167,135,135,Access requires a paid ferry ticket. The summit is near the lighthouse. Good views in all directions are available by walking around the island.
+Alcatraz Island,37.8262819,-122.42275808,140.5,140.5,Access requires a paid ferry ticket. The summit is near the lighthouse. Good views in all directions are available by walking around the island.
 Sutro Heights,37.77808102,-122.51240415,210.36,28.68,In Sutro Heights Park. 180 degree views to the south.
 Tank Hill,37.7598013,-122.44766367,606.97,14.32,In Tank Hill Park. 270 degree views.
 Hawk Hill,37.74700167,-122.46883638,709.32,4.62,Inaccessible as of May 2026.
