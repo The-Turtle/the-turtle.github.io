@@ -310,19 +310,6 @@
                     });
             }
 
-            const placeholderImages = new Set([
-                "unnamed-hill-1",
-                "anza-hill",
-                "laurel-hill",
-                "madrid-hill",
-                "macaroon-hill",
-                "crocker-amazon-hill",
-                "amuctac-hill",
-                "pacheco-peak",
-                "mount-lick",
-                "casino-hill",
-            ]);
-
             function createPictureCell(name) {
                 const cell = document.createElement("td");
                 cell.className = "hill-picture";
@@ -338,9 +325,7 @@
 
                 const image = document.createElement("img");
                 image.src = imageUrl;
-                image.alt = placeholderImages.has(filename)
-                    ? name + " — illustrated placeholder; photo needed"
-                    : name;
+                image.alt = name;
                 image.width = 96;
                 image.height = 96;
                 image.loading = "lazy";
@@ -612,11 +597,7 @@
                             "<td>" +
                             (hillsCount + i + 1) +
                             "</td>" +
-                            '<td><span class="hill-name-link honorable-link" data-lat="' +
-                            h.lat +
-                            '" data-lng="' +
-                            h.lng +
-                            '" data-name="' +
+                            '<td><span class="hill-name-link honorable-link" data-name="' +
                             h.name +
                             '">' +
                             h.name +
@@ -646,9 +627,10 @@
                     // Click handler for honorable mentions -> fly to location with temp marker
                     htbody.addEventListener("click", (e) => {
                         if (e.target.classList.contains("honorable-link")) {
-                            const lat = parseFloat(e.target.dataset.lat);
-                            const lng = parseFloat(e.target.dataset.lng);
                             const name = e.target.dataset.name;
+                            const hill = honorable.find((h) => h.name === name);
+                            const lat = hill.lat;
+                            const lng = hill.lng;
 
                             document.getElementById("map").scrollIntoView({
                                 behavior: "smooth",
