@@ -112,6 +112,17 @@
                 outline-offset: 3px;
             }
 
+            #hill-photo-preview {
+                position: fixed;
+                width: min(320px, calc(100vw - 24px), calc(100vh - 24px));
+                border: 3px solid white;
+                border-radius: 10px;
+                box-sizing: border-box;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                pointer-events: none;
+                z-index: 1000;
+            }
+
             #hills-table tr:hover,
             #honorable-table tr:hover {
                 background-color: #e0f7fa;
@@ -127,15 +138,66 @@
                 color: var(--dark-green);
             }
 
-            .hill-count {
-                color: #666;
-                font-size: 0.9em;
-                margin-top: 0;
-            }
-
             .display-options {
                 margin-top: 20px;
                 text-align: right;
+            }
+
+            #hill-tier-list {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            #hill-tier-list th {
+                width: 90px;
+                padding: 8px;
+                font-size: 32px;
+                text-align: center;
+            }
+
+            .tier-hills {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+                gap: 10px;
+                padding: 10px;
+                background: #f5f6f8;
+                text-align: center;
+            }
+
+            .tier-hills .hill-picture {
+                min-width: 0;
+            }
+
+            .tier-hills a {
+                display: block;
+                position: relative;
+                border-radius: 10px;
+                transition: transform 0.3s;
+            }
+
+            .tier-hills img {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1;
+                border-radius: 10px;
+            }
+
+            .tier-hills a:hover,
+            .tier-hills a:focus-visible {
+                transform: scale(1.05);
+                z-index: 1;
+            }
+
+            .tier-hills span {
+                position: absolute;
+                bottom: 5%;
+                left: 0;
+                width: 100%;
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+                pointer-events: none;
             }
         </style>
     </head>
@@ -218,6 +280,10 @@
                     Include honorable mentions
                 </label>
             </div>
+            <h2 id="tier-list-heading">Hill Tier List</h2>
+            <table id="hill-tier-list" aria-labelledby="tier-list-heading">
+                <tbody id="tier-list-tbody"></tbody>
+            </table>
             <h2>Hills by Prominence</h2>
             <table id="hills-table">
                 <thead>
@@ -257,6 +323,7 @@
             </p>
         </main>
 
+        <img id="hill-photo-preview" hidden alt="" />
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script>
             // Parse CSV text into an array of objects
@@ -310,8 +377,25 @@
                     });
             }
 
-            function createPictureCell(name) {
-                const cell = document.createElement("td");
+            const photoPreview = document.getElementById("hill-photo-preview");
+            const hidePhotoPreview = () => { photoPreview.hidden = true; };
+            window.addEventListener("scroll", hidePhotoPreview, true);
+            window.addEventListener("resize", hidePhotoPreview);
+
+            function showPhotoPreview(image) {
+                photoPreview.src = image.src;
+                photoPreview.alt = image.alt;
+                photoPreview.hidden = false;
+                const size = photoPreview.offsetWidth;
+                const rect = image.getBoundingClientRect();
+                const left = rect.right + size + 12 <= innerWidth - 12
+                    ? rect.right + 12 : rect.left - size - 12;
+                photoPreview.style.left = Math.max(12, left) + "px";
+                photoPreview.style.top = Math.max(12, Math.min(rect.top, innerHeight - size - 12)) + "px";
+            }
+
+            function createPictureCell(name, tagName = "td") {
+                const cell = document.createElement(tagName);
                 cell.className = "hill-picture";
                 const filename = name.toLowerCase()
                     .replace(/[^a-z0-9]+/g, "-")
@@ -333,6 +417,15 @@
                 image.addEventListener("error", () => {
                     cell.textContent = "Photo needed";
                 });
+
+                if (tagName === "td") {
+                    link.addEventListener("mouseenter", () => {
+                        if (window.matchMedia("(hover: hover)").matches) showPhotoPreview(image);
+                    });
+                    link.addEventListener("mouseleave", hidePhotoPreview);
+                    link.addEventListener("focus", () => showPhotoPreview(image));
+                    link.addEventListener("blur", hidePhotoPreview);
+                }
 
                 link.appendChild(image);
                 cell.appendChild(link);
@@ -374,7 +467,7 @@
                 .then((csvText) => {
                     const rows = parseCSV(csvText);
 
-                    // Convert to hill objects
+                    // Sort once by prominence, breaking ties by elevation
                     const allHills = rows.map((row) => ({
                         name: row.name.trim() || null,
                         lat: parseFloat(row.latitude),
@@ -383,7 +476,7 @@
                         prominence: parseFloat(row.prominence_ft),
                         notes: row.notes ? row.notes.trim() : "",
                         marker: null,
-                    }));
+                    })).sort((a, b) => b.prominence - a.prominence || b.elevation - a.elevation);
 
                     // Split into main hills and honorable mentions
                     const hills = allHills.filter((h) => h.prominence * FEET_TO_METERS >= MIN_PROMINENCE_METERS);
@@ -417,13 +510,6 @@
                         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                     }).addTo(map);
 
-                    // Sort by prominence descending, tiebreak by elevation descending
-                    hills.sort(
-                        (a, b) =>
-                            b.prominence - a.prominence ||
-                            b.elevation - a.elevation,
-                    );
-
                     // Assign names to unnamed hills
                     let unnamedCount = 0;
                     hills.forEach((hill) => {
@@ -431,6 +517,51 @@
                             unnamedCount++;
                             hill.name = "Unnamed Hill " + unnamedCount;
                         }
+                    });
+
+                    function showHillOnMap(hill) {
+                        if (!map.hasLayer(hill.marker)) {
+                            includeHonorable.checked = true;
+                            updateHonorable();
+                        }
+                        document.getElementById("map").scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                        });
+                        setTimeout(() => {
+                            map.flyTo(hill.marker.getLatLng(), 16, { duration: 1.5 });
+                            setTimeout(() => hill.marker.openTooltip(), 1600);
+                        }, 400);
+                    }
+
+                    const tiers = [
+                        ["S", "#ff8787", "Mt. Davidson|Noe Peak|Bernal Hill|Corona Heights|Eureka Peak"],
+                        ["A", "#ffbd80", "Signal Point|Bayview Hill (Candlestick Hill)|Merced Heights|Russian Hill|Grand View Hill|Blue Tower Hill|Sutro Heights"],
+                        ["B", "#ffe084", "Visitacion Knob (McLaren Ridge)|Telegraph Hill|Strawberry Hill|Lone Mountain|Alcatraz Island|Lafayette Heights|Prayerbrook Cross Hill|Holly Hill|Alamo Heights (Hayes Hill)|Martha Hill|Crocker Amazon Hill|Fort Mason Hill|Heidelberg Hill|Tank Hill|Duncan Hill|Billy Goat Hill|Alta Plaza Park|Kite Hill"],
+                        ["C", "#c5e98c", "Potrero Hill|Mount Sutro|Nob Hill|Mount St. Joseph|Gold Mine Hill|Castro Hill|Mount Olympus|Cannon Hill|Unnamed Hill 1|La Portezuela|Fairmount Heights|Larsen Peak (Sunset Heights)|Battery Davis|City College Hill|Hunter's Point Shipyard Hill|Cathedral Hill"],
+                        ["D", "#8fd9bd", "Forest Hill|Stony Hill (Hunters Point Ridge)|Edgehill Heights|Buena Vista Heights|Rincon Hill|Clarendon Heights|Dolores Heights|Laurel Hill|Red Rock Hill|Anza Hill|Madrid Hill|Amuctac Hill|Little Bayview Hill (Tubsinte Hill)|Horner's Hill|Monterey Heights|George Sterling Park|Macaroon Hill|Pacheco Peak|Chicken Point|Mount Lick|Battery Dynamite|Ignatius Heights"],
+                        ["F", "#a9bafb", "Lincoln Heights|Presidio Hill|Rob Hill|Hermit Rock|Pasadena Hill|Torpedo Point|Seal Rocks|Irish Hill|Casino Hill|Hawk Hill"],
+                    ];
+                    tiers.forEach(([tier, color, names]) => {
+                        const row = document.getElementById("tier-list-tbody").insertRow();
+                        row.innerHTML = `<th scope="row" style="background: ${color}">${tier}</th><td><div class="tier-hills"></div></td>`;
+                        const members = new Set(names.split("|"));
+                        allHills.filter((hill) => members.has(hill.name))
+                            .forEach((hill) => {
+                                const tile = createPictureCell(hill.name, "div");
+                                const link = tile.querySelector("a");
+                                link.href = "#map";
+                                link.removeAttribute("target");
+                                link.title = "Show " + hill.name + " on the map";
+                                link.addEventListener("click", (event) => {
+                                    event.preventDefault();
+                                    showHillOnMap(hill);
+                                });
+                                const name = document.createElement("span");
+                                name.textContent = hill.name.replace(/\s*\(.*?\)/g, "");
+                                link.appendChild(name);
+                                row.querySelector(".tier-hills").appendChild(tile);
+                            });
                     });
 
                     // Add markers and build table
@@ -547,33 +678,11 @@
                     tbody.addEventListener("click", (e) => {
                         if (e.target.classList.contains("hill-name-link")) {
                             const idx = parseInt(e.target.dataset.index);
-                            const hill = hills[idx];
-
-                            // Scroll the map into view first
-                            document.getElementById("map").scrollIntoView({
-                                behavior: "smooth",
-                                block: "center",
-                            });
-
-                            // Fly to the marker after a short delay for scroll
-                            setTimeout(() => {
-                                map.flyTo(hill.marker.getLatLng(), 16, {
-                                    duration: 1.5,
-                                });
-                                // Open tooltip after fly animation completes
-                                setTimeout(() => {
-                                    hill.marker.openTooltip();
-                                }, 1600);
-                            }, 400);
+                            showHillOnMap(hills[idx]);
                         }
                     });
 
                     // Build honorable mentions table
-                    honorable.sort(
-                        (a, b) =>
-                            b.prominence - a.prominence ||
-                            b.elevation - a.elevation,
-                    );
                     const htbody = document.getElementById("honorable-tbody");
                     const hillsCount = hills.length;
                     const honorableLayer = L.layerGroup();
@@ -624,46 +733,11 @@
                     includeHonorable.addEventListener("change", updateHonorable);
                     updateHonorable();
 
-                    // Click handler for honorable mentions -> fly to location with temp marker
+                    // Click handler for honorable mentions -> show marker on map
                     htbody.addEventListener("click", (e) => {
                         if (e.target.classList.contains("honorable-link")) {
                             const name = e.target.dataset.name;
-                            const hill = honorable.find((h) => h.name === name);
-                            const lat = hill.lat;
-                            const lng = hill.lng;
-
-                            document.getElementById("map").scrollIntoView({
-                                behavior: "smooth",
-                                block: "center",
-                            });
-
-                            setTimeout(() => {
-                                map.flyTo([lat, lng], 16, {
-                                    duration: 1.5,
-                                });
-                                // Show a temporary marker that fades after 3 seconds
-                                setTimeout(() => {
-                                    if (includeHonorable.checked) {
-                                        honorable.find((h) => h.lat === lat && h.lng === lng).marker.openTooltip();
-                                        return;
-                                    }
-                                    const tempMarker = L.circleMarker([lat, lng], {
-                                        radius: 6,
-                                        fillColor: "#999",
-                                        color: "#666",
-                                        weight: 2,
-                                        opacity: 1,
-                                        fillOpacity: 0.8,
-                                    }).addTo(map);
-                                    tempMarker.bindTooltip(name, {
-                                        direction: "top",
-                                        offset: [0, -8],
-                                    }).openTooltip();
-                                    setTimeout(() => {
-                                        map.removeLayer(tempMarker);
-                                    }, 3000);
-                                }, 1600);
-                            }, 400);
+                            showHillOnMap(honorable.find((hill) => hill.name === name));
                         }
                     });
                 });
