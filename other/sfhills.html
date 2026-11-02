@@ -72,12 +72,7 @@
                 border-radius: 6px;
             }
 
-            .hill-picture a {
-                display: inline-block;
-                border-radius: 6px;
-            }
-
-            .hill-picture a:focus-visible {
+            .hill-picture :focus-visible {
                 outline: 2px solid var(--turtle-green);
                 outline-offset: 3px;
             }
@@ -131,7 +126,6 @@
                 display: block;
                 position: relative;
                 border-radius: 10px;
-                transition: transform 0.3s;
             }
 
             .tier-hills img {
@@ -139,12 +133,6 @@
                 height: auto;
                 aspect-ratio: 1;
                 border-radius: 10px;
-            }
-
-            .tier-hills a:hover,
-            .tier-hills a:focus-visible {
-                transform: scale(1.05);
-                z-index: 1;
             }
 
             .tier-hills span {
@@ -359,11 +347,8 @@
                 const filename = name.toLowerCase()
                     .replace(/[^a-z0-9]+/g, "-")
                     .replace(/^-+|-+$/g, "");
-                const imageUrl = "../files/images/sfhills/" + filename + ".jpg";
-                const link = document.createElement("a");
-
                 const image = document.createElement("img");
-                image.src = imageUrl;
+                image.src = "../files/images/sfhills/" + filename + ".jpg";
                 image.alt = name;
                 image.width = 96;
                 image.height = 96;
@@ -373,20 +358,19 @@
                     cell.textContent = "Photo needed";
                 });
 
-                if (tagName === "td") {
-                    link.href = imageUrl;
-                    link.target = "_blank";
-                    link.rel = "noopener";
-                    link.addEventListener("mouseenter", () => {
-                        if (window.matchMedia("(hover: hover)").matches) showPhotoPreview(image);
-                    });
-                    link.addEventListener("mouseleave", hidePhotoPreview);
-                    link.addEventListener("focus", () => showPhotoPreview(image));
-                    link.addEventListener("blur", hidePhotoPreview);
+                const previewTarget = tagName === "td" ? image : document.createElement("a");
+                if (previewTarget === image) {
+                    image.tabIndex = 0;
+                } else {
+                    previewTarget.appendChild(image);
                 }
-
-                link.appendChild(image);
-                cell.appendChild(link);
+                previewTarget.addEventListener("mouseenter", () => {
+                    if (window.matchMedia("(hover: hover)").matches) showPhotoPreview(image);
+                });
+                previewTarget.addEventListener("mouseleave", hidePhotoPreview);
+                previewTarget.addEventListener("focus", () => showPhotoPreview(image));
+                previewTarget.addEventListener("blur", hidePhotoPreview);
+                cell.appendChild(previewTarget);
                 return cell;
             }
 
@@ -463,6 +447,7 @@
                     });
 
                     function showHillOnMap(hill) {
+                        hidePhotoPreview();
                         if (!map.hasLayer(hill.marker)) {
                             includeHonorable.checked = true;
                             updateHonorable();
