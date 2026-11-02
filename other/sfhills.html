@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="This page contains a complete list and interactive map of hills in San Francisco with at least 40 feet of topographic prominence, with elevations and prominences computed from contour data." />
+        <meta name="description" content="This page contains a complete list and interactive map of hills in San Francisco with at least 16 meters of topographic prominence, with elevations and prominences computed from contour data." />
         <title>Hills in San Francisco - Holden Mui</title>
         <link
             rel="icon"
@@ -132,6 +132,10 @@
                 font-size: 0.9em;
                 margin-top: 0;
             }
+
+            .display-options {
+                margin-top: 20px;
+            }
         </style>
     </head>
     <body>
@@ -200,9 +204,11 @@
             <h1>Hills in San Francisco</h1>
             <p>
                 This is a complete list of hills in San Francisco with at least
-                40 feet of prominence. Elevations and prominences were computed
-                from publicly available contour data and rounded to the nearest
-                5 feet. The Farallon Islands are excluded.
+                <span id="prominence-cutoff">16 meters</span> of prominence.
+                Elevations and prominences were computed from publicly available
+                contour data and rounded to the nearest
+                <span id="height-unit-word">meter</span>. The Farallon Islands
+                are excluded.
             </p>
             <div id="map"></div>
             <div class="map-options">
@@ -217,8 +223,8 @@
                     <tr>
                         <th>#</th>
                         <th>Name</th>
-                        <th>Elevation (ft)</th>
-                        <th>Prominence (ft)</th>
+                        <th data-height-label="Elevation">Elevation (m)</th>
+                        <th data-height-label="Prominence">Prominence (m)</th>
                         <th>Photo</th>
                         <th>Notes</th>
                     </tr>
@@ -231,14 +237,20 @@
                     <tr>
                         <th>#</th>
                         <th>Name</th>
-                        <th>Elevation (ft)</th>
-                        <th>Prominence (ft)</th>
+                        <th data-height-label="Elevation">Elevation (m)</th>
+                        <th data-height-label="Prominence">Prominence (m)</th>
                         <th>Photo</th>
                         <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody id="honorable-tbody"></tbody>
             </table>
+            <div class="display-options">
+                <label>
+                    <input type="checkbox" id="use-feet" />
+                    Show elevations and prominences in feet
+                </label>
+            </div>
             <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
                 Reach out to <a href="mailto:hello@holdenmui.com">hello@holdenmui.com</a> for questions or corrections!
             </p>
@@ -344,13 +356,37 @@
             // Map will be initialized after loading data to compute bounds
             let map;
 
+            const FEET_TO_METERS = 0.3048;
+            const MIN_PROMINENCE_METERS = 16;
+            const useFeet = document.getElementById("use-feet");
+
+            function formatHeight(feet) {
+                return Math.round(useFeet.checked ? feet : feet * FEET_TO_METERS);
+            }
+
+            function updateUnits() {
+                const unit = useFeet.checked ? "ft" : "m";
+                const cutoffFeet = Math.round(MIN_PROMINENCE_METERS / FEET_TO_METERS);
+                document.querySelectorAll("[data-height-label]").forEach((heading) => {
+                    heading.textContent = heading.dataset.heightLabel + " (" + unit + ")";
+                });
+                document.querySelectorAll("[data-height-ft]").forEach((cell) => {
+                    cell.textContent = formatHeight(Number(cell.dataset.heightFt));
+                });
+                document.getElementById("height-unit-word").textContent = useFeet.checked ? "foot" : "meter";
+                document.getElementById("prominence-cutoff").textContent = useFeet.checked
+                    ? "about " + cutoffFeet + " feet"
+                    : MIN_PROMINENCE_METERS + " meters";
+            }
+
+            useFeet.addEventListener("change", updateUnits);
+            updateUnits();
+
             // Load hill data from CSV
             fetch("sfhills.csv")
                 .then((response) => response.text())
                 .then((csvText) => {
                     const rows = parseCSV(csvText);
-
-                    const MIN_PROMINENCE = 40;
 
                     // Convert to hill objects
                     const allHills = rows.map((row) => ({
@@ -364,9 +400,9 @@
                     }));
 
                     // Split into main hills and honorable mentions
-                    const hills = allHills.filter((h) => h.prominence >= MIN_PROMINENCE);
+                    const hills = allHills.filter((h) => h.prominence * FEET_TO_METERS >= MIN_PROMINENCE_METERS);
                     const honorable = allHills.filter(
-                        (h) => h.prominence < MIN_PROMINENCE && h.name,
+                        (h) => h.prominence * FEET_TO_METERS < MIN_PROMINENCE_METERS && h.name,
                     );
 
                     // Compute bounding box center and initialize map
@@ -482,11 +518,11 @@
                             '">' +
                             hill.name +
                             "</span></td>" +
-                            "<td>" +
-                            hill.elevation +
+                            '<td data-height-ft="' + hill.elevation + '">' +
+                            formatHeight(hill.elevation) +
                             "</td>" +
-                            "<td>" +
-                            hill.prominence +
+                            '<td data-height-ft="' + hill.prominence + '">' +
+                            formatHeight(hill.prominence) +
                             "</td>" +
                             "<td>" + (hill.notes || "") + "</td>";
                         row.insertBefore(createPictureCell(hill.name), row.children[4]);
@@ -584,11 +620,11 @@
                             '">' +
                             h.name +
                             "</span></td>" +
-                            "<td>" +
-                            h.elevation +
+                            '<td data-height-ft="' + h.elevation + '">' +
+                            formatHeight(h.elevation) +
                             "</td>" +
-                            "<td>" +
-                            h.prominence +
+                            '<td data-height-ft="' + h.prominence + '">' +
+                            formatHeight(h.prominence) +
                             "</td>" +
                             "<td>" + (h.notes || "") + "</td>";
                         row.insertBefore(createPictureCell(h.name), row.children[4]);
