@@ -29,27 +29,7 @@
                 margin-bottom: 20px;
             }
 
-            .leaflet-popup-content-wrapper {
-                background: var(--turtle-green);
-                color: white;
-                border-radius: 4px;
-                padding: 0;
-                box-shadow: none;
-                font-size: 13px;
-                font-weight: bold;
-            }
-
-            .leaflet-popup-content {
-                margin: 4px 8px;
-                line-height: 1.4;
-            }
-
-            .leaflet-popup-tip {
-                background: var(--turtle-green);
-            }
-
-            #hills-table,
-            #honorable-table {
+            .hills-table {
                 width: 100%;
                 border-collapse: collapse;
                 margin-top: 10px;
@@ -57,39 +37,29 @@
                 overflow-x: auto;
             }
 
-            #hills-table th,
-            #honorable-table th {
+            .hills-table th {
                 background-color: var(--turtle-green);
                 color: white;
                 padding: 8px 12px;
                 text-align: left;
             }
 
-            #hills-table th:first-child,
-            #honorable-table th:first-child {
+            .hills-table th:first-child {
                 border-top-left-radius: 8px;
             }
 
-            #hills-table th:last-child,
-            #honorable-table th:last-child {
+            .hills-table th:last-child {
                 border-top-right-radius: 8px;
             }
 
-            #hills-table td,
-            #honorable-table td {
+            .hills-table td {
                 padding: 8px 12px;
                 border-bottom: 1px solid #ddd;
                 text-align: left;
             }
 
-            #hills-table td:nth-child(3),
-            #hills-table td:nth-child(4),
-            #hills-table th:nth-child(3),
-            #hills-table th:nth-child(4),
-            #honorable-table td:nth-child(3),
-            #honorable-table td:nth-child(4),
-            #honorable-table th:nth-child(3),
-            #honorable-table th:nth-child(4) {
+            .hills-table :is(td, th):nth-child(3),
+            .hills-table :is(td, th):nth-child(4) {
                 text-align: right;
             }
 
@@ -123,19 +93,8 @@
                 z-index: 1000;
             }
 
-            #hills-table tr:hover,
-            #honorable-table tr:hover {
+            .hills-table tr:hover {
                 background-color: #e0f7fa;
-            }
-
-            .hill-name-link {
-                color: var(--turtle-green);
-                cursor: pointer;
-                text-decoration: underline;
-            }
-
-            .hill-name-link:hover {
-                color: var(--dark-green);
             }
 
             .display-options {
@@ -285,7 +244,7 @@
                 <tbody id="tier-list-tbody"></tbody>
             </table>
             <h2>Hills by Prominence</h2>
-            <table id="hills-table">
+            <table id="hills-table" class="hills-table">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -299,7 +258,7 @@
                 <tbody id="hills-tbody"></tbody>
             </table>
             <h2>Honorable Mentions</h2>
-            <table id="honorable-table">
+            <table id="honorable-table" class="hills-table">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -402,10 +361,6 @@
                     .replace(/^-+|-+$/g, "");
                 const imageUrl = "../files/images/sfhills/" + filename + ".jpg";
                 const link = document.createElement("a");
-                link.href = imageUrl;
-                link.target = "_blank";
-                link.rel = "noopener";
-                link.title = "View larger image of " + name;
 
                 const image = document.createElement("img");
                 image.src = imageUrl;
@@ -419,6 +374,10 @@
                 });
 
                 if (tagName === "td") {
+                    link.href = imageUrl;
+                    link.target = "_blank";
+                    link.rel = "noopener";
+                    link.title = "View larger image of " + name;
                     link.addEventListener("mouseenter", () => {
                         if (window.matchMedia("(hover: hover)").matches) showPhotoPreview(image);
                     });
@@ -431,9 +390,6 @@
                 cell.appendChild(link);
                 return cell;
             }
-
-            // Map will be initialized after loading data to compute bounds
-            let map;
 
             const FEET_TO_METERS = 0.3048;
             const MIN_PROMINENCE_METERS = 16;
@@ -463,7 +419,10 @@
 
             // Load hill data from CSV
             fetch("sfhills.csv")
-                .then((response) => response.text())
+                .then((response) => {
+                    if (!response.ok) throw new Error("Could not load sfhills.csv: " + response.status);
+                    return response.text();
+                })
                 .then((csvText) => {
                     const rows = parseCSV(csvText);
 
@@ -475,7 +434,6 @@
                         elevation: parseFloat(row.elevation_ft),
                         prominence: parseFloat(row.prominence_ft),
                         notes: row.notes ? row.notes.trim() : "",
-                        marker: null,
                     })).sort((a, b) => b.prominence - a.prominence || b.elevation - a.elevation);
 
                     // Split into main hills and honorable mentions
@@ -484,26 +442,12 @@
                         (h) => h.prominence * FEET_TO_METERS < MIN_PROMINENCE_METERS && h.name,
                     );
 
-                    // Compute bounding box center and initialize map
-                    const lats = allHills.filter(h => !isNaN(h.lat)).map(h => h.lat);
-                    const lngs = allHills.filter(h => !isNaN(h.lng)).map(h => h.lng);
-                    const minLat = Math.min(...lats);
-                    const maxLat = Math.max(...lats);
-                    const minLng = Math.min(...lngs);
-                    const maxLng = Math.max(...lngs);
-                    const centerLat = (minLat + maxLat) / 2;
-                    const centerLng = (minLng + maxLng) / 2;
-
-                    const bounds = L.latLngBounds(
-                        [minLat, minLng],
-                        [maxLat, maxLng]
-                    );
-
-                    map = L.map("map", {
+                    const bounds = L.latLngBounds(allHills.map((hill) => [hill.lat, hill.lng]));
+                    const map = L.map("map", {
                         maxBounds: bounds.pad(0.3),
                         maxBoundsViscosity: 1.0,
                         minZoom: 12,
-                    }).setView([centerLat, centerLng], 12);
+                    }).setView(bounds.getCenter(), 12);
 
                     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
                         maxZoom: 19,
@@ -528,10 +472,17 @@
                             behavior: "smooth",
                             block: "center",
                         });
-                        setTimeout(() => {
-                            map.flyTo(hill.marker.getLatLng(), 16, { duration: 1.5 });
-                            setTimeout(() => hill.marker.openTooltip(), 1600);
-                        }, 400);
+                        map.flyTo(hill.marker.getLatLng(), 16, { duration: 1.5 });
+                        hill.marker.openTooltip();
+                    }
+
+                    function linkToHill(link, hill) {
+                        link.href = "#map";
+                        link.title = "Show " + hill.name + " on the map";
+                        link.addEventListener("click", (event) => {
+                            event.preventDefault();
+                            showHillOnMap(hill);
+                        });
                     }
 
                     const tiers = [
@@ -550,13 +501,7 @@
                             .forEach((hill) => {
                                 const tile = createPictureCell(hill.name, "div");
                                 const link = tile.querySelector("a");
-                                link.href = "#map";
-                                link.removeAttribute("target");
-                                link.title = "Show " + hill.name + " on the map";
-                                link.addEventListener("click", (event) => {
-                                    event.preventDefault();
-                                    showHillOnMap(hill);
-                                });
+                                linkToHill(link, hill);
                                 const name = document.createElement("span");
                                 name.textContent = hill.name.replace(/\s*\(.*?\)/g, "");
                                 link.appendChild(name);
@@ -564,182 +509,87 @@
                             });
                     });
 
-                    // Add markers and build table
-                    const tbody = document.getElementById("hills-tbody");
+                    const honorableLayer = L.layerGroup();
+                    const includeHonorable = document.getElementById("include-honorable");
+                    let selectedMarker = null;
+                    let rank = 0;
 
-                    hills.forEach((hill, i) => {
-                        // Create circle marker
-                        const marker = L.circleMarker([hill.lat, hill.lng], {
-                            radius: 6,
-                            fillColor: "#00796b",
-                            color: "#004d40",
-                            weight: 2,
-                            opacity: 1,
-                            fillOpacity: 0.8,
-                        }).addTo(map);
-
-                        // Bind tooltip (name on hover)
-                        marker.bindTooltip(hill.name, {
-                            direction: "top",
-                            offset: [0, -8],
-                        });
-
-                        // Click handler for marker -> scroll to table row
-                        // On mobile (portrait or narrow): first click opens tooltip, second click jumps
-                        // On desktop: click jumps immediately (tooltip already visible from hover)
-                        marker._clickedOnce = false;
-
-                        marker.on("click", () => {
-                            const isMobile = window.matchMedia("(max-width: 550px) or (orientation: portrait)").matches;
-
-                            if (isMobile && !marker._clickedOnce) {
-                                // First click on mobile: show tooltip, mark as clicked
-                                marker.openTooltip();
-                                // Reset all other markers
-                                hills.forEach((h) => {
-                                    if (h.marker && h.marker !== marker) {
-                                        h.marker._clickedOnce = false;
-                                    }
-                                });
-                                marker._clickedOnce = true;
-                                return;
+                    // Both tables use the same rows, photos, and map interactions.
+                    for (const [group, bodyId, layer] of [
+                        [hills, "hills-tbody", map],
+                        [honorable, "honorable-tbody", honorableLayer],
+                    ]) {
+                        const tbody = document.getElementById(bodyId);
+                        group.forEach((hill, i) => {
+                            const row = tbody.insertRow();
+                            row.id = (layer === map ? "hill-row-" : "honorable-row-") + i;
+                            row.insertCell().textContent = ++rank;
+                            const nameLink = document.createElement("a");
+                            nameLink.textContent = hill.name;
+                            linkToHill(nameLink, hill);
+                            row.insertCell().appendChild(nameLink);
+                            for (const height of [hill.elevation, hill.prominence]) {
+                                const cell = row.insertCell();
+                                cell.dataset.heightFt = height;
+                                cell.textContent = formatHeight(height);
                             }
+                            row.appendChild(createPictureCell(hill.name));
+                            row.insertCell().textContent = hill.notes;
 
-                            // Second click on mobile, or any click on desktop: jump to table
-                            marker._clickedOnce = false;
-                            const targetRow = document.getElementById("hill-row-" + i);
-                            if (targetRow) {
-                                targetRow.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "center",
-                                });
-                                targetRow.style.backgroundColor = "#e0f7fa";
-                                setTimeout(() => {
-                                    targetRow.style.backgroundColor = "";
-                                }, 2000);
-                            }
+                            const marker = L.circleMarker([hill.lat, hill.lng], {
+                                radius: 6,
+                                fillColor: layer === map ? "#00796b" : "#999",
+                                color: layer === map ? "#004d40" : "#666",
+                                weight: 2,
+                                fillOpacity: 0.8,
+                            }).addTo(layer);
+                            hill.marker = marker;
+
+                            marker.on("click", () => {
+                                // On mobile, tap once for the name and again for the table row.
+                                const isMobile = window.matchMedia("(max-width: 550px) or (orientation: portrait)").matches;
+                                if (isMobile && selectedMarker !== marker) {
+                                    selectedMarker = marker;
+                                    marker.openTooltip();
+                                    return;
+                                }
+                                selectedMarker = null;
+                                row.scrollIntoView({ behavior: "smooth", block: "center" });
+                                row.style.backgroundColor = "#e0f7fa";
+                                setTimeout(() => { row.style.backgroundColor = ""; }, 2000);
+                            });
                         });
+                    }
 
-                        // Store marker reference
-                        hill.marker = marker;
-
-                        // Build table row
-                        const row = document.createElement("tr");
-                        row.id = "hill-row-" + i;
-                        row.innerHTML =
-                            "<td>" +
-                            (i + 1) +
-                            "</td>" +
-                            '<td><span class="hill-name-link" data-index="' +
-                            i +
-                            '">' +
-                            hill.name +
-                            "</span></td>" +
-                            '<td data-height-ft="' + hill.elevation + '">' +
-                            formatHeight(hill.elevation) +
-                            "</td>" +
-                            '<td data-height-ft="' + hill.prominence + '">' +
-                            formatHeight(hill.prominence) +
-                            "</td>" +
-                            "<td>" + (hill.notes || "") + "</td>";
-                        row.insertBefore(createPictureCell(hill.name), row.children[4]);
-                        tbody.appendChild(row);
-
-                    });
-
-                    // Show/hide permanent labels based on zoom level
+                    // Keep labels visible when zoomed in.
                     function updateLabels() {
-                        const zoom = map.getZoom();
-                        const showLabels = zoom >= 15;
-                        hills.concat(honorable).forEach((hill) => {
-                            if (!hill.marker) return;
-                            if (showLabels && !hill.marker._permanentTooltip) {
-                                hill.marker.unbindTooltip();
-                                hill.marker.bindTooltip(hill.name, {
+                        const permanent = map.getZoom() >= 15;
+                        hills.concat(honorable).forEach(({ marker, name }) => {
+                            if (marker.getTooltip()?.options.permanent !== permanent) {
+                                marker.unbindTooltip().bindTooltip(name, {
                                     direction: "top",
                                     offset: [0, -8],
-                                    permanent: true,
+                                    permanent,
                                 });
-                                hill.marker._permanentTooltip = true;
-                            } else if (!showLabels && hill.marker._permanentTooltip) {
-                                hill.marker.unbindTooltip();
-                                hill.marker.bindTooltip(hill.name, {
-                                    direction: "top",
-                                    offset: [0, -8],
-                                    permanent: false,
-                                });
-                                hill.marker._permanentTooltip = false;
                             }
                         });
                     }
                     map.on("zoomend", updateLabels);
-
-                    // Click handler for table names -> fly to marker on map
-                    tbody.addEventListener("click", (e) => {
-                        if (e.target.classList.contains("hill-name-link")) {
-                            const idx = parseInt(e.target.dataset.index);
-                            showHillOnMap(hills[idx]);
-                        }
-                    });
-
-                    // Build honorable mentions table
-                    const htbody = document.getElementById("honorable-tbody");
-                    const hillsCount = hills.length;
-                    const honorableLayer = L.layerGroup();
-                    const includeHonorable = document.getElementById("include-honorable");
-                    honorable.forEach((h, i) => {
-                        h.marker = L.circleMarker([h.lat, h.lng], {
-                            radius: 6,
-                            fillColor: "#999",
-                            color: "#666",
-                            weight: 2,
-                            opacity: 1,
-                            fillOpacity: 0.8,
-                        }).addTo(honorableLayer);
-                        h.marker.bindTooltip(h.name, {
-                            direction: "top",
-                            offset: [0, -8],
-                        });
-
-                        const row = document.createElement("tr");
-                        row.innerHTML =
-                            "<td>" +
-                            (hillsCount + i + 1) +
-                            "</td>" +
-                            '<td><span class="hill-name-link honorable-link" data-name="' +
-                            h.name +
-                            '">' +
-                            h.name +
-                            "</span></td>" +
-                            '<td data-height-ft="' + h.elevation + '">' +
-                            formatHeight(h.elevation) +
-                            "</td>" +
-                            '<td data-height-ft="' + h.prominence + '">' +
-                            formatHeight(h.prominence) +
-                            "</td>" +
-                            "<td>" + (h.notes || "") + "</td>";
-                        row.insertBefore(createPictureCell(h.name), row.children[4]);
-                        htbody.appendChild(row);
-                    });
+                    updateLabels();
 
                     function updateHonorable() {
                         if (includeHonorable.checked) {
                             honorableLayer.addTo(map);
-                            updateLabels();
                         } else {
-                            map.removeLayer(honorableLayer);
+                            honorableLayer.remove();
                         }
                     }
                     includeHonorable.addEventListener("change", updateHonorable);
                     updateHonorable();
-
-                    // Click handler for honorable mentions -> show marker on map
-                    htbody.addEventListener("click", (e) => {
-                        if (e.target.classList.contains("honorable-link")) {
-                            const name = e.target.dataset.name;
-                            showHillOnMap(honorable.find((hill) => hill.name === name));
-                        }
-                    });
+                })
+                .catch((error) => {
+                    document.getElementById("map").textContent = "The hill data could not be loaded. Please reload the page.";
+                    console.error(error);
                 });
 
             // Dropdown nav script
