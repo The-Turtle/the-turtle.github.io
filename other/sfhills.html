@@ -325,13 +325,25 @@
             }
 
             const photoPreview = document.getElementById("hill-photo-preview");
-            const hidePhotoPreview = () => { photoPreview.hidden = true; };
+            let previewRequest = 0;
+            const hidePhotoPreview = () => {
+                previewRequest++; // Invalidate previews that are still decoding.
+                photoPreview.hidden = true;
+            };
             window.addEventListener("scroll", hidePhotoPreview, true);
             window.addEventListener("resize", hidePhotoPreview);
 
-            function showPhotoPreview(image) {
+            async function showPhotoPreview(image) {
+                hidePhotoPreview();
+                const request = previewRequest;
                 photoPreview.src = image.src;
                 photoPreview.alt = image.alt;
+                try {
+                    await photoPreview.decode();
+                } catch {
+                    return;
+                }
+                if (request !== previewRequest) return;
                 photoPreview.hidden = false;
                 const size = photoPreview.offsetWidth;
                 const rect = image.getBoundingClientRect();
