@@ -482,11 +482,11 @@
 
                     const tiers = [
                         ["S", "#ff8787", "Mt. Davidson|Noe Peak|Bernal Hill|Corona Heights|Eureka Peak"],
-                        ["A", "#ffbd80", "Signal Point|Bayview Hill (Candlestick Hill)|Merced Heights|Russian Hill|Grand View Hill|Blue Tower Hill|Sutro Heights"],
-                        ["B", "#ffe084", "Visitacion Knob (McLaren Ridge)|Telegraph Hill|Strawberry Hill|Lone Mountain|Alcatraz Island|Lafayette Heights|Prayerbrook Cross Hill|Holly Hill|Alamo Heights (Hayes Hill)|Martha Hill|Crocker Amazon Hill|Fort Mason Hill|Heidelberg Hill|Tank Hill|Duncan Hill|Billy Goat Hill|Alta Plaza Park|Kite Hill"],
-                        ["C", "#c5e98c", "Potrero Hill|Mount Sutro|Nob Hill|Mount St. Joseph|Gold Mine Hill|Castro Hill|Mount Olympus|Cannon Hill|Unnamed Hill 1|La Portezuela|Fairmount Heights|Larsen Peak (Sunset Heights)|Battery Davis|City College Hill|Hunter's Point Shipyard Hill|Cathedral Hill"],
-                        ["D", "#8fd9bd", "Forest Hill|Stony Hill (Hunters Point Ridge)|Edgehill Heights|Buena Vista Heights|Rincon Hill|Clarendon Heights|Dolores Heights|Laurel Hill|Red Rock Hill|Anza Hill|Madrid Hill|Amuctac Hill|Little Bayview Hill (Tubsinte Hill)|Horner's Hill|Monterey Heights|George Sterling Park|Macaroon Hill|Pacheco Peak|Chicken Point|Mount Lick|Battery Dynamite|Ignatius Heights"],
-                        ["F", "#a9bafb", "Lincoln Heights|Presidio Hill|Rob Hill|Hermit Rock|Pasadena Hill|Torpedo Point|Seal Rocks|Irish Hill|Casino Hill|Hawk Hill"],
+                        ["A", "#ffbd80", "Signal Point|Bayview Hill (Candlestick Hill)|Merced Heights|Russian Hill|Grand View Hill|Blue Tower Hill"],
+                        ["B", "#ffe084", "Visitacion Knob (McLaren Ridge)|Telegraph Hill|Strawberry Hill|Lone Mountain|Alcatraz Island|Prayerbrook Cross Hill|Alamo Heights (Hayes Hill)|Martha Hill|Crocker Amazon Hill|Fort Mason Hill|Sutro Heights|Tank Hill|Duncan Hill|Billy Goat Hill|Alta Plaza Park|Kite Hill"],
+                        ["C", "#c5e98c", "Potrero Hill|Mount Sutro|Nob Hill|Mount St. Joseph|Gold Mine Hill|Castro Hill|Mount Olympus|Cannon Hill|Unnamed Hill 1|La Portezuela|Fairmount Heights|Larsen Peak (Sunset Heights)|Battery Davis|City College Hill|Hunter's Point Shipyard Hill|Cathedral Hill|Lafayette Heights|Holly Hill|Heidelberg Hill"],
+                        ["D", "#8fd9bd", "Forest Hill|Stony Hill (Hunters Point Ridge)|Edgehill Heights|Buena Vista Heights|Rincon Hill|Clarendon Heights|Dolores Heights|Laurel Hill|Red Rock Hill|Anza Hill|Madrid Hill|Amuctac Hill|Little Bayview Hill (Tubsinte Hill)|Horner's Hill|Monterey Heights|George Sterling Park|Macaroon Hill|Pacheco Peak|Chicken Point|Mount Lick|Ignatius Heights|Lincoln Heights"],
+                        ["F", "#a9bafb", "Presidio Hill|Rob Hill|Hermit Rock|Pasadena Hill|Torpedo Point|Seal Rocks|Irish Hill|Casino Hill|Hawk Hill|Battery Dynamite"],
                     ];
                     tiers.forEach(([tier, color, names]) => {
                         const row = document.getElementById("tier-list-tbody").insertRow();
@@ -495,6 +495,7 @@
                         allHills.filter((hill) => members.has(hill.name))
                             .forEach((hill) => {
                                 const tile = createPictureCell(hill.name, "div");
+                                if (honorable.includes(hill)) tile.classList.add("honorable");
                                 const link = tile.querySelector("a");
                                 linkToHill(link, hill);
                                 const name = document.createElement("span");
@@ -573,6 +574,10 @@
                     updateLabels();
 
                     function updateHonorable() {
+                        hidePhotoPreview();
+                        document.querySelectorAll(".tier-hills .honorable").forEach((tile) => {
+                            tile.hidden = !includeHonorable.checked;
+                        });
                         if (includeHonorable.checked) {
                             honorableLayer.addTo(map);
                         } else {
