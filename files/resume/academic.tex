@@ -1,0 +1,159 @@
+\documentclass[12pt,a4paper,sans]{moderncv}
+
+% Banking style header and body.
+\moderncvhead{3}
+\moderncvbody{3}
+\moderncvcolor{red}
+\usepackage[margin=1in]{geometry}
+\usepackage{tikz}
+
+\renewcommand*{\emailsymbol}{%
+  \tikz[x=1em,y=1em,line join=round]{%
+    \draw (0,0) rectangle (.85,.55) (0,.55) -- (.425,.22) -- (.85,.55);}~}
+
+% End the header after the contact details.
+\patchcmd{\makehead}{\\[2.5em]}{\par}{}{%
+  \PackageError{academic-resume}{Could not adjust header spacing}
+    {Check the ModernCV banking header definition.}}
+
+\newcommand{\datedline}[2]{#1 \hfill \emph{#2}}
+
+% institution, position, date, description
+\newcommand{\entry}[4]{%
+  \datedline{\textbf{#1}: #2}{#3}\newline
+  {\small #4}}
+
+\newcommand{\paper}[3]{%
+  \datedline{\textbf{#1}}{#2}\newline
+  {\small #3}}
+
+\newcommand{\shortentry}[3]{%
+  \datedline{\textbf{#1}: #2}{#3}\par
+  \addvspace{10pt}}
+
+\name{Holden}{Mui}
+\email{hello@holdenmui.com}
+\homepage{holdenmui.com}
+
+\begin{document}
+\makecvtitle
+
+\section{Work experience}
+\entry
+  {\href{https://openai.com/}{OpenAI}}
+  {research scientist}
+  {Jun.\ 2026 - present}
+  {I work on the alignment pretraining team at OpenAI.
+   Reference: \href{mailto:katelee168@gmail.com}{Katherine Lee}.}
+
+\bigskip
+\entry
+  {\href{https://0xparc.org/}{0xPARC}}
+  {research engineer}
+  {Jun.\ 2025 - May 2026}
+  {I co-developed a zero-dependency high-performance fully homomorphic encryption (FHE)
+   library as part of a four-person core team, complete with a CUDA backend and a polynomial
+   compiler to optimize encrypted computations. I spearheaded the inaugural demo
+   ($128 \times 128$ Conway's Game of Life in FHE) and authored technical specifications for
+   a cohort of external developers to implement features such as encrypted inference,
+   encrypted linear and logistic regression, and encrypted bit arithmetic. I also designed
+   the technical interview framework, authoring original problems and evaluating candidates.
+   Reference: \href{mailto:albert@0xparc.org}{Albert Ni}.}
+
+\bigskip
+\entry
+  {\href{https://math.mit.edu/research/undergraduate/urop-plus/}{Supervised UROP}}
+  {researcher}
+  {Jun.\ 2022 - Aug.\ 2022, Jun.\ 2024 - Aug.\ 2024}
+  {A research position offered by the MIT math department designed to give MIT undergraduates
+   an opportunity to work on a research project under the guidance of a graduate student
+   mentor. In 2024, I worked with Oriol Solé Pi on computing the probability $1, 2, \dots, k$
+   are in the same cycle in a product of two $n$-cycles; this work was published in the
+   \emph{Annals of Combinatorics}. In 2022, I worked with Ashwin Sah, Mehtaab Sawhney, and
+   Tomasz Ślusarczyk on characterizing the upper tail of cycle distributions in sparse
+   Erdős-Rényi random graphs. References: \href{mailto:msawhney@mit.edu}{Mehtaab Sawhney} and
+   \href{mailto:oriolsp@mit.edu}{Oriol Solé Pi}.}
+
+\bigskip
+\entry
+  {\href{https://math.mit.edu/research/undergraduate/spur/index.php}{Summer Program for Undergraduate Research}}
+  {researcher}
+  {Jun.\ 2023 - Aug.\ 2023}
+  {Worked with Serena An and Elisabeth Bullock on algebraic combinatorics research. We
+   explored properties of flip graphs on self-dual order ideals in self-dual posets.
+   Reference: \href{mailto:edb22@mit.edu}{Elisabeth Bullock}.}
+
+\section{Education}
+\entry
+  {\href{https://www.mit.edu/}{Massachusetts Institute of Technology}}
+  {class of 2025}
+  {Aug.\ 2021 - May.\ 2025}
+  {Mathematics major, music major, and physics minor. GPA: 5.0. Elected to Phi Beta Kappa.
+   Selected graduate coursework: Applied Cryptography (A+), Schur Polynomials and Schubert
+   Polynomials (A+), Combinatorics and Geometry (A+), Ramsey Theory (A), Analysis of Boolean
+   Functions (A+), Graph Theory and Additive Combinatorics (A), Probabilistic Methods in
+   Combinatorics (A), Commutative Algebra (A+), Introduction to Representation Theory (A+),
+   Algebraic Topology I (A).}
+
+\section{Selected research}
+\paper
+  {Coalescence Probabilities of Cycle Products}
+  {Sep.\ 2024}
+  {Holden Mui. \href{https://arxiv.org/abs/2409.01415}{arXiv:2409.01415}. Published in the
+   \emph{Annals of Combinatorics}.}
+
+\bigskip
+\paper
+  {Flip Graphs on Self-Complementary Ideals of Chain Products}
+  {Jan.\ 2024}
+  {Serena An, Holden Mui. \href{https://arxiv.org/abs/2401.01457}{arXiv:2401.01457}.}
+
+\newpage
+
+\section{Technical Proficiencies}
+\begin{itemize}
+    \item \textbf{Languages}: Rust, Python, LaTeX
+    \item \textbf{Mathematics}: algebra, combinatorics, cryptography
+\end{itemize}
+
+\section{Selected Awards}
+\shortentry
+  {\href{https://www.maa.org/wp-content/uploads/2025/02/2021-Putnam-Announcement-of-Winners-1.pdf}{Putnam Mathematical Competition}}
+  {rank 21st, 14th, 27th}
+  {2021, 2022, 2023}
+\shortentry
+  {\href{https://maa.org/maa-invitational-competitions/}{Mathematical Olympiad Program}}
+  {three-time qualifier}
+  {2018, 2019, 2020}
+
+\section{Selected Teaching}
+\entry
+  {\href{https://news.mit.edu/2022/traveling-world-make-global-impact-0325}{MIT Global Teaching Labs}}
+  {instructor}
+  {Jan.\ 2022, Jan.\ 2023, Jan.\ 2024, Jan.\ 2025}
+  {An opportunity to support and train the Ghanaian, Tunisian, Bhutanese, and Rwandan IMO
+   teams. In addition to preparing lectures for each country's top students, I visited
+   several schools to stimulate mathematical interest. Reference:
+   \href{mailto:arijaco@mit.edu}{Ari Jacobovits} and
+   \href{mailto:mhegde@mit.edu}{Megha Hegde}.}
+
+\bigskip
+\entry
+  {\href{https://maa.org/maa-invitational-competitions/}{Mathematical Olympiad Program}}
+  {teaching assistant}
+  {Jun.\ 2022, Jun.\ 2023, Jun.\ 2024}
+  {A training program for the USA team at the International Math Olympiad. I graded tests,
+   presented solutions during test review, taught a class, led a singing group, and helped
+   organize social events. Reference: \href{mailto:ploh@cmu.edu}{Po-Shen Loh}.}
+
+\section{Other Experience}
+\shortentry
+  {\href{https://maa.org/maa-invitational-competitions/}{USA Mathematical Olympiad Editorial Board}}
+  {problem writer}
+  {Apr.\ 2022 - May.\ 2025}
+\shortentry
+  {\href{https://www.youtube.com/playlist?list=PLevtNOOa6SZX3d1pxOiOQ87j1Y-6ZMTPQ}{Curious Cube}}
+  {podcast host (68k views)}
+  {Dec.\ 2021 - Aug.\ 2023}
+
+\end{document}
