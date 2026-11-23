@@ -1,0 +1,430 @@
+main {
+    text-align: center;
+    max-width: 960px;
+    position: relative;
+}
+.back-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: var(--dark-green);
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.65;
+    transition: opacity 0.15s;
+}
+.back-btn:hover {
+    opacity: 1;
+}
+.game-btn {
+    background-color: var(--dark-green);
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    padding: 9px 20px;
+    font-size: 15px;
+    cursor: pointer;
+    border: 2px solid var(--turtle-green);
+    margin: 4px;
+    transition:
+        transform 0.15s,
+        box-shadow 0.15s;
+}
+.game-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+.game-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+}
+.controls-row {
+    margin: 14px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.difficulty-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #555;
+}
+.difficulty-btns {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+.diff-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background: white;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #555;
+    padding: 0;
+}
+.diff-btn:hover {
+    border-color: var(--turtle-green);
+    color: var(--turtle-green);
+}
+.diff-btn.active {
+    background: var(--dark-green);
+    color: white;
+    border-color: var(--dark-green);
+}
+.notes-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.audio-controls {
+    margin: 12px 0 6px;
+    position: relative;
+    display: inline-block;
+}
+#playBtn {
+    min-width: 100px;
+    height: 40px;
+    line-height: 18px;
+    box-sizing: border-box;
+}
+#volumeHint {
+    position: absolute;
+    bottom: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: normal;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
+}
+#volumeHint.show {
+    opacity: 1;
+}
+#keyboardWrapper {
+    overflow-x: auto;
+    margin: 20px auto;
+    max-width: 100%;
+    padding-bottom: 8px;
+}
+#keyboard {
+    --white-key-width: 30px;
+    --black-key-width: 18px;
+    height: 174px;
+    position: relative;
+    margin: 0 auto;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.piano-key {
+    top: 0;
+    position: absolute;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+.white-key {
+    width: var(--white-key-width);
+    height: 150px;
+    background: #fff;
+    border: 1px solid #999;
+    border-radius: 0 0 5px 5px;
+    z-index: 1;
+}
+.white-key:hover {
+    background: #f0f0f0;
+}
+.white-key.disabled {
+    cursor: default;
+}
+.white-key.disabled:hover {
+    background: #fff;
+}
+.black-key {
+    width: var(--black-key-width);
+    height: 95px;
+    background: #333;
+    border: 1px solid #000;
+    border-radius: 0 0 3px 3px;
+    z-index: 2;
+}
+.black-key:hover {
+    background: #555;
+}
+.black-key.disabled {
+    cursor: default;
+}
+.black-key.disabled:hover {
+    background: #333;
+}
+.key-circle {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 3;
+    pointer-events: none;
+}
+.black-key .key-circle {
+    bottom: 8px;
+    width: 12px;
+    height: 12px;
+}
+.key-circle.selected {
+    display: block;
+    background: #7e57c2;
+}
+/* Answer-key highlights (entire key background) */
+.white-key.answer {
+    background: #c8e6c9;
+}
+.white-key.answer.disabled:hover {
+    background: #c8e6c9;
+}
+.black-key.answer {
+    background: #388e3c;
+}
+.black-key.answer.disabled:hover {
+    background: #388e3c;
+}
+.octave-label {
+    top: 154px;
+    width: var(--white-key-width);
+    text-align: center;
+    position: absolute;
+    font-size: 11px;
+    color: #888;
+    z-index: 1;
+    pointer-events: none;
+}
+#feedback {
+    margin: 8px 0;
+    font-size: 15px;
+    height: 24px;
+    line-height: 24px;
+    visibility: hidden;
+}
+#feedback.visible {
+    visibility: visible;
+}
+/* Preset splash screen */
+#presetScreen {
+    text-align: center;
+    padding: 10px 0 20px;
+}
+#presetScreen p {
+    margin-bottom: 20px;
+}
+.preset-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.preset-card {
+    background: #f8f8f8;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 14px 18px;
+    width: 130px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    text-align: center;
+}
+.preset-card:hover {
+    border-color: var(--turtle-green);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.preset-card h3 {
+    margin: 0;
+    font-size: 15px;
+    color: var(--dark-green);
+}
+.corner-controls {
+    position: fixed;
+    bottom: 14px;
+    right: 14px;
+    font-size: 13px;
+    color: #666;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+}
+.settings-btn {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 8px 14px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 8px;
+    transition: color 0.15s;
+}
+.settings-btn:hover {
+    color: var(--turtle-green);
+}
+.settings-panel {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 14px;
+    position: relative;
+}
+.settings-panel.open {
+    display: flex;
+}
+.settings-panel.open ~ .settings-btn {
+    display: none;
+}
+.settings-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #999;
+    cursor: pointer;
+    padding: 2px 6px;
+    line-height: 1;
+    border-radius: 4px;
+}
+.settings-close:hover {
+    color: #555;
+}
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+.settings-header > span {
+    font-size: 15px;
+    font-weight: bold;
+    color: #555;
+}
+.toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ccc;
+    border-radius: 20px;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 2px;
+    bottom: 2px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--dark-green);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(16px);
+}
+.toggle-switch input:disabled + .toggle-slider {
+    background: #e0e0e0;
+    cursor: not-allowed;
+}
+.toggle-row:has(input:disabled) {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--dark-green);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    flex-shrink: 0;
+}
+.help-icon .tooltip {
+    display: none;
+    position: absolute;
+    right: 0;
+    bottom: 30px;
+    background: #333;
+    color: white;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    width: 280px;
+    text-align: left;
+    z-index: 100;
+    line-height: 1.7;
+    font-weight: normal;
+    white-space: pre-line;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.help-icon:hover .tooltip {
+    display: block;
+}
+.corner-divider {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 2px 0;
+}

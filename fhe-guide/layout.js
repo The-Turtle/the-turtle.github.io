@@ -20,8 +20,8 @@
     const depth = (window.PAGE && window.PAGE.depth) || 2;
     const root = '../'.repeat(depth);
 
-    const partTitle = (s) => `Part ${SECTIONS.indexOf(s) + 1}. ${s.title}`;
-    const postLabel = (i, j, p) => `${i + 1}.${j + 1} ${p.title}`;
+    const partTitle = (section) => `Part ${SECTIONS.indexOf(section) + 1}. ${section.title}`;
+    const postLabel = (sectionIndex, postIndex, post) => `${sectionIndex + 1}.${postIndex + 1} ${post.title}`;
 
     /* ---- KaTeX + highlight.js, injected for section / post pages only ----
        Saves having to duplicate the same <head> boilerplate in every file.
@@ -30,23 +30,23 @@
        NOT executed by the browser, so we have to programmatically create
        and append each script element. <link> tags work either way. */
     const injectMathAndCode = () => {
-        const link = (href) => {
+        const loadStylesheet = (href) => {
             const el = document.createElement('link');
             el.rel = 'stylesheet';
             el.href = href;
             document.head.appendChild(el);
         };
-        const script = (src, onload) => {
+        const loadScript = (url, onload) => {
             const el = document.createElement('script');
-            el.src = src;
+            el.src = url;
             if (onload) el.onload = onload;
             document.head.appendChild(el);
         };
 
         /* KaTeX: load core, then auto-render on load. */
-        link('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css');
-        script('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js', () => {
-            script('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js', () => {
+        loadStylesheet('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css');
+        loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js', () => {
+            loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js', () => {
                 renderMathInElement(document.body, {
                     delimiters: [
                         { left: '$$', right: '$$', display: true },
@@ -58,8 +58,8 @@
         });
 
         /* highlight.js: dark theme + auto-highlight on load. */
-        link('https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/tomorrow-night.min.css');
-        script('https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js', () => {
+        loadStylesheet('https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/tomorrow-night.min.css');
+        loadScript('https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js', () => {
             hljs.highlightAll();
         });
     };
@@ -78,9 +78,9 @@
          Section 1 page → Post 1.1 → … → last post of Section 1
          → Section 2 page → Post 2.1 → … */
     const navHtml = (prev, next) => {
-        const slot = (target, dir) => target
-            ? `<a class="${dir}" href="${target.href}">
-                 <span class="label">${dir === 'prev' ? '&larr; Previous' : 'Next &rarr;'}</span>
+        const slot = (target, direction) => target
+            ? `<a class="${direction}" href="${target.href}">
+                 <span class="label">${direction === 'prev' ? '&larr; Previous' : 'Next &rarr;'}</span>
                  <span class="post-nav-title">${target.title}</span>
                </a>`
             : `<span class="placeholder"></span>`;
@@ -94,17 +94,17 @@
     const renderLanding = () => {
         const el = document.getElementById('sections');
         if (!el) return;
-        const tag = (st) => st === 'todo' ? ' <span class="todo">[TODO]</span>'
-                          : st === 'incomplete' ? ' <span class="todo">[INCOMPLETE]</span>'
+        const tag = (status) => status === 'todo' ? ' <span class="todo">[TODO]</span>'
+                          : status === 'incomplete' ? ' <span class="todo">[INCOMPLETE]</span>'
                           : '';
-        el.innerHTML = SECTIONS.map((s, i) => {
-            const sub = s.posts.length
-                ? `<ul class="post-list">${s.posts.map((p, j) => `
-                  <li><a class="post-title" href="${s.slug}/${p.slug}.html">${i + 1}.${j + 1} ${p.title}</a>${tag(p.status)}</li>`).join('')}</ul>`
+        el.innerHTML = SECTIONS.map((section, sectionIndex) => {
+            const sub = section.posts.length
+                ? `<ul class="post-list">${section.posts.map((post, postIndex) => `
+                  <li><a class="post-title" href="${section.slug}/${post.slug}.html">${sectionIndex + 1}.${postIndex + 1} ${post.title}</a>${tag(post.status)}</li>`).join('')}</ul>`
                 : '';
             return `
             <li>
-              <a class="post-title" href="${s.slug}/index.html">Part ${i + 1}. ${s.title}</a>${tag(s.status)}
+              <a class="post-title" href="${section.slug}/index.html">Part ${sectionIndex + 1}. ${section.title}</a>${tag(section.status)}
               ${sub}
             </li>`;
         }).join('');
@@ -116,37 +116,37 @@
        top, the auto-generated post list (if it has a #post-list
        placeholder), and the prev/next nav at the bottom. */
     const renderSection = () => {
-        const i = SECTIONS.findIndex((s) => s.slug === window.PAGE.section);
-        if (i === -1) return;
-        const section = SECTIONS[i];
+        const sectionIndex = SECTIONS.findIndex((candidate) => candidate.slug === window.PAGE.section);
+        if (sectionIndex === -1) return;
+        const section = SECTIONS[sectionIndex];
         const heading = partTitle(section);
         document.title = `${heading} | FHE Guide | Holden Mui`;
 
         /* Breadcrumb at top of <main>. */
-        const crumb = document.getElementById('post-breadcrumb');
-        if (crumb) crumb.innerHTML = `
+        const breadcrumb = document.getElementById('post-breadcrumb');
+        if (breadcrumb) breadcrumb.innerHTML = `
             <a href="../index.html">Contents</a> &gt;
             <span>${heading}</span>`;
 
         /* Auto-rendered post list (if the page has a #post-list placeholder). */
         const list = document.getElementById('post-list');
-        if (list) list.innerHTML = section.posts.map((p, j) =>
-            `<li><a class="post-title" href="${p.slug}.html">${postLabel(i, j, p)}</a></li>`
+        if (list) list.innerHTML = section.posts.map((post, postIndex) =>
+            `<li><a class="post-title" href="${post.slug}.html">${postLabel(sectionIndex, postIndex, post)}</a></li>`
         ).join('');
     };
 
     /* ---- Post page ---- */
     const renderPost = () => {
-        const sIdx = SECTIONS.findIndex((s) => s.slug === window.PAGE.section);
-        if (sIdx === -1) return;
-        const section = SECTIONS[sIdx];
-        const j = section.posts.findIndex((p) => p.slug === window.PAGE.slug);
-        if (j === -1) return;
-        const post = section.posts[j];
+        const sectionIndex = SECTIONS.findIndex((candidate) => candidate.slug === window.PAGE.section);
+        if (sectionIndex === -1) return;
+        const section = SECTIONS[sectionIndex];
+        const postIndex = section.posts.findIndex((candidate) => candidate.slug === window.PAGE.slug);
+        if (postIndex === -1) return;
+        const post = section.posts[postIndex];
         document.title = `${post.title} | FHE Guide | Holden Mui`;
 
-        const crumb = document.getElementById('post-breadcrumb');
-        if (crumb) crumb.innerHTML = `
+        const breadcrumb = document.getElementById('post-breadcrumb');
+        if (breadcrumb) breadcrumb.innerHTML = `
             <a href="../index.html">Contents</a> &gt;
             <a href="index.html">${partTitle(section)}</a> &gt;
             <span>${post.title}</span>`;
@@ -155,15 +155,15 @@
     const renderReadingNav = () => {
         const contents = { href: '../index.html', title: 'Contents' };
         const pages = [contents];
-        SECTIONS.forEach((section, i) => {
+        SECTIONS.forEach((section, sectionIndex) => {
             pages.push({
                 href: `../${section.slug}/index.html`,
                 title: partTitle(section),
             });
-            section.posts.forEach((post, j) => {
+            section.posts.forEach((post, postIndex) => {
                 pages.push({
                     href: `../${section.slug}/${post.slug}.html`,
-                    title: postLabel(i, j, post),
+                    title: postLabel(sectionIndex, postIndex, post),
                 });
             });
         });
@@ -199,7 +199,7 @@
         const headings = document.querySelectorAll('main h2');
         if (headings.length < 2) return;
 
-        const slugify = (s) => s
+        const slugify = (text) => text
             .toLowerCase()
             .trim()
             .replace(/[^\w\s-]/g, '')
