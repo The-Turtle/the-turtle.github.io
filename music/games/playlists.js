@@ -3,9 +3,9 @@ const playlists = [
     id: "ravel",
     name: "Maurice Ravel works",
     nameSingular: "Maurice Ravel work",
-    leftImagePath: "../files/images/art/monetwaterlilies.jpg",
-    rightImagePath: "../files/images/people/ravel.jpeg",
-    folderPath: "../files/audio/ravel/",
+    leftImagePath: "../../files/images/art/monetwaterlilies.jpg",
+    rightImagePath: "../../files/images/people/ravel.jpeg",
+    folderPath: "../../files/audio/ravel/",
     songs: [
       {
         file: "alamanieredeborodine.mp3",
@@ -325,9 +325,9 @@ const playlists = [
     id: "rachmaninoff",
     name: "Rachmaninoff piano concerti",
     nameSingular: "Rachmaninoff piano concerto",
-    leftImagePath: "../files/images/people/rachmaninoff.jpeg",
-    rightImagePath: "../files/images/people/federova.jpeg",
-    folderPath: "../files/audio/rachmaninoff/",
+    leftImagePath: "../../files/images/people/rachmaninoff.jpeg",
+    rightImagePath: "../../files/images/people/federova.jpeg",
+    folderPath: "../../files/audio/rachmaninoff/",
     songs: [
       {
         file: "pianoconcerto1.mp3",
@@ -360,9 +360,9 @@ const playlists = [
     id: "swift",
     name: "Taylor Swift songs",
     nameSingular: "Taylor Swift song",
-    leftImagePath: "../files/images/people/swift1.jpeg",
-    rightImagePath: "../files/images/people/swift2.jpeg",
-    folderPath: "../files/audio/swift/",
+    leftImagePath: "../../files/images/people/swift1.jpeg",
+    rightImagePath: "../../files/images/people/swift2.jpeg",
+    folderPath: "../../files/audio/swift/",
     songs: [
       { file: "22.mp3", answers: ["22"], keywords: [] },
       { file: "afterglow.mp3", answers: ["Afterglow"], keywords: [] },
@@ -616,9 +616,9 @@ const playlists = [
     id: "kahan",
     name: "Noah Kahan songs",
     nameSingular: "Noah Kahan song",
-    leftImagePath: "../files/images/people/kahan1.jpeg",
-    rightImagePath: "../files/images/people/kahan2.jpeg",
-    folderPath: "../files/audio/kahan/",
+    leftImagePath: "../../files/images/people/kahan1.jpeg",
+    rightImagePath: "../../files/images/people/kahan2.jpeg",
+    folderPath: "../../files/audio/kahan/",
     songs: [
       { file: "allmylove.mp3", answers: ["All My Love"], keywords: [] },
       { file: "callyourmom.mp3", answers: ["Call Your Mom"], keywords: [] },
@@ -688,9 +688,9 @@ const playlists = [
     id: "redhotchilipeppers",
     name: "Red Hot Chili Peppers songs",
     nameSingular: "Red Hot Chili Peppers song",
-    leftImagePath: "../files/images/people/redhotchilipeppers1.jpeg",
-    rightImagePath: "../files/images/people/redhotchilipeppers2.jpeg",
-    folderPath: "../files/audio/redhotchilipeppers/",
+    leftImagePath: "../../files/images/people/redhotchilipeppers1.jpeg",
+    rightImagePath: "../../files/images/people/redhotchilipeppers2.jpeg",
+    folderPath: "../../files/audio/redhotchilipeppers/",
     songs: [
       { file: "aeroplane.mp3", answers: ["Aeroplane"], keywords: [] },
       {
@@ -805,9 +805,9 @@ const playlists = [
     id: "hamilton",
     name: "Hamilton songs",
     nameSingular: "Hamilton song",
-    leftImagePath: "../files/images/people/hamilton1.jpeg",
-    rightImagePath: "../files/images/people/hamilton2.jpeg",
-    folderPath: "../files/audio/hamilton/",
+    leftImagePath: "../../files/images/people/hamilton1.jpeg",
+    rightImagePath: "../../files/images/people/hamilton2.jpeg",
+    folderPath: "../../files/audio/hamilton/",
     songs: [
       {
         file: "alexanderhamilton.mp3",
@@ -957,9 +957,9 @@ const playlists = [
     id: "wicked",
     name: "Wicked songs",
     nameSingular: "Wicked song",
-    leftImagePath: "../files/images/people/wicked1.jpeg",
-    rightImagePath: "../files/images/people/wicked2.jpeg",
-    folderPath: "../files/audio/wicked/",
+    leftImagePath: "../../files/images/people/wicked1.jpeg",
+    rightImagePath: "../../files/images/people/wicked2.jpeg",
+    folderPath: "../../files/audio/wicked/",
     songs: [
       {
         file: "noonemournsthewicked.mp3",
@@ -1026,9 +1026,9 @@ const playlists = [
     id: "greatestshowman",
     name: "Greatest Showman songs",
     nameSingular: "Greatest Showman song",
-    leftImagePath: "../files/images/people/greatestshowman1.jpeg",
-    rightImagePath: "../files/images/people/greatestshowman2.jpeg",
-    folderPath: "../files/audio/greatestshowman/",
+    leftImagePath: "../../files/images/people/greatestshowman1.jpeg",
+    rightImagePath: "../../files/images/people/greatestshowman2.jpeg",
+    folderPath: "../../files/audio/greatestshowman/",
     songs: [
       {
         file: "amilliondreams.mp3",
@@ -1057,9 +1057,9 @@ const playlists = [
     id: "frozen",
     name: "Frozen songs",
     nameSingular: "Frozen song",
-    leftImagePath: "../files/images/people/olaf.jpeg",
-    rightImagePath: "../files/images/people/elsaandanna.jpeg",
-    folderPath: "../files/audio/frozen/",
+    leftImagePath: "../../files/images/people/olaf.jpeg",
+    rightImagePath: "../../files/images/people/elsaandanna.jpeg",
+    folderPath: "../../files/audio/frozen/",
     songs: [
       { file: "frozenheart.mp3", answers: ["Frozen Heart"], keywords: [] },
       {
@@ -1096,9 +1096,9 @@ const playlists = [
     id: "beatles",
     name: "Beatles songs",
     nameSingular: "Beatles song",
-    leftImagePath: "../files/images/people/beatles1.jpeg",
-    rightImagePath: "../files/images/people/beatles2.jpeg",
-    folderPath: "../files/audio/beatles/",
+    leftImagePath: "../../files/images/people/beatles1.jpeg",
+    rightImagePath: "../../files/images/people/beatles2.jpeg",
+    folderPath: "../../files/audio/beatles/",
     songs: [
       {
         file: "adayinthelife.mp3",
@@ -1171,9 +1171,9 @@ const playlists = [
     id: "abba",
     name: "ABBA songs",
     nameSingular: "ABBA song",
-    leftImagePath: "../files/images/people/abba1.jpeg",
-    rightImagePath: "../files/images/people/abba2.jpeg",
-    folderPath: "../files/audio/abba/",
+    leftImagePath: "../../files/images/people/abba1.jpeg",
+    rightImagePath: "../../files/images/people/abba2.jpeg",
+    folderPath: "../../files/audio/abba/",
     songs: [
       { file: "iamjustagirl.mp3", answers: ["I Am Just a Girl"], keywords: [] },
       {
@@ -1279,9 +1279,9 @@ const playlists = [
     id: "queen",
     name: "Queen songs",
     nameSingular: "Queen song",
-    leftImagePath: "../files/images/people/queen1.jpeg",
-    rightImagePath: "../files/images/people/queen2.jpeg",
-    folderPath: "../files/audio/queen/",
+    leftImagePath: "../../files/images/people/queen1.jpeg",
+    rightImagePath: "../../files/images/people/queen2.jpeg",
+    folderPath: "../../files/audio/queen/",
     songs: [
       { file: "akindofmagic.mp3", answers: ["A Kind Of Magic"], keywords: [] },
       {
@@ -1469,9 +1469,9 @@ const playlists = [
     id: "grande",
     name: "Ariana Grande songs",
     nameSingular: "Ariana Grande song",
-    leftImagePath: "../files/images/people/grande1.jpeg",
-    rightImagePath: "../files/images/people/grande2.jpeg",
-    folderPath: "../files/audio/grande/",
+    leftImagePath: "../../files/images/people/grande1.jpeg",
+    rightImagePath: "../../files/images/people/grande2.jpeg",
+    folderPath: "../../files/audio/grande/",
     songs: [
       { file: "baddecisions.mp3", answers: ["Bad Decisions"], keywords: [] },
       { file: "bangbang.mp3", answers: ["Bang Bang"], keywords: [] },
@@ -1518,9 +1518,9 @@ const playlists = [
     id: "mendes",
     name: "Shawn Mendes songs",
     nameSingular: "Shawn Mendes song",
-    leftImagePath: "../files/images/people/mendes1.jpeg",
-    rightImagePath: "../files/images/people/mendes2.jpeg",
-    folderPath: "../files/audio/mendes/",
+    leftImagePath: "../../files/images/people/mendes1.jpeg",
+    rightImagePath: "../../files/images/people/mendes2.jpeg",
+    folderPath: "../../files/audio/mendes/",
     songs: [
       { file: "24hours.mp3", answers: ["24 Hours"], keywords: [] },
       { file: "305.mp3", answers: ["305"], keywords: [] },
@@ -1684,9 +1684,9 @@ const playlists = [
     id: "marx",
     name: "Richard Marx songs",
     nameSingular: "Richard Marx song",
-    leftImagePath: "../files/images/people/marx1.jpeg",
-    rightImagePath: "../files/images/people/marx2.jpeg",
-    folderPath: "../files/audio/marx/",
+    leftImagePath: "../../files/images/people/marx1.jpeg",
+    rightImagePath: "../../files/images/people/marx2.jpeg",
+    folderPath: "../../files/audio/marx/",
     songs: [
       { file: "angelslullaby.mp3", answers: ["Angel's Lullaby"], keywords: [] },
       { file: "anglia.mp3", answers: ["Angelia"], keywords: [] },
@@ -1736,9 +1736,9 @@ const playlists = [
     id: "chopinetudes",
     name: "Chopin Etudes",
     nameSingular: "Chopin Etude",
-    leftImagePath: "../files/images/people/chopin.jpeg",
-    rightImagePath: "../files/images/people/cortot.jpeg",
-    folderPath: "../files/audio/chopin/",
+    leftImagePath: "../../files/images/people/chopin.jpeg",
+    rightImagePath: "../../files/images/people/cortot.jpeg",
+    folderPath: "../../files/audio/chopin/",
     songs: [
       {
         file: "op10no1incmajor.mp3",
@@ -1866,9 +1866,9 @@ const playlists = [
     id: "bachcello",
     name: "Bach cello works",
     nameSingular: "Bach cello work",
-    leftImagePath: "../files/images/people/bach.jpeg",
-    rightImagePath: "../files/images/people/starker.jpeg",
-    folderPath: "../files/audio/bach/",
+    leftImagePath: "../../files/images/people/bach.jpeg",
+    rightImagePath: "../../files/images/people/starker.jpeg",
+    folderPath: "../../files/audio/bach/",
     songs: [
       {
         file: "suiteno1ingpraeludium.mp3",
@@ -2056,9 +2056,9 @@ const playlists = [
     id: "paganinicaprices",
     name: "Paganini Caprices",
     nameSingular: "Paganini Caprice",
-    leftImagePath: "../files/images/people/paganini.jpeg",
-    rightImagePath: "../files/images/people/ricci.jpeg",
-    folderPath: "../files/audio/paganini/",
+    leftImagePath: "../../files/images/people/paganini.jpeg",
+    rightImagePath: "../../files/images/people/ricci.jpeg",
+    folderPath: "../../files/audio/paganini/",
     songs: [
       { file: "caprice1.mp3", answers: ["Caprice No. 1"], keywords: [] },
       { file: "caprice2.mp3", answers: ["Caprice No. 2"], keywords: [] },

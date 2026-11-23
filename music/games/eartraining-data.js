@@ -71,7 +71,7 @@ const CHORDS = {
 };
 
 // Salamander Grand Piano samples, spaced about three semitones apart.
-const SAMPLE_PATH = '../files/audio/samples/piano/';
+const SAMPLE_PATH = '../../files/audio/samples/piano/';
 const SAMPLES = [
     { name: 'A0',  midi: 21  },
     { name: 'C1',  midi: 24  },
