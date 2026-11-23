@@ -45,9 +45,7 @@
 
         /* KaTeX: load core, then auto-render on load. */
         link('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css');
-        const katexCore = document.createElement('script');
-        katexCore.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js';
-        katexCore.onload = () => {
+        script('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js', () => {
             script('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js', () => {
                 renderMathInElement(document.body, {
                     delimiters: [
@@ -57,8 +55,7 @@
                     throwOnError: false,
                 });
             });
-        };
-        document.head.appendChild(katexCore);
+        });
 
         /* highlight.js: dark theme + auto-highlight on load. */
         link('https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/tomorrow-night.min.css');

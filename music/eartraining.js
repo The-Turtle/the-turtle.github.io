@@ -561,33 +561,12 @@ function onKeyClick(midi) {
 }
 
 function updateKeyboard() {
-    var correctSet = new Set(currentNotes);
-
-    var allKeys = document.querySelectorAll('.piano-key');
-    allKeys.forEach(function (div) {
-        var midi = parseInt(div.dataset.midi, 10);
-        var circle = div.querySelector('.key-circle');
-
-        /* Reset */
-        circle.className = 'key-circle';
-        div.classList.remove('answer');
-
-        if (submitted) {
-            /* Blue dot stays on every key the user selected */
-            if (selectedNotes.has(midi)) {
-                circle.classList.add('selected');
-            }
-            /* Highlight the entire key for every note in the answer */
-            if (correctSet.has(midi)) {
-                div.classList.add('answer');
-            }
-            div.classList.add('disabled');
-        } else {
-            div.classList.remove('disabled');
-            if (selectedNotes.has(midi)) {
-                circle.classList.add('selected');
-            }
-        }
+    const correctNotes = new Set(currentNotes);
+    keyboard.querySelectorAll('.piano-key').forEach((key) => {
+        const midi = Number(key.dataset.midi);
+        key.querySelector('.key-circle').classList.toggle('selected', selectedNotes.has(midi));
+        key.classList.toggle('answer', submitted && correctNotes.has(midi));
+        key.classList.toggle('disabled', submitted);
     });
 }
 

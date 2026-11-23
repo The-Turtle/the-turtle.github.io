@@ -8,6 +8,8 @@ const timerDisplay = document.getElementById("timer");
 const instructions = document.getElementById("instructions");
 const scoreShare = document.getElementById("scoreShare");
 const scoreShareButton = document.getElementById("scoreShareButton");
+const playerA = document.getElementById("songA");
+const playerB = document.getElementById("songB");
 
 let playlist;
 let folderPath;
@@ -37,16 +39,8 @@ let currentSongPlayer;
 
 let recentSongs = [];
 
-function toggleCurrentSongPlayer() {
-  if (currentSongPlayer === "A") {
-    currentSongPlayer = "B";
-  } else {
-    currentSongPlayer = "A";
-  }
-}
-
 function initializeSongs() {
-  songA = loadSongA();
+  songA = loadSong(playerA);
   songB = null;
   currentSong = songA;
   currentSongPlayer = "B";
@@ -109,11 +103,9 @@ function startGame() {
   playNextSong();
 }
 
-function loadSong(audioSourceId, songId) {
+function loadSong(audio) {
   const song = randomSong();
-  const audioSource = document.getElementById(audioSourceId);
-  audioSource.src = folderPath + song.file;
-  const audio = document.getElementById(songId);
+  audio.querySelector("source").src = folderPath + song.file;
   audio.onloadedmetadata = () => {
     audio.currentTime = Math.random() * audio.duration;
     audio.play();
@@ -127,53 +119,18 @@ function loadSong(audioSourceId, songId) {
   return song;
 }
 
-function loadSongA() {
-  return loadSong("audioSourceA", "songA");
-}
-
-function loadSongB() {
-  return loadSong("audioSourceB", "songB");
-}
-
-function playSong(id) {
-  const audio = document.getElementById(id);
-  audio.muted = false;
-}
-
-function playSongA() {
-  playSong("songA");
-}
-
-function playSongB() {
-  playSong("songB");
-}
-
-function stopSong(id) {
-  const audio = document.getElementById(id);
-  audio.pause();
-}
-
-function stopSongA() {
-  stopSong("songA");
-}
-
-function stopSongB() {
-  stopSong("songB");
-}
-
 function playNextSong() {
-  toggleCurrentSongPlayer();
+  currentSongPlayer = currentSongPlayer === "A" ? "B" : "A";
   if (currentSongPlayer === "A") {
     currentSong = songA;
-    stopSongB();
-    playSongA();
-    songB = loadSongB();
-  }
-  if (currentSongPlayer === "B") {
+    playerB.pause();
+    playerA.muted = false;
+    songB = loadSong(playerB);
+  } else {
     currentSong = songB;
-    stopSongA();
-    playSongB();
-    songA = loadSongA();
+    playerA.pause();
+    playerB.muted = false;
+    songA = loadSong(playerA);
   }
   questionTimeStart = Date.now();
   guessInput.value = "";
@@ -205,8 +162,9 @@ function sanitizeInput(input) {
 }
 
 function match(userGuess, correctAnswers) {
-  for (let answer of correctAnswers) {
-    if (sanitizeInput(userGuess) === sanitizeInput(answer)) {
+  const guess = sanitizeInput(userGuess);
+  for (const answer of correctAnswers) {
+    if (guess === sanitizeInput(answer)) {
       return answer;
     }
   }
@@ -344,13 +302,11 @@ function updateSuggestions() {
 }
 
 function endGame() {
-  feedback.innerHTML = "";
-  feedback.innerHTML += `The correct answer was <em>${correctAnswer()}</em>`;
-  feedback.innerHTML += "<br><br>";
-  feedback.innerHTML += `Game over! You identified ${score} ${score === 1 ? playlist.nameSingular : playlist.name} (${skippedCounter} skipped)`;
+  feedback.innerHTML = `The correct answer was <em>${correctAnswer()}</em><br><br>` +
+    `Game over! You identified ${score} ${score === 1 ? playlist.nameSingular : playlist.name} (${skippedCounter} skipped)`;
   feedback.style.color = "white";
-  stopSongA();
-  stopSongB();
+  playerA.pause();
+  playerB.pause();
   startButton.textContent = "Play again";
   skipButton.disabled = true;
   guessInput.disabled = true;
@@ -362,18 +318,10 @@ function endGame() {
   scoreShareButton.disabled = false;
   const spaceIfNeeded = outputString.endsWith("\n") ? "" : " ";
   if (!penaltyActive) {
-    outputString +=
-      spaceIfNeeded +
-      "(" +
-      questionTimeElapsed() +
-      "s) " +
-      correctAnswer() +
-      "\n";
+    outputString += `${spaceIfNeeded}(${questionTimeElapsed()}s) ${correctAnswer()}\n`;
   }
-  outputString = "Music Guesser (tinyurl.com/musicguesser)\n" + outputString;
-  outputString = outputString.trim();
-  outputString +=
-    "\nScore: " + score + "/" + (score + skippedCounter) + " " + playlist.name;
+  outputString = `Music Guesser (tinyurl.com/musicguesser)\n${outputString}`.trim();
+  outputString += `\nScore: ${score}/${score + skippedCounter} ${playlist.name}`;
   resetTimers();
   initializeSongs();
 }
