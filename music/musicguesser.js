@@ -20,8 +20,6 @@ const audioB = document.getElementById("songB");
 
 // State
 let playlist;
-let folderPath;
-let songs;
 
 let score = 0;
 let skippedCount = 0;
@@ -49,8 +47,6 @@ function selectPlaylist(id) {
   document.getElementById("gameContent").style.display = "block";
   document.getElementById("backButton").style.display = "block";
   playlist = playlists.find((playlist) => playlist.id === id);
-  folderPath = playlist.folderPath;
-  songs = playlist.songs;
   document.getElementById("leftPortrait").src = playlist.leftImagePath;
   document.getElementById("rightPortrait").src = playlist.rightImagePath;
   timerDisplay.textContent = GAME_DURATION_SECONDS;
@@ -180,7 +176,7 @@ function initializeSongs() {
 function preloadSong(player) {
   player.song = pickRandomSong();
   const audio = player.audio;
-  audio.querySelector("source").src = folderPath + player.song.file;
+  audio.querySelector("source").src = playlist.folderPath + player.song.file;
   audio.onloadedmetadata = () => {
     audio.currentTime = Math.random() * audio.duration;
     audio.play();
@@ -196,10 +192,10 @@ function preloadSong(player) {
 function pickRandomSong() {
   let song;
   do {
-    song = songs[Math.floor(Math.random() * songs.length)];
+    song = playlist.songs[Math.floor(Math.random() * playlist.songs.length)];
   } while (recentSongs.includes(song.answers[0]));
   recentSongs.push(song.answers[0]);
-  if (recentSongs.length > Math.floor(songs.length / 2)) {
+  if (recentSongs.length > Math.floor(playlist.songs.length / 2)) {
     recentSongs.shift();
   }
   return song;
@@ -287,7 +283,7 @@ function getSuggestions(input) {
   const matchingAnswers = new Set();
   const nonContiguousAnswers = new Set();
   const normalizedInput = normalizeAnswer(input);
-  songs.forEach((song) => {
+  playlist.songs.forEach((song) => {
     song.answers.forEach((answer) => {
       if (normalizeAnswer(answer).startsWith(normalizedInput)) {
         priorityAnswers.add(song.answers[0]);

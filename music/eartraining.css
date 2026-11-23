@@ -19,30 +19,6 @@ main {
 .back-btn:hover {
     opacity: 1;
 }
-.game-btn {
-    background-color: var(--dark-green);
-    border-radius: 8px;
-    color: white;
-    font-weight: bold;
-    padding: 9px 20px;
-    font-size: 15px;
-    cursor: pointer;
-    border: 2px solid var(--turtle-green);
-    margin: 4px;
-    transition:
-        transform 0.15s,
-        box-shadow 0.15s;
-}
-.game-btn:hover {
-    transform: scale(1.04);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-}
-.game-btn:disabled {
-    opacity: 0.5;
-    cursor: default;
-    transform: none;
-    box-shadow: none;
-}
 .controls-row {
     margin: 14px 0;
     display: flex;
@@ -98,26 +74,6 @@ main {
     height: 40px;
     line-height: 18px;
     box-sizing: border-box;
-}
-#volumeHint {
-    position: absolute;
-    bottom: 48px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: normal;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 10;
-}
-#volumeHint.show {
-    opacity: 1;
 }
 #keyboardWrapper {
     overflow-x: auto;
