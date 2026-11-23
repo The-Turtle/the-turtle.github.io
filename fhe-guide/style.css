@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap');
 
+html {
+    scroll-behavior: smooth;
+}
+
 /* Layout for the FHE guide pages.
    Layered on top of ../../style.css.
 
@@ -36,8 +40,8 @@ header {
     background-color: var(--fhe-bg);
     color: var(--fhe-fg);
 }
-.namebtn,
-.namebtn:hover {
+.site-name,
+.site-name:hover {
     color: var(--fhe-fg);
 }
 

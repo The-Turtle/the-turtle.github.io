@@ -143,17 +143,23 @@
                 padding-bottom: 8px;
             }
             #keyboard {
+                --white-key-width: 30px;
+                --black-key-width: 18px;
+                height: 174px;
                 position: relative;
                 margin: 0 auto;
                 user-select: none;
                 -webkit-user-select: none;
             }
             .piano-key {
+                top: 0;
                 position: absolute;
                 box-sizing: border-box;
                 cursor: pointer;
             }
             .white-key {
+                width: var(--white-key-width);
+                height: 150px;
                 background: #fff;
                 border: 1px solid #999;
                 border-radius: 0 0 5px 5px;
@@ -169,6 +175,8 @@
                 background: #fff;
             }
             .black-key {
+                width: var(--black-key-width);
+                height: 95px;
                 background: #333;
                 border: 1px solid #000;
                 border-radius: 0 0 3px 3px;
@@ -218,11 +226,13 @@
                 background: #388e3c;
             }
             .octave-label {
+                top: 154px;
+                width: var(--white-key-width);
+                text-align: center;
                 position: absolute;
                 font-size: 11px;
                 color: #888;
                 z-index: 1;
-                text-align: center;
                 pointer-events: none;
             }
             #feedback {
@@ -269,12 +279,6 @@
                 margin: 0;
                 font-size: 15px;
                 color: var(--dark-green);
-            }
-            #gameArea {
-                display: none;
-            }
-            #gameArea.active {
-                display: block;
             }
             .corner-controls {
                 position: fixed;
@@ -442,36 +446,27 @@
                 margin: 2px 0;
             }
         </style>
+        <script src="../site.js" defer></script>
     </head>
     <body>
         <header>
-            <div class="top-left-name">
-                <img
-                    src="../files/images/turtleicon.png"
-                    alt="Turtle icon"
-                    class="name-icon"
-                />
-                <div style="display: inline-block">
-                    <div class="hide-name">
-                        <a class="namebtn" href="../index.html">Holden Mui</a>
-                    </div>
-                </div>
-            </div>
-            <nav>
-                <div class="dropdown">
-                    <a class="dropbtn" href="../index.html">Home</a>
-                </div>
-                <div class="dropdown">
-                    <a class="dropbtn">Career</a>
+            <a class="site-name" href="../index.html" aria-label="Holden Mui home">
+                <img src="../files/images/turtleicon.png" alt="" />
+                <span>Holden Mui</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a class="nav-link" href="../index.html">Home</a>
+                <details>
+                    <summary>Career</summary>
                     <div class="dropdown-content">
                         <a href="../career/0xparc.html">0xPARC</a>
                         <a href="../fhe-guide/index.html">FHE Guide</a>
                         <a href="../career/coursework.html">Coursework</a>
                         <a href="../career/resume.html">Resume</a>
                     </div>
-                </div>
-                <div class="dropdown">
-                    <a class="dropbtn">Math</a>
+                </details>
+                <details>
+                    <summary>Math</summary>
                     <div class="dropdown-content">
                         <a href="../math/research.html">Research</a>
                         <a href="../math/talks.html">Talks</a>
@@ -479,30 +474,20 @@
                         <a href="../math/olympiad.html">Olympiad</a>
                         <a href="../math/puzzles.html">Puzzles</a>
                     </div>
-                </div>
-                <div class="dropdown">
-                    <a class="dropbtn">Music</a>
+                </details>
+                <details>
+                    <summary>Music</summary>
                     <div class="dropdown-content">
                         <a href="../music/piano.html">Piano</a>
-                        <a href="../music/composition.html"
-                            >Composition</a
-                        >
-                        <a href="../music/arrangements.html"
-                            >Arrangements</a
-                        >
-                        <a href="../music/musicguesser.html"
-                            >Music Guesser</a
-                        >
-                        <a href="../music/frequencyguesser.html"
-                            >Frequency Guesser</a
-                        >
-                        <a href="../music/eartraining.html"
-                            >Ear Training</a
-                        >
+                        <a href="../music/composition.html">Composition</a>
+                        <a href="../music/arrangements.html">Arrangements</a>
+                        <a href="../music/musicguesser.html">Music Guesser</a>
+                        <a href="../music/frequencyguesser.html">Frequency Guesser</a>
+                        <a href="../music/eartraining.html">Ear Training</a>
                     </div>
-                </div>
-                <div class="dropdown">
-                    <a class="dropbtn">Other</a>
+                </details>
+                <details>
+                    <summary>Other</summary>
                     <div class="dropdown-content">
                         <a href="../other/events.html">Events</a>
                         <a href="../other/writing.html">Writing</a>
@@ -511,7 +496,7 @@
                         <a href="../other/links.html">Links</a>
                         <a href="../other/sfhills.html">SF Hills</a>
                     </div>
-                </div>
+                </details>
             </nav>
         </header>
 
@@ -542,7 +527,7 @@
                 </div>
             </div>
 
-            <div id="gameArea">
+            <div id="gameArea" hidden>
                 <div class="audio-controls">
                     <button class="game-btn" id="playBtn">
                         &#9654; Play
@@ -649,35 +634,5 @@
         <script src="iosaudiounlock.js" defer></script>
         <script src="eartraining.js" defer></script>
 
-        <script>
-            document.getElementById('backBtn').addEventListener('click', function () {
-                stopPlayback();
-                roundActive = false;
-                submitted = false;
-                selectedNotes.clear();
-                document.getElementById('gameArea').classList.remove('active');
-                document.getElementById('presetScreen').style.display = '';
-            });
-            document.addEventListener("DOMContentLoaded", () => {
-                const dropdowns =
-                    document.querySelectorAll(".dropdown");
-
-                dropdowns.forEach((dropdown) => {
-                    const button =
-                        dropdown.querySelector(".dropbtn");
-                    button.addEventListener("click", () => {
-                        dropdown.classList.toggle("active");
-                    });
-                });
-
-                document.addEventListener("click", (e) => {
-                    dropdowns.forEach((dropdown) => {
-                        if (!dropdown.contains(e.target)) {
-                            dropdown.classList.remove("active");
-                        }
-                    });
-                });
-            });
-        </script>
     </body>
 </html>

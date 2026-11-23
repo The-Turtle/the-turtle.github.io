@@ -147,36 +147,27 @@
                 pointer-events: none;
             }
         </style>
+        <script src="../site.js" defer></script>
     </head>
     <body>
         <header>
-            <div class="top-left-name">
-                <img
-                    src="../files/images/turtleicon.png"
-                    alt="Turtle icon"
-                    class="name-icon"
-                />
-                <div style="display: inline-block">
-                    <div class="hide-name">
-                        <a class="namebtn" href="../index.html">Holden Mui</a>
-                    </div>
-                </div>
-            </div>
-            <nav>
-                <div class="dropdown">
-                    <a class="dropbtn" href="../index.html">Home</a>
-                </div>
-                <div class="dropdown">
-                    <a class="dropbtn">Career</a>
+            <a class="site-name" href="../index.html" aria-label="Holden Mui home">
+                <img src="../files/images/turtleicon.png" alt="" />
+                <span>Holden Mui</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a class="nav-link" href="../index.html">Home</a>
+                <details>
+                    <summary>Career</summary>
                     <div class="dropdown-content">
                         <a href="../career/0xparc.html">0xPARC</a>
                         <a href="../fhe-guide/index.html">FHE Guide</a>
                         <a href="../career/coursework.html">Coursework</a>
                         <a href="../career/resume.html">Resume</a>
                     </div>
-                </div>
-                <div class="dropdown">
-                    <a class="dropbtn">Math</a>
+                </details>
+                <details>
+                    <summary>Math</summary>
                     <div class="dropdown-content">
                         <a href="../math/research.html">Research</a>
                         <a href="../math/talks.html">Talks</a>
@@ -184,9 +175,9 @@
                         <a href="../math/olympiad.html">Olympiad</a>
                         <a href="../math/puzzles.html">Puzzles</a>
                     </div>
-                </div>
-                <div class="dropdown">
-                    <a class="dropbtn">Music</a>
+                </details>
+                <details>
+                    <summary>Music</summary>
                     <div class="dropdown-content">
                         <a href="../music/piano.html">Piano</a>
                         <a href="../music/composition.html">Composition</a>
@@ -195,9 +186,9 @@
                         <a href="../music/frequencyguesser.html">Frequency Guesser</a>
                         <a href="../music/eartraining.html">Ear Training</a>
                     </div>
-                </div>
-                <div class="dropdown">
-                    <a class="dropbtn">Other</a>
+                </details>
+                <details>
+                    <summary>Other</summary>
                     <div class="dropdown-content">
                         <a href="../other/events.html">Events</a>
                         <a href="../other/writing.html">Writing</a>
@@ -206,7 +197,7 @@
                         <a href="../other/links.html">Links</a>
                         <a href="../other/sfhills.html">SF Hills</a>
                     </div>
-                </div>
+                </details>
             </nav>
         </header>
 
@@ -592,25 +583,7 @@
                     console.error(error);
                 });
 
-            // Dropdown nav script
-            document.addEventListener("DOMContentLoaded", () => {
-                const dropdowns = document.querySelectorAll(".dropdown");
 
-                dropdowns.forEach((dropdown) => {
-                    const button = dropdown.querySelector(".dropbtn");
-                    button.addEventListener("click", () => {
-                        dropdown.classList.toggle("active");
-                    });
-                });
-
-                document.addEventListener("click", (e) => {
-                    dropdowns.forEach((dropdown) => {
-                        if (!dropdown.contains(e.target)) {
-                            dropdown.classList.remove("active");
-                        }
-                    });
-                });
-            });
         </script>
     </body>
 </html>

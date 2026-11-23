@@ -1,19 +1,10 @@
-/* ======================================================
-   Constants
-   ====================================================== */
+// Constants
 const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const MIN_MIDI = 36; // C2
 const MAX_MIDI = 84; // C6
 const BLACK_SET = new Set([1, 3, 6, 8, 10]); // semitone indices within octave
 
-const WHITE_W = 30;
-const WHITE_H = 150;
-const BLACK_W = 18;
-const BLACK_H = 95;
-
-/* ======================================================
-   Chord definitions – keyed by number of notes (difficulty)
-   ====================================================== */
+// Chord definitions – keyed by number of notes (difficulty)
 const CHORDS = {
     2: [
         { name: 'Minor 2nd',   intervals: [0, 1] },
@@ -126,9 +117,7 @@ const SAMPLES = [
 /* Pre-sorted array of just the MIDI values for quick nearest-lookup */
 const sampleMidis = SAMPLES.map(function (s) { return s.midi; });
 
-/* ======================================================
-   Preset definitions
-   ====================================================== */
+// Preset definitions
 const PRESETS = [
     null, // index 0 unused
     { difficulty: 2, smallGaps: true,  doublings: false, chordsOnly: true,  inversions: false, hearGuess: true,  autoSelectLowest: true },
@@ -138,12 +127,9 @@ const PRESETS = [
     { difficulty: 6, smallGaps: false, doublings: true,  chordsOnly: false, inversions: false, hearGuess: false, autoSelectLowest: true }
 ];
 
-/* ======================================================
-   State
-   ====================================================== */
+// State
 let audioCtx = null;
 let masterGain = null;
-let difficulty = 3;
 let currentNotes = [];        // MIDI numbers (the answer)
 let selectedNotes = new Set(); // MIDI numbers the user picked
 let roundActive = false;
@@ -155,25 +141,40 @@ let sampleBuffers = {};
 let samplesLoaded = false;
 let samplesLoading = false;
 
-/* Settings (toggled from corner controls) */
-let hearGuess = true;         // play selected notes on each click
-let autoSelectLowest = true;  // auto-select the lowest note each round
-let doublings = false;        // allow same pitch class in different octaves
-let chordsOnly = true;        // draw from tertian chord distribution
-let inversions = false;       // allow chord inversions
-let smallGaps = true;         // consecutive notes ≤ 1 octave apart
+const settings = {
+    difficulty: 3,
+    hearGuess: true,
+    autoSelectLowest: true,
+    doublings: false,
+    chordsOnly: true,
+    inversions: false,
+    smallGaps: true,
+};
+let savedChordSettings = null;
 
-/* Saved toggle state for chords/inversions when difficulty ≥ 6 */
-let savedChordsOnly = null;
-let savedInversions = null;
+const playButton = document.getElementById('playBtn');
+const submitButton = document.getElementById('submitBtn');
+const nextButton = document.getElementById('nextBtn');
+const backButton = document.getElementById('backBtn');
+const feedback = document.getElementById('feedback');
+const keyboard = document.getElementById('keyboard');
+const presetScreen = document.getElementById('presetScreen');
+const gameArea = document.getElementById('gameArea');
+const difficultyButtons = document.querySelectorAll('.diff-btn');
+const settingControls = {
+    hearGuess: document.getElementById('hearGuessToggle'),
+    autoSelectLowest: document.getElementById('autoLowestToggle'),
+    smallGaps: document.getElementById('smallGapsToggle'),
+    doublings: document.getElementById('doublingsToggle'),
+    chordsOnly: document.getElementById('chordsOnlyToggle'),
+    inversions: document.getElementById('inversionsToggle'),
+};
 
 /* Hide auto-selected note until the user presses Play for the first time.
    Reset to true whenever settings or difficulty change. */
 let needsFirstPlay = true;
 
-/* ======================================================
-   Helpers
-   ====================================================== */
+// Helpers
 function isBlack(midi) {
     return BLACK_SET.has(midi % 12);
 }
@@ -300,7 +301,7 @@ async function playChord() {
     if (needsFirstPlay) {
         needsFirstPlay = false;
         /* Do the deferred auto-select now that the user has heard the chord */
-        if (autoSelectLowest && currentNotes.length > 0) {
+        if (settings.autoSelectLowest && currentNotes.length > 0) {
             selectedNotes.add(currentNotes[0]);
             updateKeyboard();
         }
@@ -308,9 +309,7 @@ async function playChord() {
     await playNotes(currentNotes);
 }
 
-/* ======================================================
-   Note generation helpers
-   ====================================================== */
+// Note generation helpers
 
 /**
  * Check whether an interval set contains duplicate pitch classes.
@@ -381,11 +380,9 @@ function uniformTranslate(intervals) {
     return intervals.map(function (iv) { return t + iv; });
 }
 
-/* ======================================================
-   Note generation – main entry
-   ====================================================== */
+// Note generation – main entry
 function generateNotes() {
-    if (chordsOnly && difficulty <= 5) {
+    if (settings.chordsOnly && settings.difficulty <= 5) {
         return generateChordNotes();
     }
     return generateNotesRandom();
@@ -397,9 +394,9 @@ function generateNotes() {
    Small gaps OFF → each note placed at a random octave in range.
    ====================================================== */
 function generateChordNotes() {
-    var chordList = CHORDS[difficulty];
+    var chordList = CHORDS[settings.difficulty];
     if (!chordList || chordList.length === 0) {
-        throw new Error('No chords defined for difficulty ' + difficulty + '.');
+        throw new Error('No chords defined for difficulty ' + settings.difficulty + '.');
     }
 
     var maxAttempts = 300;
@@ -409,11 +406,11 @@ function generateChordNotes() {
         var raw = chord.intervals;
 
         /* Skip if doublings not allowed and chord has duplicate pitch classes */
-        if (!doublings && hasDoublings(raw)) continue;
+        if (!settings.doublings && hasDoublings(raw)) continue;
 
-        if (smallGaps) {
+        if (settings.smallGaps) {
             /* ── Compact voicing: permute, stack, translate ── */
-            var permuted = inversions ? shuffleArray(raw) : shuffleKeepFirst(raw);
+            var permuted = settings.inversions ? shuffleArray(raw) : shuffleKeepFirst(raw);
             var intervals = buildVoicing(permuted);
 
             /* Safety check (should always pass for distinct PCs) */
@@ -448,7 +445,7 @@ function generateChordNotes() {
             notes.sort(function (x, y) { return x - y; });
 
             /* If inversions off, the root pitch class must be the lowest note */
-            if (!inversions && notes[0] % 12 !== rootPC) continue;
+            if (!settings.inversions && notes[0] % 12 !== rootPC) continue;
 
             return notes;
         }
@@ -470,23 +467,22 @@ function generateNotesRandom() {
         var seen = new Set();
         var usedPC = new Set();
         var tries = 0;
-        while (notes.length < difficulty && tries < 500) {
+        while (notes.length < settings.difficulty && tries < 500) {
             tries++;
             var m = MIN_MIDI + Math.floor(Math.random() * (MAX_MIDI - MIN_MIDI + 1));
             if (seen.has(m)) continue;
-            if (!doublings && usedPC.has(m % 12)) continue;
+            if (!settings.doublings && usedPC.has(m % 12)) continue;
             notes.push(m);
             seen.add(m);
             usedPC.add(m % 12);
         }
-        if (notes.length < difficulty) continue;
+        if (notes.length < settings.difficulty) continue;
 
-        /* Step 2: sort ascending */
-        notes.sort(function (x, y) { return x - y; });
+            notes.sort(function (x, y) { return x - y; });
 
         /* Step 3: if small gaps, reduce consecutive intervals > 12
            then uniformly translate into range */
-        if (smallGaps) {
+        if (settings.smallGaps) {
             var reduced = false;
             for (var i = 1; i < notes.length; i++) {
                 var gap = notes[i] - notes[i - 1];
@@ -515,89 +511,39 @@ function generateNotesRandom() {
     throw new Error('Could not generate random notes satisfying the current constraints.');
 }
 
-/* ======================================================
-   Keyboard rendering
-   ====================================================== */
+// Keyboard rendering
 function buildKeyboard() {
-    var container = document.getElementById('keyboard');
-    container.innerHTML = '';
+    const style = getComputedStyle(keyboard);
+    const whiteWidth = parseFloat(style.getPropertyValue('--white-key-width'));
+    const blackWidth = parseFloat(style.getPropertyValue('--black-key-width'));
+    let whiteIndex = 0;
+    keyboard.replaceChildren();
 
-    /* Catalogue keys */
-    var whiteIdx = 0;
-    var keys = [];
+    for (let midi = MIN_MIDI; midi <= MAX_MIDI; midi++) {
+        const black = isBlack(midi);
+        const key = document.createElement('div');
+        key.className = black ? 'piano-key black-key' : 'piano-key white-key';
+        key.dataset.midi = midi;
+        key.style.left = (whiteIndex * whiteWidth - (black ? blackWidth / 2 : 0)) + 'px';
 
-    for (var midi = MIN_MIDI; midi <= MAX_MIDI; midi++) {
-        if (isBlack(midi)) {
-            keys.push({ midi: midi, type: 'black', whitePos: whiteIdx });
-        } else {
-            keys.push({ midi: midi, type: 'white', index: whiteIdx });
-            whiteIdx++;
-        }
-    }
-
-    var totalWhite = whiteIdx;
-    var totalWidth = totalWhite * WHITE_W;
-
-    container.style.width = totalWidth + 'px';
-    container.style.height = (WHITE_H + 24) + 'px';
-    container.style.position = 'relative';
-
-    /* White keys */
-    keys.forEach(function (k) {
-        if (k.type !== 'white') return;
-
-        var div = document.createElement('div');
-        div.className = 'piano-key white-key';
-        div.dataset.midi = k.midi;
-        div.style.left = (k.index * WHITE_W) + 'px';
-        div.style.width = WHITE_W + 'px';
-        div.style.height = WHITE_H + 'px';
-        div.style.top = '0';
-
-        var circle = document.createElement('div');
+        const circle = document.createElement('div');
         circle.className = 'key-circle';
-        div.appendChild(circle);
+        key.appendChild(circle);
+        key.addEventListener('click', () => onKeyClick(midi));
+        keyboard.appendChild(key);
 
-        div.addEventListener('click', function () { onKeyClick(k.midi); });
-        container.appendChild(div);
-
-        /* Octave labels on every C */
-        if (k.midi % 12 === 0) {
-            var label = document.createElement('div');
+        if (midi % 12 === 0) {
+            const label = document.createElement('div');
             label.className = 'octave-label';
-            label.textContent = midiToName(k.midi);
-            label.style.left = (k.index * WHITE_W) + 'px';
-            label.style.width = WHITE_W + 'px';
-            label.style.top = (WHITE_H + 4) + 'px';
-            label.style.textAlign = 'center';
-            container.appendChild(label);
+            label.textContent = midiToName(midi);
+            label.style.left = (whiteIndex * whiteWidth) + 'px';
+            keyboard.appendChild(label);
         }
-    });
-
-    /* Black keys (rendered after so they sit on top in DOM order) */
-    keys.forEach(function (k) {
-        if (k.type !== 'black') return;
-
-        var div = document.createElement('div');
-        div.className = 'piano-key black-key';
-        div.dataset.midi = k.midi;
-        div.style.left = (k.whitePos * WHITE_W - BLACK_W / 2) + 'px';
-        div.style.width = BLACK_W + 'px';
-        div.style.height = BLACK_H + 'px';
-        div.style.top = '0';
-
-        var circle = document.createElement('div');
-        circle.className = 'key-circle';
-        div.appendChild(circle);
-
-        div.addEventListener('click', function () { onKeyClick(k.midi); });
-        container.appendChild(div);
-    });
+        if (!black) whiteIndex++;
+    }
+    keyboard.style.width = (whiteIndex * whiteWidth) + 'px';
 }
 
-/* ======================================================
-   Keyboard interaction
-   ====================================================== */
 function onKeyClick(midi) {
     if (!roundActive || submitted) return;
 
@@ -609,7 +555,7 @@ function onKeyClick(midi) {
     updateKeyboard();
 
     /* Play all currently selected notes as a chord (if setting is on) */
-    if (hearGuess) {
+    if (settings.hearGuess) {
         playNotes(Array.from(selectedNotes));
     }
 }
@@ -645,9 +591,7 @@ function updateKeyboard() {
     });
 }
 
-/* ======================================================
-   Game flow
-   ====================================================== */
+// Game flow
 function startRound() {
     currentNotes = generateNotes();
     selectedNotes.clear();
@@ -656,17 +600,16 @@ function startRound() {
 
     /* Auto-select the lowest note — but only if we've already
        pressed Play at least once (not in a "cold start" state). */
-    if (!needsFirstPlay && autoSelectLowest && currentNotes.length > 0) {
+    if (!needsFirstPlay && settings.autoSelectLowest && currentNotes.length > 0) {
         selectedNotes.add(currentNotes[0]);
     }
 
-    document.getElementById('submitBtn').style.display = '';
-    document.getElementById('submitBtn').disabled = false;
-    document.getElementById('nextBtn').style.display = 'none';
-    var fb = document.getElementById('feedback');
-    fb.textContent = '';
-    fb.style.color = '';
-    fb.classList.remove('visible');
+    submitButton.style.display = '';
+    submitButton.disabled = false;
+    nextButton.style.display = 'none';
+    feedback.textContent = '';
+    feedback.style.color = '';
+    feedback.classList.remove('visible');
 
     updateKeyboard();
 }
@@ -683,12 +626,11 @@ function submitGuess() {
     var isExactMatch = selectedNotes.size === currentNotes.length &&
         currentNotes.every(function (n) { return selectedNotes.has(n); });
 
-    var feedbackEl = document.getElementById('feedback');
-    feedbackEl.innerHTML = '';
+    feedback.innerHTML = '';
 
     if (isExactMatch) {
-        feedbackEl.textContent = '\u2714 Correct';
-        feedbackEl.style.color = '#2e7d32';
+        feedback.textContent = '\u2714 Correct';
+        feedback.style.color = '#2e7d32';
     } else {
         /* Show each answer note with ✓ or ✗ */
         var parts = currentNotes.map(function (n) {
@@ -708,14 +650,14 @@ function submitGuess() {
         extras.forEach(function (n) {
             parts.push('<span style="color:#c62828">\u2718\u2009' + midiToName(n) + '</span>');
         });
-        feedbackEl.innerHTML = parts.join('\u2002');
+        feedback.innerHTML = parts.join('\u2002');
     }
 
-    feedbackEl.classList.add('visible');
+    feedback.classList.add('visible');
 
-    document.getElementById('submitBtn').style.display = 'none';
-    document.getElementById('nextBtn').style.display = '';
-    document.getElementById('nextBtn').focus();
+    submitButton.style.display = 'none';
+    nextButton.style.display = '';
+    nextButton.focus();
 
     updateKeyboard();
 }
@@ -727,221 +669,98 @@ async function nextRound() {
     }
 }
 
-/* ======================================================
-   Difficulty selector
-   ====================================================== */
-function initDifficulty() {
-    var btns = document.querySelectorAll('.diff-btn');
-    btns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            btns.forEach(function (b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            difficulty = parseInt(btn.dataset.val, 10);
-
-            /* For 6+ notes there are no chord definitions →
-               save current state, turn chords/inversions off and disable */
-            var chordsEl = document.getElementById('chordsOnlyToggle');
-            var inversionsEl = document.getElementById('inversionsToggle');
-            if (difficulty >= 6) {
-                /* Save only on the first transition into ≥ 6 */
-                if (savedChordsOnly === null) {
-                    savedChordsOnly = chordsOnly;
-                    savedInversions = inversions;
-                }
-                if (chordsEl) {
-                    chordsEl.checked = false;
-                    chordsEl.disabled = true;
-                    chordsOnly = false;
-                }
-                if (inversionsEl) {
-                    inversionsEl.checked = false;
-                    inversionsEl.disabled = true;
-                    inversions = false;
-                }
-            } else {
-                /* Restore saved state when returning to ≤ 5 */
-                if (savedChordsOnly !== null) {
-                    chordsOnly = savedChordsOnly;
-                    inversions = savedInversions;
-                    if (chordsEl) chordsEl.checked = chordsOnly;
-                    if (inversionsEl) inversionsEl.checked = inversions;
-                    savedChordsOnly = null;
-                    savedInversions = null;
-                }
-                if (chordsEl) chordsEl.disabled = false;
-                if (inversionsEl) inversionsEl.disabled = false;
-            }
-
-            /* Start a fresh round whenever difficulty changes */
-            stopPlayback();
-            needsFirstPlay = true;
-            startRound();
-        });
+function updateSettingsControls() {
+    difficultyButtons.forEach((button) => {
+        button.classList.toggle('active', Number(button.dataset.val) === settings.difficulty);
     });
+    for (const [name, checkbox] of Object.entries(settingControls)) {
+        checkbox.checked = settings[name];
+    }
+    settingControls.chordsOnly.disabled = settings.difficulty >= 6;
+    settingControls.inversions.disabled = settings.difficulty >= 6;
 }
 
-/* ======================================================
-   Settings (corner controls)
-   ====================================================== */
-function initSettings() {
-    var toggles = [
-        { id: 'hearGuessToggle',   setter: function (v) { hearGuess = v; } },
-        { id: 'autoLowestToggle',  setter: function (v) { autoSelectLowest = v; } },
-        { id: 'smallGapsToggle',   setter: function (v) { smallGaps = v; } },
-        { id: 'doublingsToggle',   setter: function (v) { doublings = v; } },
-        { id: 'chordsOnlyToggle',  setter: function (v) { chordsOnly = v; } },
-        { id: 'inversionsToggle',  setter: function (v) { inversions = v; } }
-    ];
-
-    var chordsEl = document.getElementById('chordsOnlyToggle');
-    var inversionsEl = document.getElementById('inversionsToggle');
-
-    toggles.forEach(function (t) {
-        var el = document.getElementById(t.id);
-        if (!el) return;
-        /* Sync JS state with the checkbox default */
-        t.setter(el.checked);
-        el.addEventListener('change', function () {
-            t.setter(el.checked);
-
-            /* Inversions on → force chords on */
-            if (t.id === 'inversionsToggle' && el.checked && chordsEl && !chordsEl.checked) {
-                chordsEl.checked = true;
-                chordsOnly = true;
-            }
-            /* Chords off → force inversions off */
-            if (t.id === 'chordsOnlyToggle' && !el.checked && inversionsEl && inversionsEl.checked) {
-                inversionsEl.checked = false;
-                inversions = false;
-            }
-
-            /* Any setting change → new chord, hide auto-select until Play */
-            stopPlayback();
-            needsFirstPlay = true;
-            startRound();
-        });
-    });
-}
-
-/* ======================================================
-   Initialisation & event wiring
-   ====================================================== */
-document.addEventListener('DOMContentLoaded', function () {
-    initDifficulty();
-    initSettings();
-    buildKeyboard();
-
-    document.getElementById('playBtn').addEventListener('click', playChord);
-
-    document.getElementById('submitBtn').addEventListener('click', submitGuess);
-    document.getElementById('nextBtn').addEventListener('click', nextRound);
-
-    /* Enter key: submit if mid-round, advance if reviewing */
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            if (roundActive && !submitted) {
-                submitGuess();
-            } else if (submitted) {
-                nextRound();
-            }
-        }
-    });
-
-    /* Volume hint: show once on first hover / click of Play */
-    var hint = document.getElementById('volumeHint');
-    var playBtn = document.getElementById('playBtn');
-    function showHintOnce() {
-        hint.classList.add('show');
-        setTimeout(function () { hint.classList.remove('show'); }, 2000);
-        playBtn.removeEventListener('mouseenter', showHintOnce);
-        playBtn.removeEventListener('click', showHintOnce);
-    }
-    playBtn.addEventListener('mouseenter', showHintOnce);
-    playBtn.addEventListener('click', showHintOnce);
-
-    /* Collapsible settings panel */
-    var settingsBtn = document.getElementById('settingsBtn');
-    var settingsClose = document.getElementById('settingsClose');
-    var settingsPanel = document.getElementById('settingsPanel');
-    if (settingsBtn && settingsPanel) {
-        settingsBtn.addEventListener('click', function () {
-            settingsPanel.classList.add('open');
-        });
-    }
-    if (settingsClose && settingsPanel) {
-        settingsClose.addEventListener('click', function () {
-            settingsPanel.classList.remove('open');
-        });
-    }
-
-    /* Preset cards */
-    var presetCards = document.querySelectorAll('.preset-card');
-    presetCards.forEach(function (card) {
-        card.addEventListener('click', function () {
-            var idx = parseInt(card.dataset.preset, 10);
-            applyPreset(idx);
-        });
-    });
-
-    /* Don't auto-start — wait for preset selection */
-});
-
-/**
- * Apply a preset: update all settings, sync UI, hide splash, show game, start round.
- */
-function applyPreset(idx) {
-    var p = PRESETS[idx];
-    if (!p) return;
-
-    /* Update JS state */
-    difficulty = p.difficulty;
-    smallGaps = p.smallGaps;
-    doublings = p.doublings;
-    chordsOnly = p.chordsOnly;
-    inversions = p.inversions;
-    hearGuess = p.hearGuess;
-    autoSelectLowest = p.autoSelectLowest;
-
-    /* Sync difficulty buttons */
-    var btns = document.querySelectorAll('.diff-btn');
-    btns.forEach(function (b) {
-        b.classList.toggle('active', parseInt(b.dataset.val, 10) === difficulty);
-    });
-
-    /* Sync toggle checkboxes */
-    var map = {
-        smallGapsToggle: smallGaps,
-        doublingsToggle: doublings,
-        chordsOnlyToggle: chordsOnly,
-        inversionsToggle: inversions,
-        hearGuessToggle: hearGuess,
-        autoLowestToggle: autoSelectLowest
-    };
-    for (var id in map) {
-        var el = document.getElementById(id);
-        if (el) el.checked = map[id];
-    }
-
-    /* Handle chords/inversions disabled state for difficulty >= 6 */
-    var chordsEl = document.getElementById('chordsOnlyToggle');
-    var inversionsEl = document.getElementById('inversionsToggle');
-    if (difficulty >= 6) {
-        if (chordsEl) { chordsEl.disabled = true; }
-        if (inversionsEl) { inversionsEl.disabled = true; }
-        savedChordsOnly = null;
-        savedInversions = null;
-    } else {
-        if (chordsEl) { chordsEl.disabled = false; }
-        if (inversionsEl) { inversionsEl.disabled = false; }
-    }
-
-    /* Hide splash, show game */
-    var presetScreen = document.getElementById('presetScreen');
-    var gameArea = document.getElementById('gameArea');
-    if (presetScreen) presetScreen.style.display = 'none';
-    if (gameArea) gameArea.classList.add('active');
-
-    /* Start the game */
+function restartRound() {
+    stopPlayback();
     needsFirstPlay = true;
     startRound();
 }
+
+function setDifficulty(difficulty) {
+    if (difficulty >= 6 && settings.difficulty < 6) {
+        savedChordSettings = { chordsOnly: settings.chordsOnly, inversions: settings.inversions };
+        settings.chordsOnly = false;
+        settings.inversions = false;
+    } else if (difficulty < 6 && savedChordSettings) {
+        Object.assign(settings, savedChordSettings);
+        savedChordSettings = null;
+    }
+    settings.difficulty = difficulty;
+    updateSettingsControls();
+    restartRound();
+}
+
+function applyPreset(index) {
+    Object.assign(settings, PRESETS[index]);
+    savedChordSettings = null;
+    updateSettingsControls();
+    presetScreen.hidden = true;
+    gameArea.hidden = false;
+    restartRound();
+}
+
+function showPresets() {
+    stopPlayback();
+    roundActive = false;
+    submitted = false;
+    selectedNotes.clear();
+    gameArea.hidden = true;
+    presetScreen.hidden = false;
+}
+
+// These scripts use defer, so the controls already exist.
+playButton.addEventListener('click', playChord);
+submitButton.addEventListener('click', submitGuess);
+nextButton.addEventListener('click', nextRound);
+backButton.addEventListener('click', showPresets);
+
+difficultyButtons.forEach((button) => {
+    button.addEventListener('click', () => setDifficulty(Number(button.dataset.val)));
+});
+for (const [name, checkbox] of Object.entries(settingControls)) {
+    checkbox.addEventListener('change', () => {
+        settings[name] = checkbox.checked;
+        if (name === 'inversions' && checkbox.checked) settings.chordsOnly = true;
+        if (name === 'chordsOnly' && !checkbox.checked) settings.inversions = false;
+        updateSettingsControls();
+        restartRound();
+    });
+}
+document.querySelectorAll('.preset-card').forEach((card) => {
+    card.addEventListener('click', () => applyPreset(Number(card.dataset.preset)));
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || gameArea.hidden) return;
+    if (event.target.closest('button, input, summary, a')) return;
+    event.preventDefault();
+    if (roundActive) submitGuess();
+    else if (submitted) nextRound();
+});
+
+const volumeHint = document.getElementById('volumeHint');
+function showHintOnce() {
+    volumeHint.classList.add('show');
+    setTimeout(() => volumeHint.classList.remove('show'), 2000);
+    playButton.removeEventListener('mouseenter', showHintOnce);
+    playButton.removeEventListener('click', showHintOnce);
+}
+playButton.addEventListener('mouseenter', showHintOnce);
+playButton.addEventListener('click', showHintOnce);
+
+const settingsPanel = document.getElementById('settingsPanel');
+document.getElementById('settingsBtn').addEventListener('click', () => settingsPanel.classList.add('open'));
+document.getElementById('settingsClose').addEventListener('click', () => settingsPanel.classList.remove('open'));
+
+updateSettingsControls();
+buildKeyboard();

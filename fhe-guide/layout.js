@@ -67,27 +67,13 @@
         });
     };
 
-    /* ---- Site header ----
-       Inside the guide we drop the site-wide nav dropdowns and keep only
-       the identity (turtle + name), so the page chrome signals "you're in
-       a different section." The name still links back to the main site. */
     const renderHeader = () => {
-        const el = document.getElementById('site-header');
-        if (!el) return;
-        /* The invisible <nav> with one dropdown reserves the exact same
-           height a normal page header has, so the bar doesn't shrink. */
-        el.innerHTML = `
-            <div class="top-left-name">
-              <img src="${root}files/images/turtleicon.png" alt="Turtle icon" class="name-icon" />
-              <div style="display: inline-block">
-                <div class="hide-name">
-                  <a class="namebtn" href="${root}index.html">Holden Mui</a>
-                </div>
-              </div>
-            </div>
-            <nav style="visibility: hidden" aria-hidden="true">
-              <div class="dropdown"><a class="dropbtn">&nbsp;</a></div>
-            </nav>`;
+        const header = document.getElementById('site-header');
+        header.innerHTML = `
+            <a class="site-name" href="${root}index.html" aria-label="Holden Mui home">
+                <img src="${root}files/images/turtleicon.png" alt="" />
+                <span>Holden Mui</span>
+            </a>`;
     };
 
     /* ---- Prev/next nav (used on section and post pages) ----
@@ -150,36 +136,6 @@
         if (list) list.innerHTML = section.posts.map((p, j) =>
             `<li><a class="post-title" href="${p.slug}.html">${postLabel(i, j, p)}</a></li>`
         ).join('');
-
-        /* Previous: last post of previous section, or that section itself if it
-           had no posts. On the very first section, point back to the landing. */
-        let prev;
-        if (i === 0) {
-            prev = { href: '../index.html', title: 'Contents' };
-        } else {
-            const ps = SECTIONS[i - 1].posts;
-            if (ps.length > 0) {
-                const last = ps[ps.length - 1];
-                prev = { href: `../${SECTIONS[i - 1].slug}/${last.slug}.html`,
-                         title: postLabel(i - 1, ps.length - 1, last) };
-            } else {
-                prev = { href: `../${SECTIONS[i - 1].slug}/index.html`,
-                         title: partTitle(SECTIONS[i - 1]) };
-            }
-        }
-
-        /* Next: first post of this section, or next section if this one's
-           empty. On the very last (empty) section, point back to landing. */
-        const next = section.posts.length > 0
-            ? { href: `${section.posts[0].slug}.html`,
-                title: postLabel(i, 0, section.posts[0]) }
-            : (i < SECTIONS.length - 1
-                ? { href: `../${SECTIONS[i + 1].slug}/index.html`,
-                    title: partTitle(SECTIONS[i + 1]) }
-                : { href: '../index.html', title: 'Contents' });
-
-        const nav = document.getElementById('post-nav');
-        if (nav) nav.outerHTML = navHtml(prev, next);
     };
 
     /* ---- Post page ---- */
@@ -197,24 +153,29 @@
             <a href="../index.html">Contents</a> &gt;
             <a href="index.html">${partTitle(section)}</a> &gt;
             <span>${post.title}</span>`;
+    };
 
-        /* Previous: previous post in this section, or this section's page. */
-        const prev = j > 0
-            ? { href: `${section.posts[j - 1].slug}.html`,
-                title: postLabel(sIdx, j - 1, section.posts[j - 1]) }
-            : { href: 'index.html', title: partTitle(section) };
+    const renderReadingNav = () => {
+        const contents = { href: '../index.html', title: 'Contents' };
+        const pages = [contents];
+        SECTIONS.forEach((section, i) => {
+            pages.push({
+                href: `../${section.slug}/index.html`,
+                title: partTitle(section),
+            });
+            section.posts.forEach((post, j) => {
+                pages.push({
+                    href: `../${section.slug}/${post.slug}.html`,
+                    title: postLabel(i, j, post),
+                });
+            });
+        });
+        pages.push(contents);
 
-        /* Next: next post in this section, or the next section's page. */
-        const next = j < section.posts.length - 1
-            ? { href: `${section.posts[j + 1].slug}.html`,
-                title: postLabel(sIdx, j + 1, section.posts[j + 1]) }
-            : (sIdx < SECTIONS.length - 1
-                ? { href: `../${SECTIONS[sIdx + 1].slug}/index.html`,
-                    title: partTitle(SECTIONS[sIdx + 1]) }
-                : null);
-
+        const href = `../${window.PAGE.section}/${window.PAGE.slug || 'index'}.html`;
+        const current = pages.findIndex((page) => page.href === href);
         const nav = document.getElementById('post-nav');
-        if (nav) nav.outerHTML = navHtml(prev, next);
+        if (current > 0 && nav) nav.outerHTML = navHtml(pages[current - 1], pages[current + 1]);
     };
 
     /* ---- "Lies" popovers ----
@@ -276,11 +237,11 @@
         if (window.PAGE?.kind === 'section') renderSection();
         if (window.PAGE?.kind === 'post')    renderPost();
         if (window.PAGE?.kind === 'section' || window.PAGE?.kind === 'post') {
+            renderReadingNav();
             injectMathAndCode();
         }
         enableLiePopovers();
         renderPageToc();
-        document.documentElement.style.scrollBehavior = 'smooth';
     };
 
     if (document.readyState === 'loading') {
