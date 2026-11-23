@@ -1,0 +1,79 @@
+\documentclass[12pt,a4paper,sans]{moderncv}
+
+% Banking style header and body.
+\moderncvhead{3}
+\moderncvbody{3}
+\moderncvcolor{red}
+\usepackage[margin=1in]{geometry}
+\usepackage{tikz}
+
+\renewcommand*{\emailsymbol}{%
+  \tikz[x=1em,y=1em,line join=round]{%
+    \draw (0,0) rectangle (.85,.55) (0,.55) -- (.425,.22) -- (.85,.55);}~}
+
+% Use the full text width for the quote and bring it closer to the contact line.
+\renewcommand*{\recomputecvheadlengths}{%
+  \setlength{\quotewidth}{\textwidth}}
+% Reduce the banking style's extra gap above the quote.
+\patchcmd{\makehead}{\\[2.5em]}{\\[0.5em]}{}{
+  \PackageError{music-resume}{Could not adjust header spacing}
+    {Check the ModernCV banking header definition.}}
+
+%institution, position, date, description
+\newcommand{\entry}[4]{%
+  \textbf{#1}: #2 \hfill \emph{#3}\newline
+  {\small #4}}
+
+\newcommand{\piecedesc}[4]{%
+  \textbf{\emph{#1}} (#2) {\small #4} \hfill \emph{#3}\par
+  \addvspace{10pt}}
+
+\newcommand{\award}[3]{%
+  \textbf{#1}: #2 \hfill \emph{#3}\par
+  \addvspace{10pt}}
+
+\name{Holden}{Mui}
+\email{hello@holdenmui.com}
+\quote{``Music, I feel, must be emotional first and intellectual second.'' -~Maurice~Ravel}
+
+\begin{document}
+\makecvtitle
+
+\vspace{-30pt}
+
+\section{Music Education}
+
+\bigskip
+\entry{\href{https://music.mit.edu/}{Massachusetts Institute of Technology}}{music major}{Sep.\ 2021 - May 2025}{Advisor: Emily Richmond Pollock; Professors: Timothy McFarland, Charles Shadle}
+
+\bigskip
+\entry{\href{https://www.musicinst.org/}{Music Institute of Chicago}}{piano and composition student}{2014 - Aug.\ 2021}{Teachers: Kaoru Nir, Matthew Hagle}
+
+\section{Selected Compositions}
+
+\bigskip
+\entry{\emph{Pursuit}}{for chamber orchestra}{2023 - 2025}{In one movement. Premiered in May 2025. An early version was performed at the 2023 TEDxMIT Salon.}
+
+\bigskip
+\entry{\emph{Serenade and Toccata}}{for solo piano}{2017 - 2025}{In two movements: \emph{Serenade} and \emph{Toccata}. Premiered by Andrew Wu in May 2025.}
+
+\bigskip
+\entry{\emph{Poetry}}{for solo piano}{2021}{A suite of five pieces: \emph{Prelude}, \emph{Lament}, \emph{Nocturne}, \emph{Scherzo}, and \emph{Postlude}. Premiered by Andrew Wu in April 2023.}
+
+\bigskip
+\entry{\emph{Landscapes}}{for string orchestra}{2019}{A suite of three pieces: \emph{Prairie}, \emph{Rivulet}, and \emph{Tundra}; 2020 ILMEA Instrumental Small Ensemble composition winner. Performed by the MIT Symphony Orchestra in 2024.}
+
+\section{Selected Piano Repertoire}
+
+\piecedesc{Rhapsody in Blue}{Gershwin}{2024}{at Tech Night with the Boston Pops}
+\piecedesc{Piano Concerto No. 3 in D minor}{Rachmaninoff}{2023}{MIT concerto competition winner}
+
+\section{Awards}
+\award{Louis Sudler Prize}{winner}{2025}
+\award{Emergent Ventures grantee}{composition recipient}{2024}
+\award{Philip Loew Memorial Award}{recipient}{2024}
+\award{Emerson Fellowship}{recipient}{2022, 2023, 2024}
+\award{ILMEA Composition Competition}{small ensemble winner, large ensemble winner}{2020}
+\award{MTNA Composition Competition}{national winner}{2016, 2019}
+
+\end{document}
