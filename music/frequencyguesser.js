@@ -1,11 +1,3 @@
-const guessInput = document.getElementById("guessInput");
-const playButton = document.getElementById("toggleBtn");
-const submitButton = document.getElementById("submitBtn");
-const nextButton = document.getElementById("nextBtn");
-const feedback = document.getElementById("feedback");
-const referenceA = document.getElementById("refA");
-const canvas = document.getElementById("graph");
-
 // Constants
 const MIN_FREQ = 10 / 60; // 10 BPM in Hz  (~0.167 Hz)
 const MAX_FREQ = 10000; // 10 kHz
@@ -19,13 +11,75 @@ const MAX_FREQ = 10000; // 10 kHz
 const SIGMA = 5e-4;
 const FADE_TIME = 0.03; // 30 ms fade-in / fade-out to avoid clicks
 
+// Page elements
+const guessInput = document.getElementById("guessInput");
+const playButton = document.getElementById("toggleBtn");
+const submitButton = document.getElementById("submitBtn");
+const nextButton = document.getElementById("nextBtn");
+const feedback = document.getElementById("feedback");
+const referenceA = document.getElementById("refA");
+const canvas = document.getElementById("graph");
+const hint = document.getElementById("volumeHint");
+
 // State
-let currentFreq = null;
-let audioCtx = null;
+let currentFrequency = null;
+let audioContext = null;
 let gainNode = null;
-let currentSrc = null;
+let currentSource = null;
 let guessData = []; // { freq, guessHz, error }
 let roundActive = false;
+
+// Game flow
+async function nextRound() {
+    currentFrequency = sampleFreq();
+
+    guessInput.disabled = false;
+    guessInput.value = "";
+    guessInput.focus();
+
+    submitButton.disabled = false;
+    submitButton.style.display = "";
+    nextButton.style.display = "none";
+    playButton.disabled = false;
+    feedback.textContent = "";
+
+    roundActive = true;
+    if (audioContext) await playTone();
+}
+
+function submitGuess() {
+    if (!roundActive) return;
+
+    const rawGuess = guessInput.value.trim();
+    const guess = parseGuess(rawGuess);
+    if (guess == null) {
+        feedback.innerHTML =
+            '<span style="color:#c62828">Invalid input. Try: 440 Hz, 120 BPM, or C#4+25c</span>';
+        return;
+    }
+
+    roundActive = false;
+    stopTone(true);  // fade out on submit
+    playButton.disabled = true;
+
+    /* Error in octaves (log₂ ratio) */
+    const errorOctaves = Math.log2(guess.hz / currentFrequency);
+    guessData.push({
+        freq: currentFrequency,
+        guessHz: guess.hz,
+        error: errorOctaves,
+    });
+
+    feedback.textContent =
+        `Correct answer: ${formatCorrectAnswer(currentFrequency, guess.format)}`;
+
+    drawGraph();
+
+    guessInput.disabled = true;
+    submitButton.style.display = "none";
+    nextButton.style.display = "";
+    nextButton.focus();
+}
 
 /* ======================================================
    Audio – Web Audio API Gaussian pulse-train synthesis
@@ -45,17 +99,17 @@ let roundActive = false;
    We pick whichever converges faster.
    ====================================================== */
 function initAudio() {
-    audioCtx = new (window.AudioContext ||
+    audioContext = new (window.AudioContext ||
         window.webkitAudioContext)();
-    gainNode = audioCtx.createGain();
+    gainNode = audioContext.createGain();
     gainNode.gain.value = 0.5;
-    gainNode.connect(audioCtx.destination);
+    gainNode.connect(audioContext.destination);
 
     /* Safari unlock: send a silent buffer synchronously inside the
        user gesture so the context isn't left muted. */
-    const silent = audioCtx.createBufferSource();
-    silent.buffer = audioCtx.createBuffer(1, 1, 22050);
-    silent.connect(audioCtx.destination);
+    const silent = audioContext.createBufferSource();
+    silent.buffer = audioContext.createBuffer(1, 1, 22050);
+    silent.connect(audioContext.destination);
     silent.start(0);
 }
 
@@ -64,16 +118,16 @@ function initAudio() {
  * pulse-train waveform at the given frequency.
  */
 function buildToneBuffer(freq) {
-    const sr = audioCtx.sampleRate;
+    const sampleRate = audioContext.sampleRate;
     const kappa = SIGMA * freq;
-    const periodSamples = sr / freq;
+    const periodSamples = sampleRate / freq;
 
     /* Buffer: ≥1 full period, ~1 s for freq ≥ 1 Hz */
     const numPeriods = Math.max(1, Math.round(Math.max(freq, 1)));
-    const bufLen = Math.round(numPeriods * periodSamples);
+    const sampleCount = Math.round(numPeriods * periodSamples);
 
-    const buf = audioCtx.createBuffer(1, bufLen, sr);
-    const data = buf.getChannelData(0);
+    const audioBuffer = audioContext.createBuffer(1, sampleCount, sampleRate);
+    const data = audioBuffer.getChannelData(0);
 
     if (kappa >= 0.1) {
         /* --- FOURIER FORM ---
@@ -88,8 +142,8 @@ function buildToneBuffer(freq) {
             denom += b;
             if (b < 1e-10) break;
         }
-        for (let i = 0; i < bufLen; i++) {
-            const phase = 2 * Math.PI * freq * i / sr;
+        for (let i = 0; i < sampleCount; i++) {
+            const phase = 2 * Math.PI * freq * i / sampleRate;
             let val = 0;
             for (let j = 0; j < coeffs.length; j++) {
                 val += coeffs[j] * Math.cos((j + 1) * phase);
@@ -111,8 +165,8 @@ function buildToneBuffer(freq) {
         }
         const denom = g0 - dc;
 
-        for (let i = 0; i < bufLen; i++) {
-            const t = i / sr;
+        for (let i = 0; i < sampleCount; i++) {
+            const t = i / sampleRate;
             let gt = 0;
             /* Only sum Gaussians within ±4σ of this sample */
             const nCenter = t * freq;
@@ -135,36 +189,36 @@ function buildToneBuffer(freq) {
        above ~500 Hz, so high-pitched tones don't blast your ears
        while low-frequency clicks stay audible. */
     let peak = 0;
-    for (let i = 0; i < bufLen; i++) {
+    for (let i = 0; i < sampleCount; i++) {
         const a = Math.abs(data[i]);
         if (a > peak) peak = a;
     }
     if (peak > 0) {
         const freqGain = 0.9 / Math.pow(1 + freq / 500, 0.25);
         const scale = freqGain / peak;
-        for (let i = 0; i < bufLen; i++) data[i] *= scale;
+        for (let i = 0; i < sampleCount; i++) data[i] *= scale;
     }
 
-    return buf;
+    return audioBuffer;
 }
 
 async function playTone() {
-    if (currentFreq == null) return;
-    if (!audioCtx) initAudio();
+    if (currentFrequency == null) return;
+    if (!audioContext) initAudio();
     stopTone(false);   // immediate stop – the fade-in masks any click
-    if (audioCtx.state === "suspended") await audioCtx.resume();
+    if (audioContext.state === "suspended") await audioContext.resume();
 
-    currentSrc = audioCtx.createBufferSource();
-    currentSrc.buffer = buildToneBuffer(currentFreq);
-    currentSrc.loop = true;
-    currentSrc.connect(gainNode);
+    currentSource = audioContext.createBufferSource();
+    currentSource.buffer = buildToneBuffer(currentFrequency);
+    currentSource.loop = true;
+    currentSource.connect(gainNode);
 
-    const now = audioCtx.currentTime;
+    const now = audioContext.currentTime;
     gainNode.gain.cancelScheduledValues(now);
     gainNode.gain.setValueAtTime(0, now);
     gainNode.gain.linearRampToValueAtTime(0.5, now + FADE_TIME);
 
-    currentSrc.start();
+    currentSource.start();
     updateToggleBtn();
 }
 
@@ -173,25 +227,25 @@ async function playTone() {
  *                         false → immediate stop (internal, before a new play)
  */
 function stopTone(fade) {
-    if (currentSrc) {
+    if (currentSource) {
         try {
-            if (fade && audioCtx) {
-                const now = audioCtx.currentTime;
+            if (fade && audioContext) {
+                const now = audioContext.currentTime;
                 gainNode.gain.cancelScheduledValues(now);
                 gainNode.gain.setValueAtTime(gainNode.gain.value, now);
                 gainNode.gain.linearRampToValueAtTime(0, now + FADE_TIME);
-                currentSrc.stop(now + FADE_TIME);
+                currentSource.stop(now + FADE_TIME);
             } else {
-                currentSrc.stop();
+                currentSource.stop();
             }
         } catch (_) {}
-        currentSrc = null;
+        currentSource = null;
     }
     updateToggleBtn();
 }
 
 async function toggleTone() {
-    if (currentSrc) {
+    if (currentSource) {
         stopTone(true);  // user-initiated → fade out
     } else {
         await playTone();
@@ -199,7 +253,7 @@ async function toggleTone() {
 }
 
 function updateToggleBtn() {
-    playButton.textContent = currentSrc ? "⏹ Stop" : "▶ Play";
+    playButton.textContent = currentSource ? "⏹ Stop" : "▶ Play";
 }
 
 // Frequency sampling – log-uniform
@@ -324,74 +378,22 @@ function formatCorrectAnswer(freq, format) {
     return `${formatSignificant(freq)} Hz`;
 }
 
-// Game logic
-async function nextRound() {
-    currentFreq = sampleFreq();
-
-    guessInput.disabled = false;
-    guessInput.value = "";
-    guessInput.focus();
-
-    submitButton.disabled = false;
-    submitButton.style.display = "";
-    nextButton.style.display = "none";
-    playButton.disabled = false;
-    feedback.textContent = "";
-
-    roundActive = true;
-    if (audioCtx) await playTone();
-}
-
-function submitGuess() {
-    if (!roundActive) return;
-
-    const rawGuess = guessInput.value.trim();
-    const guess = parseGuess(rawGuess);
-    if (guess == null) {
-        feedback.innerHTML =
-            '<span style="color:#c62828">Invalid input. Try: 440 Hz, 120 BPM, or C#4+25c</span>';
-        return;
-    }
-
-    roundActive = false;
-    stopTone(true);  // fade out on submit
-    playButton.disabled = true;
-
-    /* Error in octaves (log₂ ratio) */
-    const err = Math.log2(guess.hz / currentFreq);
-    guessData.push({
-        freq: currentFreq,
-        guessHz: guess.hz,
-        error: err,
-    });
-
-    feedback.textContent =
-        `Correct answer: ${formatCorrectAnswer(currentFreq, guess.format)}`;
-
-    drawGraph();
-
-    guessInput.disabled = true;
-    submitButton.style.display = "none";
-    nextButton.style.display = "";
-    nextButton.focus();
-}
-
 /* ======================================================
    Graph – Canvas 2D scatter plot
    X = frequency (log scale)
    Y = error in octaves
    ====================================================== */
 function drawGraph() {
-    const ctx = canvas.getContext("2d");
+    const context = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
 
-    const W = canvas.parentElement.clientWidth;
+    const canvasWidth = canvas.parentElement.clientWidth;
 
-    const ml = 58,
-        mr = 18,
-        mt = 14,
-        mb = 50;
-    const pw = W - ml - mr;
+    const marginLeft = 58,
+        marginRight = 18,
+        marginTop = 14,
+        marginBottom = 50;
+    const plotWidth = canvasWidth - marginLeft - marginRight;
 
     const xLo = Math.log2(MIN_FREQ);
     const xHi = Math.log2(MAX_FREQ);
@@ -402,77 +404,77 @@ function drawGraph() {
     const octavesY = 2 * yA;
 
     /* Enforce aspect ratio: 1 octave on Y = sqrt(12) × 1 octave on X */
-    const pxPerOctX = pw / octavesX;
+    const pxPerOctX = plotWidth / octavesX;
     const pxPerOctY = Math.sqrt(12) * pxPerOctX;
-    const ph = Math.round(octavesY * pxPerOctY);
-    const H = ph + mt + mb;
+    const plotHeight = Math.round(octavesY * pxPerOctY);
+    const canvasHeight = plotHeight + marginTop + marginBottom;
 
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.width = W + "px";
-    canvas.style.height = H + "px";
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvas.width = canvasWidth * dpr;
+    canvas.height = canvasHeight * dpr;
+    canvas.style.width = canvasWidth + "px";
+    canvas.style.height = canvasHeight + "px";
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const xPx = (lf) =>
-        ml + ((lf - xLo) / (xHi - xLo)) * pw;
-    const yPx = (e) => mt + ((yA - e) / (2 * yA)) * ph;
+        marginLeft + ((lf - xLo) / (xHi - xLo)) * plotWidth;
+    const yPx = (e) => marginTop + ((yA - e) / (2 * yA)) * plotHeight;
 
     /* Background */
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "#fafafa";
-    ctx.fillRect(ml, mt, pw, ph);
+    context.clearRect(0, 0, canvasWidth, canvasHeight);
+    context.fillStyle = "#fafafa";
+    context.fillRect(marginLeft, marginTop, plotWidth, plotHeight);
 
     /* --- X grid lines at octaves of the reference A --- */
-    ctx.strokeStyle = "#e0e0e0";
-    ctx.lineWidth = 1;
+    context.strokeStyle = "#e0e0e0";
+    context.lineWidth = 1;
     const refA = getRefA();
     const refALog2 = Math.log2(refA);
     for (let oct = Math.ceil(xLo - refALog2); oct <= Math.floor(xHi - refALog2); oct++) {
         const x = xPx(refALog2 + oct);
-        if (x < ml || x > ml + pw) continue;
-        ctx.beginPath();
-        ctx.moveTo(x, mt);
-        ctx.lineTo(x, mt + ph);
-        ctx.stroke();
+        if (x < marginLeft || x > marginLeft + plotWidth) continue;
+        context.beginPath();
+        context.moveTo(x, marginTop);
+        context.lineTo(x, marginTop + plotHeight);
+        context.stroke();
     }
 
     /* --- X labels at powers of 10 --- */
-    ctx.font = "11px sans-serif";
-    ctx.textBaseline = "top";
-    ctx.fillStyle = "#888";
-    ctx.textAlign = "center";
+    context.font = "11px sans-serif";
+    context.textBaseline = "top";
+    context.fillStyle = "#888";
+    context.textAlign = "center";
     [1, 10, 100, 1000, 10000].forEach((f) => {
         const x = xPx(Math.log2(f));
-        if (x < ml || x > ml + pw) return;
+        if (x < marginLeft || x > marginLeft + plotWidth) return;
         const label =
             f >= 1000 ? f / 1000 + "k" : String(f);
-        ctx.fillText(label + " Hz", x, mt + ph + 7);
+        context.fillText(label + " Hz", x, marginTop + plotHeight + 7);
     });
 
     /* --- Y grid (semitones: 12 divisions per octave) --- */
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
+    context.textAlign = "right";
+    context.textBaseline = "middle";
     for (let s = -18; s <= 18; s++) {
         const val = s / 12;
         const y = yPx(val);
         if (s === 0) {
-            ctx.strokeStyle = "#aaa";
-            ctx.lineWidth = 1.5;
+            context.strokeStyle = "#aaa";
+            context.lineWidth = 1.5;
         } else if (s % 12 === 0) {
-            ctx.strokeStyle = "#ccc";
-            ctx.lineWidth = 1;
+            context.strokeStyle = "#ccc";
+            context.lineWidth = 1;
         } else {
-            ctx.strokeStyle = "#ddd";
-            ctx.lineWidth = 0.75;
+            context.strokeStyle = "#ddd";
+            context.lineWidth = 0.75;
         }
-        ctx.beginPath();
-        ctx.moveTo(ml, y);
-        ctx.lineTo(ml + pw, y);
-        ctx.stroke();
+        context.beginPath();
+        context.moveTo(marginLeft, y);
+        context.lineTo(marginLeft + plotWidth, y);
+        context.stroke();
 
         /* Labels at 0, ±½, ±1, ±1½ */
         if (s === 0 || s === 6 || s === -6 || s === 12 || s === -12 || s === 18 || s === -18) {
-            ctx.fillStyle = "#888";
+            context.fillStyle = "#888";
             const lbl = s === 0 ? "0"
                 : s === 6 ? "+½"
                 : s === -6 ? "-½"
@@ -480,47 +482,54 @@ function drawGraph() {
                 : s === -12 ? "-1"
                 : s === 18 ? "≥+1½"
                 : "≤-1½";
-            ctx.fillText(lbl, ml - 6, y);
+            context.fillText(lbl, marginLeft - 6, y);
         }
     }
 
     /* --- Axes --- */
-    ctx.strokeStyle = "#555";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(ml, mt);
-    ctx.lineTo(ml, mt + ph);
-    ctx.lineTo(ml + pw, mt + ph);
-    ctx.stroke();
+    context.strokeStyle = "#555";
+    context.lineWidth = 1.5;
+    context.beginPath();
+    context.moveTo(marginLeft, marginTop);
+    context.lineTo(marginLeft, marginTop + plotHeight);
+    context.lineTo(marginLeft + plotWidth, marginTop + plotHeight);
+    context.stroke();
 
     /* --- Data points --- */
-    ctx.fillStyle = "#2e7d32";
+    context.fillStyle = "#2e7d32";
     for (const d of guessData) {
         const x = xPx(Math.log2(d.freq));
         const y = yPx(d.error);
         /* Clamp y to plot area so dots don't escape */
-        const cy = Math.max(mt, Math.min(mt + ph, y));
-        ctx.beginPath();
-        ctx.arc(x, cy, 3.5, 0, Math.PI * 2);
-        ctx.fill();
+        const cy = Math.max(marginTop, Math.min(marginTop + plotHeight, y));
+        context.beginPath();
+        context.arc(x, cy, 3.5, 0, Math.PI * 2);
+        context.fill();
     }
 
     /* --- Axis labels --- */
-    ctx.fillStyle = "#555";
-    ctx.font = "12px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.fillText("Frequency", ml + pw / 2, H - 14);
+    context.fillStyle = "#555";
+    context.font = "12px sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "top";
+    context.fillText("Frequency", marginLeft + plotWidth / 2, canvasHeight - 14);
 
-    ctx.save();
-    ctx.translate(13, mt + ph / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.textBaseline = "top";
-    ctx.fillText("Error (octaves)", 0, 0);
-    ctx.restore();
+    context.save();
+    context.translate(13, marginTop + plotHeight / 2);
+    context.rotate(-Math.PI / 2);
+    context.textBaseline = "top";
+    context.fillText("Error (octaves)", 0, 0);
+    context.restore();
 }
 
-// Initialisation & event wiring
+function showHintOnce() {
+    hint.classList.add("show");
+    setTimeout(() => hint.classList.remove("show"), 2000);
+    playButton.removeEventListener("mouseenter", showHintOnce);
+    playButton.removeEventListener("click", showHintOnce);
+}
+
+// Events
 playButton.addEventListener("click", toggleTone);
 submitButton.addEventListener("click", submitGuess);
 nextButton.addEventListener("click", nextRound);
@@ -533,13 +542,6 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* Volume hint: show on first hover, hide after 2s, never again */
-const hint = document.getElementById("volumeHint");
-function showHintOnce() {
-    hint.classList.add("show");
-    setTimeout(() => hint.classList.remove("show"), 2000);
-    playButton.removeEventListener("mouseenter", showHintOnce);
-    playButton.removeEventListener("click", showHintOnce);
-}
 playButton.addEventListener("mouseenter", showHintOnce);
 playButton.addEventListener("click", showHintOnce);
 
