@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="465" viewBox="0 0 900 465">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#bcbdd0"/>
+    </marker>
+    <style>
+      .bg{fill:#161923}
+      .b{fill:#252936;stroke:#5fa8d3;stroke-width:1.5;rx:6}
+      .p{fill:#252936;stroke:#7eb77f;stroke-width:1.5;rx:6}
+      .c{fill:#252936;stroke:#d6a65d;stroke-width:1.5;rx:6}
+      .g{fill:#252936;stroke:#8a8c9e;stroke-width:1.2;stroke-dasharray:6 6;rx:8}
+      .inner{fill:#1e222e;stroke:#5fa8d3;stroke-width:1.2;rx:5}
+      .innerp{fill:#1e222e;stroke:#7eb77f;stroke-width:1.2;rx:5}
+      .t{fill:#bcbdd0;font:16px Open Sans,Arial,sans-serif;text-anchor:middle;dominant-baseline:middle}
+      .s{fill:#8a8c9e;font:13px Open Sans,Arial,sans-serif;text-anchor:middle;dominant-baseline:middle}
+      .ar{stroke:#bcbdd0;stroke-width:1.6;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <rect class="bg" width="900" height="465"/>
+
+  <rect class="c" x="35" y="42" width="110" height="54"/>
+  <text class="t" x="90" y="69">Client prompt</text>
+
+  <rect class="p" x="175" y="42" width="105" height="54"/>
+  <text class="t" x="227" y="69">Tokenizer</text>
+
+  <rect class="p" x="310" y="42" width="125" height="54"/>
+  <text class="t"><tspan x="372" y="61">Token</tspan><tspan x="372" y="82">embedding</tspan></text>
+
+  <rect class="p" x="310" y="128" width="125" height="54"/>
+  <text class="t"><tspan x="372" y="147">Position</tspan><tspan x="372" y="168">embedding</tspan></text>
+
+  <rect class="p" x="475" y="85" width="115" height="54"/>
+  <text class="t"><tspan x="532" y="104">Add</tspan><tspan x="532" y="125">embeddings</tspan></text>
+
+  <rect class="p" x="620" y="85" width="95" height="54"/>
+  <text class="t" x="667" y="112">Encrypt</text>
+
+  <rect class="g" x="325" y="200" width="250" height="150"/>
+  <text class="s" x="450" y="222">Transformer block x4</text>
+  <rect class="innerp" x="360" y="242" width="180" height="36"/>
+  <text class="t" x="450" y="260">Attention + residual</text>
+  <rect class="inner" x="360" y="298" width="180" height="36"/>
+  <text class="t" x="450" y="316">FFN + residual</text>
+
+  <rect class="b" x="390" y="384" width="120" height="54"/>
+  <text class="t" x="450" y="411">LM head</text>
+
+  <rect class="b" x="540" y="384" width="120" height="54"/>
+  <text class="t"><tspan x="600" y="402">Encrypted</tspan><tspan x="600" y="423">logits</tspan></text>
+
+  <rect class="p" x="690" y="384" width="90" height="54"/>
+  <text class="t" x="735" y="411">Decrypt</text>
+
+  <rect class="c" x="810" y="384" width="75" height="54"/>
+  <text class="t" x="847" y="411">Sample</text>
+
+  <path class="ar" d="M145 69h30"/>
+  <path class="ar" d="M280 69h30"/>
+  <path class="ar" d="M435 69l40 43"/>
+  <path class="ar" d="M435 155l40-43"/>
+  <path class="ar" d="M590 112h30"/>
+  <path class="ar" d="M667 139v30H450v31"/>
+  <path class="ar" d="M450 278v20"/>
+  <path class="ar" d="M450 350v34"/>
+  <path class="ar" d="M510 411h30"/>
+  <path class="ar" d="M660 411h30"/>
+  <path class="ar" d="M780 411h30"/>
+</svg>

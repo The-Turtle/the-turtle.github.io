@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Mathematics research papers." />
+    <title>Math Research | Holden Mui</title>
+    <link rel="icon" href="../files/images/turtleicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="../style.css" />
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <script src="../site.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <a class="site-name" href="../index.html" aria-label="Holden Mui home">
+        <img src="../files/images/turtleicon.png" alt="" />
+        <span>Holden Mui</span>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a class="nav-link" href="../index.html">Home</a>
+        <details>
+          <summary>Career</summary>
+          <div class="dropdown-content">
+            <a href="../career/openai.html">OpenAI</a>
+            <a href="../career/0xparc.html">0xPARC</a>
+            <a href="../fhe-guide/index.html">FHE Guide</a>
+            <a href="../career/coursework.html">Coursework</a>
+            <a href="../career/resume.html">Resume</a>
+          </div>
+        </details>
+        <details>
+          <summary>Math</summary>
+          <div class="dropdown-content">
+            <a href="../math/research.html">Research</a>
+            <a href="../math/talks.html">Talks</a>
+            <a href="../math/teaching.html">Teaching</a>
+            <a href="../math/olympiad.html">Olympiad</a>
+            <a href="../math/puzzles.html">Puzzles</a>
+          </div>
+        </details>
+        <details>
+          <summary>Music</summary>
+          <div class="dropdown-content">
+            <a href="../music/piano.html">Piano</a>
+            <a href="../music/composition.html">Composition</a>
+            <a href="../music/arrangements.html">Arrangements</a>
+            <a href="../other/events.html">Events</a>
+            <a href="../music/games/">Games</a>
+          </div>
+        </details>
+        <details>
+          <summary>Other</summary>
+          <div class="dropdown-content">
+            <a href="../other/writing.html">Writing</a>
+            <a href="../other/gallery.html">Gallery</a>
+            <a href="../other/news.html">News</a>
+            <a href="../other/links.html">Links</a>
+            <a href="../other/sfhills.html">SF Hills</a>
+          </div>
+        </details>
+      </nav>
+    </header>
+
+    <main>
+      <h1>Research</h1>
+      <p>Here are my papers in combinatorics and probability.</p>
+      <h3>Coalescence Probabilities of Cycle Products</h3>
+      <p>
+        When two cyclic rearrangements are performed in succession, how likely are selected elements to end up in the same cycle?
+      </p>
+      <p>
+        Generalizing a formula of Stanley, we prove combinatorially that the probability that \(1, 2, \dots, k\) are contained in the same cycle of a product of two random \(n\)-cycles is
+        \[\frac{1}{k} + \frac{4 (-1)^n}{ \binom{2k}{k}} \sum_{\substack{1 \leq i \leq k-1 \\ i \not\equiv n \bmod 2}} \binom{2k-1}{k+i} \left(\frac{1}{n+i+1} - \frac{1}{n-i}\right).\]
+      </p>
+      <p>
+        <a href="https://link.springer.com/article/10.1007/s00026-026-00810-4" target="_blank">Published version</a> in the <em>Annals of Combinatorics</em> (2026);
+        <a href="https://arxiv.org/abs/2409.01415" target="_blank">Preprint</a> (2024).
+      </p>
+      <hr>
+      <h3>Flip Graphs on Self-Complementary Ideals of Chain Products (with Serena An)</h3>
+      <p>
+        How far apart can two symmetric configurations be if we transform one into the other through a sequence of small moves?
+      </p>
+      <p>
+        In this paper, we introduce a flip operation on self-complementary ideals of chain product posets and study the resulting flip graphs.
+        We give asymptotics for the number of vertices in these graphs, compute their diameters, and give bounds for their radii.
+        We also define similar flip operations on self-complementary ideals of the chain product \([2r] \times [2r] \times [2r]\) satisfying additional symmetries, and we achieve similar results for the resulting flip graphs.
+      </p>
+      <p>
+        <a href="https://arxiv.org/abs/2401.01457" target="_blank">Preprint</a> (2024).
+      </p>
+      <hr>
+      <h3>The Upper Tail of Cycle Distributions in Sparse Erdős-Rényi Random Graphs (with Tomasz Ślusarczyk)</h3>
+      <p>
+        How likely is a random network with few connections to contain unusually many loops of a fixed length?
+      </p>
+      <p>
+        The distribution of subgraph counts in Erdős-Rényi random graphs is of great interest in extremal combinatorics.
+        In this paper, we analyze the upper tail of the \(k\)-cycle count in the sparse (constant-degree) regime for fixed \(k\), in the limit as the number of vertices tends to infinity.
+        We provide asymptotically sharp bounds for the probability the graph contains a large number of \(k\)-cycles via a coring argument;
+        the logarithmic probability of containing \(t\) cycles is asymptotically equal to the logarithmic probability of containing \(t\) disjoint \(k\)-cycles or containing a clique with \(t\) cycles.
+      </p>
+      <p>
+        <a href="https://math.mit.edu/research/undergraduate/spur/documents/2022/Mui_Slusarczyk.pdf" target="_blank">Paper (PDF)</a>, MIT UROP+ (2022).
+      </p>
+    </main>
+  </body>
+
+</html>

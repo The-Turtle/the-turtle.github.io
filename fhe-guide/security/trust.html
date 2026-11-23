@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="../../files/images/turtleicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <header id="site-header"></header>
+
+    <main>
+      <p class="post-breadcrumb" id="post-breadcrumb"></p>
+      <article>
+        <h1>Trust assumptions</h1>
+
+        <p>
+          The security of a CKKS deployment depends on a number
+          of <em>trust assumptions</em> about its participants.
+          The standard assumption is that everyone is
+          <strong>honest-but-curious</strong>: each party follows
+          the protocol exactly as specified, but may try to
+          extract whatever information they can from the messages
+          they legitimately see. Below we describe what each
+          participant must be honest about, and what can go wrong
+          if they aren't.
+        </p>
+
+        <h2 id="server">The server</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          The server is expected to execute the agreed-upon
+          arithmetic circuit faithfully. A malicious server can
+          hand the decryptors a ciphertext that actually decrypts
+          to sensitive information &mdash; for instance, a single
+          party's raw input &mdash; while telling them it is the
+          result of a computation whose output was safe to reveal.
+          The decryptors, trusting that claim, decrypt the
+          ciphertext and unwittingly publish the leaked
+          information.
+        </p>
+
+        <h2 id="multiparty-participants">Multiparty participants</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          During
+          <a href="../internals/multiparty.html">multiparty key generation and decryption</a>,
+          each party is expected to follow the protocol exactly
+          &mdash; sampling its secret-key shard honestly,
+          broadcasting the correct public-key, relinearization-key,
+          and rotation-key contributions, and producing well-formed
+          partial decryptions at the end. A party that deviates
+          from the protocol can corrupt the joint keys or the final
+          decryption, so the result the rest of the parties recover
+          is wrong or nonsense.
+        </p>
+
+        <h2 id="encryptors">Encryptors</h2>
+        <p><b>[WORK IN PROGRESS]</b></p>
+        <p>
+          Whoever performs an encryption is expected to encrypt
+          the actual input they are contributing &mdash; not a
+          probe of their own design. A malicious encryptor can
+          submit a specially crafted plaintext to try to extract
+          information about either (a) the function being computed
+          in a standard FHE use case, or (b) the other parties'
+          inputs in a multiparty use case. This can be partially
+          mitigated by interleaving fake <em>trial</em> runs with
+          real computations: since the cheater cannot tell which
+          run is real, they can cheat at most once before being
+          detected.
+        </p>
+      </article>
+      <nav class="post-nav" id="post-nav"></nav>
+    </main>
+
+    <script>window.PAGE = { kind: 'post', section: 'security', slug: 'trust' };</script>
+    <script src="../posts.js"></script>
+    <script src="../layout.js"></script>
+  </body>
+</html>

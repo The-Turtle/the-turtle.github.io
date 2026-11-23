@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="My year at 0xPARC building a performant, production-grade fully homomorphic encryption library from the ground up: why, how, and what we learned." />
+    <title>A Guide to Fully Homomorphic Encryption | Holden Mui</title>
+    <link rel="icon" href="../files/images/turtleicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header id="site-header"></header>
+
+    <main>
+      <h1>A Guide to Fully Homomorphic Encryption</h1>
+      <p>
+        I've spent one year at
+        <a href="https://0xparc.org/" target="_blank">0xPARC</a>
+        building a performant, production-grade
+        <a href="https://en.wikipedia.org/wiki/Homomorphic_encryption" target="_blank">fully homomorphic encryption</a>
+        (FHE) library from the ground up. As a way to wrap up my time
+        at 0xPARC and pass on what I've learned to the next generation
+        of FHE builders (LLMs included!), I made this guide. It's
+        written with a variety of archetypes in mind, from founders
+        who want to build with our library and engineers who want a
+        deeper understanding of the underlying mathematics, to
+        interns, researchers, and cryptographers who will work on the
+        system itself &mdash; or, more broadly, anyone curious about
+        what 0xPARC does.
+      </p>
+      <p>
+        Depending on what you're here for, different parts will be
+        more useful:
+      </p>
+      <ul>
+        <li>If you want to know what 0xPARC is about or what FHE is at a high level, read <a href="introduction/index.html">Part&nbsp;1</a>.</li>
+        <li>If you want to use our system to build something, read <a href="building/index.html">Part&nbsp;2</a>.</li>
+        <li>If you want to know every last detail of how CKKS (a specific instantiation of FHE) works at a technical level, read <a href="internals/index.html">Part&nbsp;3</a>.</li>
+        <li>If you like compilers or GPU engineering, read <a href="implementation/index.html">Part&nbsp;4</a>.</li>
+        <li>If you're a security engineer wondering whether our system is secure, read <a href="security/index.html">Part&nbsp;5</a>.</li>
+        <li>If you want to know how 0xPARC is thinking about FHE, read <a href="takeaways/index.html">Part&nbsp;6</a>.</li>
+      </ul>
+      <p>
+        Today, the technical content on FHE is scattered across
+        ePrint papers and GitHub codebases. What
+        writing exists tends toward two extremes: high-level
+        surveys that don't explain any details, or deep dives into
+        a single optimization. This guide aims to fill the gap: it
+        is the first full-stack explanation of how FHE works
+        end-to-end, and how the resulting system manages to be
+        genuinely fast. I hope it plays some part in bringing
+        more people into the FHE world.
+      </p>
+
+      <h2>How to read this guide</h2>
+      <p>
+        Two conventions show up throughout this guide: lies and
+        exercises.
+      </p>
+      <p>
+        <b>Lies:</b> for ease of understanding, the text
+        occasionally tells little lies. Lies are marked with a
+        dotted underline
+        <span class="lie" data-truth="like this! Hover (or tap on mobile) to see the real story behind any underlined phrase.">like this</span>;
+        hover (or tap on mobile) to see the real story.
+      </p>
+      <p>
+        <b>Exercises:</b> the text also drops in short exercises,
+        rendered inline as tinted boxes like the one below.
+        They're designed to slow you down and make sure you're
+        understanding the material.
+      </p>
+      <div class="exercise-body">
+        <b>Exercise:</b> like this!
+      </div>
+
+      <h2>Contents</h2>
+      <ul class="post-list" id="sections"></ul>
+
+      <p>
+        <b>Note:</b> CKKS is just one specific instantiation of FHE;
+        <a href="introduction/landscape.html">Section&nbsp;1.2</a>
+        surveys the broader landscape of FHE schemes, and
+        <a href="building/index.html">Part&nbsp;2</a> explains why we
+        chose to build CKKS.
+      </p>
+
+      <h2>Other resources</h2>
+      <p>
+        In addition to this guide, here are some existing resources
+        for learning about CKKS.
+      </p>
+      <ul>
+        <li>
+          <a href="https://openmined.org/blog/ckks-explained-part-1-simple-encoding-and-decoding/" target="_blank">OpenMined's “CKKS explained” series</a>
+          (2020) covers CKKS specifically and is great for beginners: it implements the basic operations
+          from scratch, but doesn't cover any optimizations or
+          bootstrapping.
+        </li>
+        <li>
+          <a href="https://arxiv.org/abs/2503.05136" target="_blank">Ronny Ko's <i>The Beginner's Textbook for Fully Homomorphic Encryption</i></a>
+          (2025) is a general FHE textbook, very thorough on the
+          mathematics. It assumes little background, building up
+          modular arithmetic and rings from scratch, and covers many
+          schemes, but it does not get into any optimizations.
+        </li>
+        <li>
+          <a href="https://www.jeremykun.com/2024/05/04/fhe-overview/" target="_blank">Jeremy Kun's high-level technical overview</a>
+          (2024) is a general survey of FHE, but it mostly stays at
+          the API level and does not cover how the pieces are
+          implemented.
+        </li>
+        <li>
+          <a href="https://eprint.iacr.org/2022/1602" target="_blank">Marcolla et al.'s survey</a>
+          (2022) is a thorough but theory-heavy survey of FHE in general.
+        </li>
+        <li>
+          <a href="https://openfhe-development.readthedocs.io/" target="_blank">OpenFHE's documentation</a>
+          (2022) is a good place to learn by reading a production FHE
+          library that covers CKKS among other schemes, though it reads
+          like codebase documentation rather than an exposition.
+        </li>
+      </ul>
+      <p>
+        Each of these is great, and each strikes its own balance
+        between depth and breadth. This guide is meant to complement
+        them by doing three things that none of the above do: explain
+        CKKS with all of its optimizations in mind, show how everything
+        is actually built in practice, and explain how real programs
+        are built with CKKS. The goal of this guide is to convince you not
+        just that CKKS is possible, but that it is performant.
+      </p>
+
+      <p>
+        Please email
+        <a href="mailto:hello@holdenmui.com">hello@holdenmui.com</a>
+        for comments and/or corrections!
+      </p>
+
+      <nav class="post-nav">
+        <span class="placeholder"></span>
+        <a class="next" href="introduction/index.html">
+          <span class="label">Next &rarr;</span>
+          <span class="post-nav-title">Part 1. Introduction to FHE</span>
+        </a>
+      </nav>
+    </main>
+
+    <script>window.PAGE = { kind: 'landing', depth: 1 };</script>
+    <script src="posts.js"></script>
+    <script src="layout.js"></script>
+  </body>
+</html>

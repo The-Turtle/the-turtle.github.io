@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="This page contains a complete list and interactive map of hills in San Francisco with at least 16 meters of topographic prominence, with elevations and prominences computed from contour data." />
+        <title>Hills in San Francisco - Holden Mui</title>
+        <link
+            rel="icon"
+            href="../files/images/turtleicon.png"
+            type="image/x-icon"
+        />
+        <link rel="stylesheet" href="../style.css" />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        />
+        <style>
+            #map {
+                height: 500px;
+                width: 100%;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                z-index: 0;
+            }
+
+            .map-options {
+                text-align: right;
+                margin-bottom: 20px;
+            }
+
+            .hills-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+                display: block;
+                overflow-x: auto;
+            }
+
+            .hills-table th {
+                background-color: var(--turtle-green);
+                color: white;
+                padding: 8px 12px;
+                text-align: left;
+            }
+
+            .hills-table th:first-child {
+                border-top-left-radius: 8px;
+            }
+
+            .hills-table th:last-child {
+                border-top-right-radius: 8px;
+            }
+
+            .hills-table td {
+                padding: 8px 12px;
+                border-bottom: 1px solid #ddd;
+                text-align: left;
+            }
+
+            .hills-table :is(td, th):nth-child(3),
+            .hills-table :is(td, th):nth-child(4) {
+                text-align: right;
+            }
+
+            .hill-picture img {
+                display: block;
+                width: 96px;
+                height: 96px;
+                max-width: none;
+                object-fit: cover;
+                border-radius: 6px;
+            }
+
+            .hill-picture :focus-visible {
+                outline: 2px solid var(--turtle-green);
+                outline-offset: 3px;
+            }
+
+            #hill-photo-preview {
+                position: fixed;
+                width: min(320px, calc(100vw - 24px), calc(100vh - 24px));
+                border: 3px solid white;
+                border-radius: 10px;
+                box-sizing: border-box;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                pointer-events: none;
+                z-index: 1000;
+            }
+
+            .hills-table tr:hover {
+                background-color: #e0f7fa;
+            }
+
+            .display-options {
+                margin-top: 20px;
+                text-align: right;
+            }
+
+            #hill-tier-list {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            #hill-tier-list th {
+                width: 90px;
+                padding: 8px;
+                font-size: 32px;
+                text-align: center;
+            }
+
+            .tier-hills {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+                gap: 10px;
+                padding: 10px;
+                background: #f5f6f8;
+                text-align: center;
+            }
+
+            .tier-hills .hill-picture {
+                min-width: 0;
+            }
+
+            .tier-hills a {
+                display: block;
+                position: relative;
+                border-radius: 10px;
+            }
+
+            .tier-hills img {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1;
+                border-radius: 10px;
+            }
+
+            .tier-hills span {
+                position: absolute;
+                bottom: 5%;
+                left: 0;
+                width: 100%;
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+                pointer-events: none;
+            }
+        </style>
+        <script src="../site.js" defer></script>
+    </head>
+    <body>
+        <header>
+            <a class="site-name" href="../index.html" aria-label="Holden Mui home">
+                <img src="../files/images/turtleicon.png" alt="" />
+                <span>Holden Mui</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a class="nav-link" href="../index.html">Home</a>
+                <details>
+                    <summary>Career</summary>
+                    <div class="dropdown-content">
+                        <a href="../career/openai.html">OpenAI</a>
+                        <a href="../career/0xparc.html">0xPARC</a>
+                        <a href="../fhe-guide/index.html">FHE Guide</a>
+                        <a href="../career/coursework.html">Coursework</a>
+                        <a href="../career/resume.html">Resume</a>
+                    </div>
+                </details>
+                <details>
+                    <summary>Math</summary>
+                    <div class="dropdown-content">
+                        <a href="../math/research.html">Research</a>
+                        <a href="../math/talks.html">Talks</a>
+                        <a href="../math/teaching.html">Teaching</a>
+                        <a href="../math/olympiad.html">Olympiad</a>
+                        <a href="../math/puzzles.html">Puzzles</a>
+                    </div>
+                </details>
+                <details>
+                    <summary>Music</summary>
+                    <div class="dropdown-content">
+                        <a href="../music/piano.html">Piano</a>
+                        <a href="../music/composition.html">Composition</a>
+                        <a href="../music/arrangements.html">Arrangements</a>
+                        <a href="../other/events.html">Events</a>
+                        <a href="../music/games/">Games</a>
+                    </div>
+                </details>
+                <details>
+                    <summary>Other</summary>
+                    <div class="dropdown-content">
+                        <a href="../other/writing.html">Writing</a>
+                        <a href="../other/gallery.html">Gallery</a>
+                        <a href="../other/news.html">News</a>
+                        <a href="../other/links.html">Links</a>
+                        <a href="../other/sfhills.html">SF Hills</a>
+                    </div>
+                </details>
+            </nav>
+        </header>
+
+        <main>
+            <h1>Hills in San Francisco</h1>
+            <p>
+                This is a complete list of hills in San Francisco with at least
+                <span id="prominence-cutoff">16 meters</span> of prominence.
+                Elevations and prominences were computed from publicly available
+                contour data and rounded to the nearest
+                <span id="height-unit-word">meter</span>. The Farallon Islands
+                are excluded.
+            </p>
+            <div id="map"></div>
+            <div class="map-options">
+                <label>
+                    <input type="checkbox" id="include-honorable" />
+                    Include honorable mentions
+                </label>
+            </div>
+            <h2 id="tier-list-heading">Hill Tier List</h2>
+            <table id="hill-tier-list" aria-labelledby="tier-list-heading">
+                <tbody id="tier-list-tbody"></tbody>
+            </table>
+            <h2>Hills by Prominence</h2>
+            <table id="hills-table" class="hills-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th data-height-label="Elevation">Elevation (m)</th>
+                        <th data-height-label="Prominence">Prominence (m)</th>
+                        <th>Photo</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="hills-tbody"></tbody>
+            </table>
+            <h2>Honorable Mentions</h2>
+            <table id="honorable-table" class="hills-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th data-height-label="Elevation">Elevation (m)</th>
+                        <th data-height-label="Prominence">Prominence (m)</th>
+                        <th>Photo</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="honorable-tbody"></tbody>
+            </table>
+            <div class="display-options">
+                <label>
+                    <input type="checkbox" id="use-feet" />
+                    Show elevations and prominences in feet
+                </label>
+            </div>
+            <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
+                Reach out to <a href="mailto:hello@holdenmui.com">hello@holdenmui.com</a> for questions or corrections!
+            </p>
+        </main>
+
+        <img id="hill-photo-preview" hidden alt="" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="sfhills.js"></script>
+    </body>
+</html>

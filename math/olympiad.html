@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="A collection of original math olympiad problems for competitions such as USAMO, TST, and more." />
+        <title>Math Olympiad Problems | Holden Mui</title>
+        <link
+            rel="icon"
+            href="../files/images/turtleicon.png"
+            type="image/x-icon"
+        />
+        <link rel="stylesheet" href="../style.css" />
+        <script
+            id="MathJax-script"
+            async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+        ></script>
+        <script src="../site.js" defer></script>
+    </head>
+    <body>
+        <header>
+            <a class="site-name" href="../index.html" aria-label="Holden Mui home">
+                <img src="../files/images/turtleicon.png" alt="" />
+                <span>Holden Mui</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a class="nav-link" href="../index.html">Home</a>
+                <details>
+                    <summary>Career</summary>
+                    <div class="dropdown-content">
+                        <a href="../career/openai.html">OpenAI</a>
+                        <a href="../career/0xparc.html">0xPARC</a>
+                        <a href="../fhe-guide/index.html">FHE Guide</a>
+                        <a href="../career/coursework.html">Coursework</a>
+                        <a href="../career/resume.html">Resume</a>
+                    </div>
+                </details>
+                <details>
+                    <summary>Math</summary>
+                    <div class="dropdown-content">
+                        <a href="../math/research.html">Research</a>
+                        <a href="../math/talks.html">Talks</a>
+                        <a href="../math/teaching.html">Teaching</a>
+                        <a href="../math/olympiad.html">Olympiad</a>
+                        <a href="../math/puzzles.html">Puzzles</a>
+                    </div>
+                </details>
+                <details>
+                    <summary>Music</summary>
+                    <div class="dropdown-content">
+                        <a href="../music/piano.html">Piano</a>
+                        <a href="../music/composition.html">Composition</a>
+                        <a href="../music/arrangements.html">Arrangements</a>
+                        <a href="../other/events.html">Events</a>
+                        <a href="../music/games/">Games</a>
+                    </div>
+                </details>
+                <details>
+                    <summary>Other</summary>
+                    <div class="dropdown-content">
+                        <a href="../other/writing.html">Writing</a>
+                        <a href="../other/gallery.html">Gallery</a>
+                        <a href="../other/news.html">News</a>
+                        <a href="../other/links.html">Links</a>
+                        <a href="../other/sfhills.html">SF Hills</a>
+                    </div>
+                </details>
+            </nav>
+        </header>
+
+        <main>
+            <h1>Olympiad</h1>
+            <p>
+                I am a problem author for math olympiads. Here is a selection of
+                some of the problems I've written.
+            </p>
+            <div class="toc">
+                <p>Quick links:</p>
+                <ul>
+                    <li>
+                        <a href="#2026-usemo-eastern-zone-problem-4"
+                            >2026 USEMO (Eastern Zone) Problem 4</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2026-amm-problem-5">2026 AMM Problem 5</a>
+                    </li>
+                    <li>
+                        <a href="#2026-amm-problem-3">2026 AMM Problem 3</a>
+                    </li>
+                    <li>
+                        <a href="#2025-usemo-problem-3">2025 USEMO Problem 3</a>
+                    </li>
+                    <li>
+                        <a href="#2025-usa-tst-problem-2"
+                            >2025 USA TST Problem 2</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2024-usa-tstst-problem-5"
+                            >2024 USA TSTST Problem 5</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2023-mpfg-olympiad-problem-4"
+                            >2023 MPfG Olympiad Problem 4</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2023-usamts-round-2-problem-4"
+                            >2023 USAMTS Round 2 Problem 4</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2023-usemo-problem-2">2023 USEMO Problem 2</a>
+                    </li>
+                    <li>
+                        <a href="#2023-usa-tstst-problem-9"
+                            >2023 USA TSTST Problem 9</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2023-usa-tstst-problem-6"
+                            >2023 USA TSTST Problem 6</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2023-elmo-problem-3">2023 ELMO Problem 3</a>
+                    </li>
+                    <li>
+                        <a href="#2023-hmic-problem-3">2023 HMIC Problem 3</a>
+                    </li>
+                    <li>
+                        <a href="#2023-hmic-problem-2">2023 HMIC Problem 2</a>
+                    </li>
+                    <li>
+                        <a href="#2023-usamo-problem-3"
+                            >2023 USAMO Problem 3 / USAJMO Problem 3</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2023-usamo-problem-1"
+                            >2023 USAMO Problem 1 / USAJMO Problem 2</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2023-february-hmmt-team-round-problem-4"
+                            >2023 February HMMT Team Round Problem 4</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2022-usemo-problem-1">2022 USEMO Problem 1</a>
+                    </li>
+                    <li>
+                        <a href="#2022-usa-tstst-problem-1"
+                            >2022 USA TSTST Problem 1</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2022-elmo-problem-4">2022 ELMO Problem 4</a>
+                    </li>
+                    <li>
+                        <a href="#2022-usamo-problem-4"
+                            >2022 USAMO Problem 4 / USAJMO Problem 5</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2022-usajmo-problem-1"
+                            >2022 USAJMO Problem 1</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2021-usa-tstst-problem-7"
+                            >2021 USA TSTST Problem 7</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2021-usa-tstst-problem-4"
+                            >2021 USA TSTST Problem 4</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2021-usa-tstst-problem-1"
+                            >2021 USA TSTST Problem 1</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#2021-usemo-problem-1">2021 USEMO Problem 1</a>
+                    </li>
+                    <li>
+                        <a href="#2019-elmo-problem-2">2019 ELMO Problem 2</a>
+                    </li>
+                </ul>
+            </div>
+            <hr />
+            <h2 id="2026-usemo-eastern-zone-problem-4">
+                2026 USEMO (Eastern Zone) Problem 4
+            </h2>
+            <div class="shaded-box">
+                <p>
+                    Let \(B\) and \(C\) be fixed points inside circle
+                    \(\omega\), and let \(\overline{BC}\) meet \(\omega\)
+                    at \(A\) and \(D\). Let \(P\) be a point on
+                    \(\omega\), and let \(\overline{PB}\) and
+                    \(\overline{PC}\) meet \(\omega\) again at \(X\) and
+                    \(Y\), respectively. Prove that as \(P\) varies,
+                    \((ABX)\) and \((CDY)\)'s external tangents concur on
+                    two fixed lines.
+                </p>
+            </div>
+            <p>
+                (<a href="https://aops.com/community/p39628798" target="_blank">AoPS thread</a>,
+                <a href="../files/proposals/2026usemo4.pdf" target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2026-amm-problem-5">2026 AMM Problem 5</h2>
+            <div class="shaded-box">
+                <p>
+                    In \(\mathbb{R}^3\), tetrahedra \(ABDE\), \(BCEF\), and
+                    \(CAFD\) are congruent. Line \(\ell\) intersects
+                    \(\overline{AD}\), \(\overline{BE}\), and
+                    \(\overline{CF}\). Prove that \(\ell\) meets \((ABC)\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p38218368"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2026amm5.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2026-amm-problem-3">2026 AMM Problem 3</h2>
+            <div class="shaded-box">
+                <p>
+                    Let \(n\) be a positive integer. Prove that there is some
+                    positive integer \(k\) for which
+                    \[a_1! + a_2! + \dots + a_n! + k\]
+                    is never square for any choice of positive integers
+                    \(a_1, a_2, \dots, a_n\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p38218349"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2026amm3.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2025-usemo-problem-3">2025 USEMO Problem 3</h2>
+            <div class="shaded-box">
+                <p>
+                    2025 black and white stones are arranged in a \(45 \times
+                    45\) grid. A set of four stones is <em>special</em> if the
+                    four stones form a \(2 \times 2\) square, the top-left stone
+                    and the bottom-right stone are both black, and the
+                    bottom-left stone and top-right stone are both white. A
+                    <em>move</em>
+                    consists of inverting the colors of any special set of four
+                    stones.
+                    <ol type="a">
+                        <li>Prove that it is impossible to make infinitely many moves.</li>
+                        <li>Across all possible initial configurations, what is the maximum number of moves that can be made?</li>
+                    </ol>
+                </p>
+            </div>
+            <p>
+                (<a href="https://aops.com/community/c6h3702124" , target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2025usemo3.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2025-usa-tst-problem-2">2025 USA TST Problem 2</h2>
+            <div class="shaded-box">
+                <p>
+                    Let \(a_1, a_2, \dots\) and \(b_1, b_2, \dots\) be sequences
+                    of real numbers for which \(a_1 > b_1\) and \[a_{n+1} =
+                    a_n^2 - 2b_n\] \[b_{n+1} = b_n^2 - 2a_n\] for all positive
+                    integers \(n\). Prove that \(a_1, a_2, \dots\) is eventually
+                    increasing.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p33455233"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2025tst2.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2024-usa-tstst-problem-5">2024 USA TSTST Problem 5</h2>
+            <div class="shaded-box">
+                <p>
+                    Let \(n\) be a positive integer. Prove that among the first
+                    \(n\) multiples of three, there are more numbers with an
+                    even number of 1s in binary than numbers with an odd number
+                    of 1s in binary.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p31007010"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2024tstst5.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-mpfg-olympiad-problem-4">
+                2023 MPfG Olympiad Problem 4
+            </h2>
+            <div class="shaded-box">
+                <p>
+                    Let \(O = (0,0)\) and call a lattice triangle \(ABC\)
+                    <em>marine</em> if \([ABO] = [BCO] = [CAO] = \frac{1}{2}\).
+                    Find all points in \(\mathbb{R}^2\) that don't lie in the
+                    interior of any marine triangle.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p29323732"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023mpfg4.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-usamts-round-2-problem-4">
+                2023 USAMTS Round 2 Problem 4
+            </h2>
+            <div class="shaded-box">
+                <p>
+                    \(ABC\)'s incircle has center \(I\) and is tangent to
+                    \(\overline{BC}\), \(\overline{CA}\), and \(\overline{AB}\)
+                    at \(D\), \(E\), and \(F\). If \((ADI)\) intersects
+                    \(\overline{AB}\) and \(\overline{AC}\) again at \(X\) and
+                    \(Y\), prove \(\overline{EF}\) bisects \(\overline{XY}\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p29309230"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023usamts2p4.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-usemo-problem-2">2023 USEMO Problem 2</h2>
+            <div class="shaded-box">
+                <p>
+                    Each point in the plane is labeled with a real number. Prove
+                    that there exist two distinct points \(P\) and \(Q\) such
+                    that their labels differ by less than the distance from
+                    \(P\) to \(Q\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p28992221"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023usemo2.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-usa-tstst-problem-9">2023 USA TSTST Problem 9</h2>
+            <div class="shaded-box">
+                <p>
+                    For every pair of integers \(a, b \in \mathbb{Z}^+\) and
+                    function \(f: \mathbb{Z}/a\mathbb{Z} \to
+                    \mathbb{Z}/b\mathbb{Z}\), let \(\Delta f :
+                    \mathbb{Z}/a\mathbb{Z} \to \mathbb{Z}/b\mathbb{Z}\) denote
+                    the function \(n \mapsto f(n+1) - f(n)\). In terms of \(a\)
+                    and \(b\), determine the number of functions \(f :
+                    \mathbb{Z}/a\mathbb{Z} \to \mathbb{Z}/b\mathbb{Z}\) for
+                    which \(\Delta^N f = f\) for some \(N \in \mathbb{Z}^+\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p28015688"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023tstst9.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-usa-tstst-problem-6">2023 USA TSTST Problem 6</h2>
+            <div class="shaded-box">
+                <p>
+                    Let distinct points \(P\) and \(Q\) lie inside scalene
+                    triangle \(ABC\). Suppose that the angle bisectors of
+                    \(\angle PAQ\), \(\angle PBQ\), and \(\angle PCQ\) are
+                    altitudes of triangle \(ABC\). Prove that the midpoint of
+                    \(\overline{PQ}\) lies on the Euler line of triangle
+                    \(ABC\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p28015708"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023tstst6.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-elmo-problem-3">2023 ELMO Problem 3</h2>
+            <div class="shaded-box">
+                <p>
+                    Quadrilaterals \(ABCD \sim A_1B_1C_1D_1 \sim A_2B_2C_2D_2\)
+                    lie in the plane such that \[ \overline{A_1B_2} \subset
+                    \overline{AB}, \: \overline{B_1C_2} \subset \overline{BC},
+                    \: \overline{C_1D_2} \subset \overline{CD}, \text{ and }
+                    \overline{D_1A_2} \subset \overline{DA}. \] Prove that
+                    \(\overline{AC} \cap \overline{BD}\), \(\overline{A_1C_1}
+                    \cap \overline{B_1D_1}\), and \(\overline{A_2C_2} \cap
+                    \overline{B_2D_2}\) are collinear.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p28014215"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023elmo3.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-hmic-problem-3">2023 HMIC Problem 3</h2>
+            <div class="shaded-box">
+                <p>
+                    A circle through \(B\) and a circle through \(C\) are both
+                    externally tangent to the incircle and \(A\)-excircle of
+                    \(\triangle ABC\). Prove \(\overline{BC}\) cuts the circles
+                    into congruent chords.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p27587348"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023hmic3.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-hmic-problem-2">2023 HMIC Problem 2</h2>
+            <div class="shaded-box">
+                <p>
+                    Find all primes \(p \geq 5\) for which \[ \left\{2^{-1},
+                    3^{-1}, \ldots, \left(\frac{p-1}{2}\right)^{-1}\right\} =
+                    \left\{-2, -3, \ldots, -\frac{p-1}{2}\right\} \pmod{p}. \]
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p27587336"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023hmic2.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-usamo-problem-3">
+                2023 USAMO Problem 3 / USAJMO Problem 3
+            </h2>
+            <div class="shaded-box">
+                <p>
+                    Fix an odd integer \(n\), and place \(\frac{1}{2}(n^2-1)\)
+                    nonoverlapping dominoes in an \(n \times n\) grid. Let \(k\)
+                    be the number of distinct grid-aligned configurations
+                    obtainable by sliding the dominoes. In terms of \(n\), find
+                    all possible values of \(k\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p27349464"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023usamo3.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-usamo-problem-1">
+                2023 USAMO Problem 1 / USAJMO Problem 2
+            </h2>
+            <div class="shaded-box">
+                <p>
+                    The foot from \(C\) to the \(A\)-median of triangle \(ABC\)
+                    is \(P\), and the circumcircle of triangle \(ABP\) meets
+                    \(\overline{BC}\) again at \(Q\). Prove that the midpoint of
+                    \(\overline{AQ}\) is equidistant from \(B\) and \(C\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p27349297"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023usamo1.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2023-february-hmmt-team-round-problem-4">
+                2023 February HMMT Team Round Problem 4
+            </h2>
+            <div class="shaded-box">
+                <p>
+                    Philena and Nathan are playing a game. First, Nathan
+                    secretly chooses an ordered pair \((x, y)\) of positive
+                    integers such that \(x \leq 20\) and \(y \leq 23\). (Philena
+                    knows that Nathan's pair must satisfy \(x \leq 20\) and \(y
+                    \leq 23\).) The game then proceeds in rounds; in every
+                    round, Philena chooses an ordered pair \((a, b)\) of
+                    positive integers and tells it to Nathan; Nathan says YES if
+                    \(x \leq a\) and \(y \leq b\), and NO otherwise. Find, with
+                    proof, the smallest positive integer \(N\) for which Philena
+                    has a strategy that guarantees she can be certain of
+                    Nathan's pair after at most \(N\) rounds.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p27125752"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2023hmmtteam4.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2022-usemo-problem-1">2022 USEMO Problem 1</h2>
+            <div class="shaded-box">
+                <p>
+                    Define a <em>width-one strip</em> to be a rectangle with
+                    width 1 or height 1. An \(n \times n\) square is dissected
+                    into width-one strips such that neighboring strips share
+                    exactly one unit of perimeter. What is the minimum possible
+                    number of strips?
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p26373095"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2022usemo1.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2022-usa-tstst-problem-1">2022 USA TSTST Problem 1</h2>
+            <div class="shaded-box">
+                <p>
+                    In terms of \(n \in \mathbb{Z}^+\), find the smallest
+                    integer \(k\) for which \((0, 1)^2 \setminus S\) is a union
+                    of \(k\) axis-aligned open rectangles for every set \(S
+                    \subset (0, 1)^2\) of size \(n\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p25516960"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2022tstst1.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2022-elmo-problem-4">2022 ELMO Problem 4</h2>
+            <div class="shaded-box">
+                <p>
+                    Convex pentagon \(ABCDE\) satisfies \(ABE \sim BEC \sim
+                    EDB\). Prove \(\overline{BE}\), \(\overline{CD}\), and the
+                    tangent to \((ACD)\) at \(A\) concur.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p25496308"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2022elmo4.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2022-usamo-problem-4">
+                2022 USAMO Problem 4 / USAJMO Problem 5
+            </h2>
+            <div class="shaded-box">
+                <p>
+                    Find all pairs of primes \((p, q)\) for which \(p - q\) and
+                    \(pq - q\) are both square.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p24774670"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2022usamo4.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2022-usajmo-problem-1">2022 USAJMO Problem 1</h2>
+            <div class="shaded-box">
+                <p>
+                    Find all \(m \in \mathbb{Z}^+\) for which there exists an
+                    infinite nonconstant sequence in \(\mathbb{Z}/m\mathbb{Z}\)
+                    that is both arithmetic and geometric.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p24774800"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2022usajmo1.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2021-usa-tstst-problem-7">2021 USA TSTST Problem 7</h2>
+            <div class="shaded-box">
+                <p>
+                    Let \(M\) be a finite set of lattice points and \(n\) be a
+                    positive integer. A <em>mine-avoiding path</em> is a path of
+                    lattice points with length \(n\), beginning at \((0,0)\) and
+                    ending at a point on the line \(x + y = n\), that does not
+                    contain any point in \(M\). Prove that if there exists a
+                    mine-avoiding path, then there exist at least \(2^{n -
+                    |M|}\) mine-avoiding paths.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p24130213"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2021tstst7.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2021-usa-tstst-problem-4">2021 USA TSTST Problem 4</h2>
+            <div class="shaded-box">
+                <p>
+                    Let \(a\) and \(b\) be positive integers such that there are
+                    infinitely many pairs of positive integers \((m, n)\) such
+                    that \(m^2 + an + b\) and \(n^2 + am + b\) are both square.
+                    Prove that \(a \mid 2b\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p23864177"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2021tstst4.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2021-usa-tstst-problem-1">2021 USA TSTST Problem 1</h2>
+            <div class="shaded-box">
+                <p>
+                    Points \(X\) and \(Y\) lie on sides \(\overline{AB}\) and
+                    \(\overline{CD}\) of cyclic quadrilateral \(ABCD\) with
+                    center \(O\). If \((ADX)\) and \((BCY)\) meet
+                    \(\overline{XY}\) again at \(P\) and \(Q\), prove \(OP =
+                    OQ\).
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p23586650"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2021tstst1.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2021-usemo-problem-1">2021 USEMO Problem 1</h2>
+            <div class="shaded-box">
+                <p>
+                    In an \(n \times n\) square of \(n^2\) real numbers,
+                    maximize the number of numbers greater than the average of
+                    its row but less than the average of its column.
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p23517195"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2021usemo1.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+
+            <h2 id="2019-elmo-problem-2">2019 ELMO Problem 2</h2>
+            <div class="shaded-box">
+                <p>
+                    Evan has a convex \(n\)-gon in the plane for a given
+                    positive integer \(n\ge 3\) and wishes to construct the
+                    centroid of its vertices. He has no standard ruler or
+                    compass, but he does have a device with which he can dissect
+                    the segment between two given points into \(m\) equal parts.
+                    For what \(m\) can Evan necessarily accomplish his task?
+                </p>
+            </div>
+            <p>
+                (<a
+                    href="https://aops.com/community/p12573504"
+                    ,
+                    target="_blank"
+                    >AoPS thread</a
+                >,
+                <a href="../files/proposals/2019elmo2.pdf" , target="_blank"
+                    >original proposal</a
+                >)
+            </p>
+        </main>
+    </body>
+
+</html>

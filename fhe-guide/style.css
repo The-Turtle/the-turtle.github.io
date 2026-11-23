@@ -1,0 +1,452 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap');
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Layout for the FHE guide pages.
+   Layered on top of ../../style.css.
+
+   Visual style is borrowed from the mdBook "Navy" theme that the
+   Halo2 book uses: dark navy-blue background, lavender-gray text,
+   muted blue links, slightly-lighter navy code blocks. */
+
+/* --- Halo2 / mdBook "Navy" theme tokens, scoped to the guide ---
+   These values are pulled directly from
+   https://zcash.github.io/halo2/css/variables-*.css */
+:root {
+    --fhe-bg:        hsl(226, 23%, 11%);     /* page background */
+    --fhe-fg:        #bcbdd0;                /* body text */
+    --fhe-fg-muted:  #8a8c9e;
+    --fhe-link:      #2b79a2;
+    --fhe-rule:      hsl(226, 23%, 22%);
+    --fhe-tint:      hsl(226, 15%, 17%);     /* quote / code background */
+    --fhe-tint-hov:  hsl(226, 15%, 22%);
+    --fhe-code-fg:   #c5c8c6;                /* inline-code color */
+}
+
+/* --- Body & typography ---
+   Open Sans / Source Code Pro at the same sizes mdBook uses.
+   Scoped to <main> so the site header keeps its original Arial. */
+
+body {
+    background: var(--fhe-bg);
+}
+
+/* --- Header ---
+   Match the page background so the strip blends in (rather than
+   showing the sitewide teal). The name + icon stay readable on dark. */
+header {
+    background-color: var(--fhe-bg);
+    color: var(--fhe-fg);
+}
+.site-name,
+.site-name:hover {
+    color: var(--fhe-fg);
+}
+
+main {
+    background: var(--fhe-bg);
+    box-shadow: none;
+    border: none;
+    text-align: justify;
+    color: var(--fhe-fg);
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+}
+
+main p,
+main ol,
+main ul {
+    line-height: 1.45em;
+}
+
+/* Halo2 keeps headings the same color as body and gives h2/h3 a lot of
+   breathing room before them. */
+main h1,
+main h2,
+main h3,
+main h4 {
+    color: var(--fhe-fg);
+}
+main h2,
+main h3 { margin-top: 2em; }
+main h4,
+main h5 { margin-top: 1.5em; }
+main h1 { margin-top: 0; }
+
+/* Links: no underline by default, underline on hover. */
+main a {
+    color: var(--fhe-link);
+    text-decoration: none;
+}
+main a:hover {
+    text-decoration: underline;
+}
+
+/* Keep superscripts and subscripts (e.g. the D in IND-CPA^D)
+   from inflating the line height of their containing line.
+   Without this, a heading or TOC entry that contains a <sup>
+   ends up taller than its siblings. */
+main sup, main sub,
+.page-toc sup, .page-toc sub {
+    line-height: 0;
+    font-size: 0.75em;
+}
+
+/* Code: monospace, dark warm brown text, faint blue tint background. */
+main code,
+main pre {
+    font-family: 'Source Code Pro', Consolas, 'Ubuntu Mono', Menlo, monospace;
+    font-size: 0.875em;
+}
+
+main code {
+    color: var(--fhe-code-fg);
+    background: var(--fhe-tint);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+main pre {
+    background: var(--fhe-tint);
+    padding: 12px 14px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+main pre code {
+    color: var(--fhe-fg);
+    background: transparent;
+    padding: 0;
+}
+
+main blockquote {
+    margin: 20px 0;
+    padding: 0 20px;
+    background: var(--fhe-tint);
+    border-top: 1px solid var(--fhe-tint-hov);
+    border-bottom: 1px solid var(--fhe-tint-hov);
+}
+
+.arch-diagram {
+    box-sizing: border-box;
+    display: block;
+    margin: 16px auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--fhe-rule);
+    border-radius: 4px;
+}
+
+.pipeline-diagram {
+    border: 0;
+    border-radius: 0;
+}
+
+/* Tables: small, centered, with a tinted header row.
+   The dark theme has no default contrast on browser tables, so we
+   draw explicit borders against the page background. */
+main table {
+    border-collapse: collapse;
+    margin: 16px auto;
+    font-size: 14px;
+}
+main th,
+main td {
+    padding: 6px 14px;
+    border: 1px solid var(--fhe-rule);
+    text-align: left;
+}
+main th {
+    background: var(--fhe-tint);
+    font-weight: 600;
+}
+
+main hr {
+    border: none;
+    border-top: 1px solid var(--fhe-rule);
+    margin: 24px auto;
+}
+
+/* KaTeX renders glyphs in currentColor, so it inherits our
+   light-on-dark text color automatically. But its built-in CSS pins
+   a few colors (e.g. .katex-html) – nudge them to inherit too. */
+main .katex,
+main .katex * {
+    color: inherit;
+}
+
+/* --- Landing & section pages --- */
+
+.post-list {
+    list-style: none;
+    padding-left: 16px;
+    margin: 0;
+    border-left: 2px solid var(--fhe-rule);
+}
+
+.post-list li {
+    margin: 8px 0;
+}
+
+.post-list .post-title {
+    color: var(--fhe-link);
+    text-decoration: none;
+}
+
+.post-list .post-title:hover {
+    text-decoration: underline;
+}
+
+/* On section pages, the post list is the main thing to click. */
+main > .post-list {
+    padding-left: 0;
+    border-left: none;
+}
+
+main > .post-list li {
+    padding: 6px 10px;
+    margin: 2px 0;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+main > .post-list li:hover {
+    background: var(--fhe-tint);
+}
+
+/* --- Landing page nested table of contents ---
+   The landing "Contents" lists every part with its sub-sections
+   nested underneath. Parts read as headers (no row highlight);
+   sub-sections keep the clickable-row hover. Pages that aren't
+   finished yet are tagged with a small [TODO] marker. */
+#sections > li:hover { background: transparent; }
+#sections > li > .post-title { font-weight: 700; }
+#sections .post-list { margin: 6px 0 14px; }
+
+.todo {
+    color: var(--fhe-fg-muted);
+    font-size: 0.72em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+}
+
+/* --- Per-post breadcrumb & nav --- */
+
+.post-breadcrumb {
+    font-size: 14px;
+    margin: 0 0 12px;
+    color: var(--fhe-fg-muted);
+}
+
+.post-breadcrumb a {
+    color: var(--fhe-link);
+    text-decoration: none;
+}
+
+.post-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.post-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 12px;
+    margin: 40px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--fhe-rule);
+}
+
+.post-nav a {
+    max-width: 45%;
+    color: var(--fhe-link);
+    text-decoration: none;
+    padding: 8px 12px;
+    border: 1px solid var(--fhe-rule);
+    border-radius: 4px;
+    background: var(--fhe-bg);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.post-nav a:hover {
+    background: var(--fhe-tint);
+    border-color: #c0c0c0;
+    text-decoration: none;
+}
+
+.post-nav .label {
+    display: block;
+    font-size: 11px;
+    color: var(--fhe-fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.post-nav .post-nav-title {
+    display: block;
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 1px;
+}
+
+.post-nav .next {
+    text-align: right;
+}
+
+/* Hide a missing prev/next slot but keep the layout. */
+.post-nav .placeholder {
+    visibility: hidden;
+}
+
+/* --- "Lies": inline simplifications whose truth is revealed on
+   hover (desktop) or tap (touch). Markup is:
+     <span class="lie" data-truth="the real story">lie text</span>
+   The .lie-open class is toggled by a small handler in layout.js
+   so taps work on devices without :hover. */
+.lie {
+    text-decoration: underline dotted;
+    text-decoration-color: var(--fhe-link);
+    text-underline-offset: 3px;
+    cursor: help;
+    position: relative;
+}
+.lie::after {
+    content: "This is a lie: " attr(data-truth);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: min(340px, 80vw);
+    background: var(--fhe-tint-hov);
+    color: var(--fhe-fg);
+    border: 1px solid var(--fhe-rule);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1.45;
+    text-align: left;
+    white-space: normal;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.lie:hover::after,
+.lie:focus::after,
+.lie.lie-open::after {
+    opacity: 1;
+}
+
+/* --- Exercises: short callouts rendered as a tinted box flush
+   against the surrounding prose. Markup is just:
+     <div class="exercise-body">exercise content</div>
+   inserted directly after the paragraph it relates to. */
+.exercise-body {
+    background: var(--fhe-tint);
+    border-left: 3px solid var(--fhe-link);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-style: normal;
+    color: var(--fhe-fg);
+}
+
+/* --- Examples: worked-out illustrations rendered as a tinted box,
+   styled like .exercise-body but with a muted accent so they're
+   visually distinguishable. Markup is:
+     <div class="example-body">example content</div> */
+.example-body {
+    background: var(--fhe-tint);
+    border-left: 3px solid var(--fhe-fg-muted);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-style: normal;
+    color: var(--fhe-fg);
+}
+
+/* --- Page table of contents ---
+   A wiki-style sticky sidebar on the left listing the h2 headings
+   of the current page. Built by renderPageToc() in layout.js,
+   which scans <main> for h2 elements, auto-assigns ids, and
+   appends this nav. Hidden only on narrow viewports where there's
+   truly no room next to <main>. On medium viewports we keep it
+   pinned to the left edge and shift <main> right (see below) so
+   the sidebar stays visible as much as possible. */
+.page-toc {
+    position: fixed;
+    top: 96px;
+    /* Sit ~40px to the left of a centered <main> on wide screens,
+       but never let the sidebar slide off-screen: clamp to 20px
+       once the viewport gets narrower than ~1400px. */
+    left: max(20px, calc(50vw - 680px));
+    width: 240px;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-size: 13px;
+    line-height: 1.4;
+    z-index: 5;
+}
+.page-toc-label {
+    color: var(--fhe-fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 11px;
+    margin-bottom: 8px;
+    padding-left: 14px;
+}
+.page-toc ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    border-left: 2px solid var(--fhe-rule);
+}
+.page-toc li {
+    padding: 0;
+    margin: 0;
+}
+.page-toc a {
+    display: block;
+    padding: 4px 12px;
+    margin-left: -2px;
+    color: var(--fhe-fg-muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.page-toc a:hover {
+    color: var(--fhe-fg);
+    border-left-color: var(--fhe-link);
+    text-decoration: none;
+}
+
+/* Once the viewport is narrower than ~1400px the sidebar is
+   pinned to left: 20px (see clamp above), which would overlap
+   a centered 800px <main>. Push <main> to the right on pages
+   that actually have a TOC so the two don't collide. */
+@media (max-width: 1399px) {
+    body:has(.page-toc) main {
+        margin-left: 300px;
+        margin-right: auto;
+    }
+}
+
+/* Below ~1100px there isn't enough room for both the sidebar
+   and a readable <main>, so drop the sidebar and re-center. */
+@media (max-width: 1099px) {
+    .page-toc { display: none; }
+    body:has(.page-toc) main {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}

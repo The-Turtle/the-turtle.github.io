@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="A photo gallery of my travels, concerts, MIT campus life, and around the world." />
+        <title>Photo Gallery | Holden Mui</title>
+        <link
+            rel="icon"
+            href="../files/images/turtleicon.png"
+            type="image/x-icon"
+        />
+        <link rel="stylesheet" href="../style.css" />
+        <style>
+            .gallery {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 10px;
+                padding: 10px;
+            }
+            .gallery img {
+                width: 100%;
+                aspect-ratio: 1 / 1;
+                object-fit: cover;
+                border-radius: 10px;
+                transition: transform 0.3s;
+            }
+            .gallery img:hover {
+                transform: scale(1.05);
+            }
+            .photo {
+                position: relative;
+                display: inline-block;
+            }
+            .photo:hover .caption {
+                opacity: 1;
+                visibility: visible;
+            }
+            .caption {
+                position: absolute;
+                text-align: center;
+                bottom: 5%;
+                left: 50%;
+                width: 100%;
+                transform: translate(-50%, 0%);
+                color: white;
+                font-size: 20px;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s;
+            }
+        </style>
+        <script src="../site.js" defer></script>
+    </head>
+    <body>
+        <header>
+            <a class="site-name" href="../index.html" aria-label="Holden Mui home">
+                <img src="../files/images/turtleicon.png" alt="" />
+                <span>Holden Mui</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a class="nav-link" href="../index.html">Home</a>
+                <details>
+                    <summary>Career</summary>
+                    <div class="dropdown-content">
+                        <a href="../career/openai.html">OpenAI</a>
+                        <a href="../career/0xparc.html">0xPARC</a>
+                        <a href="../fhe-guide/index.html">FHE Guide</a>
+                        <a href="../career/coursework.html">Coursework</a>
+                        <a href="../career/resume.html">Resume</a>
+                    </div>
+                </details>
+                <details>
+                    <summary>Math</summary>
+                    <div class="dropdown-content">
+                        <a href="../math/research.html">Research</a>
+                        <a href="../math/talks.html">Talks</a>
+                        <a href="../math/teaching.html">Teaching</a>
+                        <a href="../math/olympiad.html">Olympiad</a>
+                    </div>
+                </details>
+                <details>
+                    <summary>Music</summary>
+                    <div class="dropdown-content">
+                        <a href="../music/piano.html">Piano</a>
+                        <a href="../music/composition.html">Composition</a>
+                        <a href="../music/arrangements.html">Arrangements</a>
+                        <a href="../other/events.html">Events</a>
+                        <a href="../music/games/">Games</a>
+                    </div>
+                </details>
+                <details>
+                    <summary>Other</summary>
+                    <div class="dropdown-content">
+                        <a href="../other/writing.html">Writing</a>
+                        <a href="../other/gallery.html">Gallery</a>
+                        <a href="../other/news.html">News</a>
+                        <a href="../other/links.html">Links</a>
+                        <a href="../other/sfhills.html">SF Hills</a>
+                    </div>
+                </details>
+            </nav>
+        </header>
+
+        <main>
+            <h1>Gallery</h1>
+            <par>Here are some photos!</par>
+            <hr />
+            <details>
+                <summary>life</summary>
+                <div class="gallery">
+                    <a href="../files/images/life/me.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/me.jpg"
+                                loading="lazy"
+                                alt="A picture of me"
+                            />
+                            <span class="caption">me!</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/life/mit.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/mit.jpg"
+                                loading="lazy"
+                                alt="MIT Killian court"
+                            />
+                            <span class="caption">MIT</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/life/sunset.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/sunset.jpg"
+                                loading="lazy"
+                                alt="The sunset over Harvard bridge"
+                            />
+                            <span class="caption"
+                                >sunset over Harvard bridge</span
+                            >
+                        </div>
+                    </a>
+                    <a href="../files/images/life/painting.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/painting.jpg"
+                                loading="lazy"
+                                alt="A painting of a moon reflection"
+                            />
+                            <span class="caption">painting!</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/life/shavedsnow.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/shavedsnow.jpg"
+                                loading="lazy"
+                                alt="Shaved snow from Grace Street"
+                            />
+                            <span class="caption"
+                                >shaved snow from Grace Street</span
+                            >
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/life/universal.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/universal.jpg"
+                                loading="lazy"
+                                alt="Me and my friends at Universal Studios"
+                            />
+                            <span class="caption">me, Isabella, and Luke</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/life/chicken.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/chicken.jpg"
+                                loading="lazy"
+                                alt="Me holding a chicken"
+                            />
+                            <span class="caption">holding a chicken</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/life/ducks.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/ducks.jpg"
+                                loading="lazy"
+                                alt="Me and some ducks"
+                            />
+                            <span class="caption">ducks!</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/life/dog.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/dog.jpg"
+                                loading="lazy"
+                                alt="Me and a dog"
+                            />
+                            <span class="caption">dog</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/life/rach2.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/rach2.jpg"
+                                loading="lazy"
+                                alt="Signed copy of rach 2"
+                            />
+                            <span class="caption"
+                                >Anna Federova signed my Rach 2 copy!</span
+                            >
+                        </div>
+                    </a>
+                    <a href="../files/images/life/room503.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/room503.jpg"
+                                loading="lazy"
+                                alt="My freshman year desk"
+                            />
+                            <span class="caption">freshman year desk</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/life/room508.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/room508.jpg"
+                                loading="lazy"
+                                alt="My junior year room"
+                            />
+                            <span class="caption">junior year room</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/life/springrolls.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/springrolls.jpg"
+                                loading="lazy"
+                                alt="Making spring rolls"
+                            />
+                            <span class="caption">making spring rolls</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/life/cookies.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/cookies.jpg"
+                                loading="lazy"
+                                alt="Decorated cookies"
+                            />
+                            <span class="caption">cookie decorating!</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/life/cake.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/life/cake.jpg"
+                                loading="lazy"
+                                alt="A turtle cake"
+                            />
+                            <span class="caption">turtle cake!</span>
+                        </div>
+                    </a>
+                </div>
+            </details>
+            <hr />
+            <details>
+                <summary>Bhutan</summary>
+                <div class="gallery">
+                    <a
+                        href="../files/images/bhutan/parotaktsang.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/parotaktsang.jpg"
+                                loading="lazy"
+                                alt="Paro Taktsang"
+                            />
+                            <span class="caption">Paro Taktsang</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/punakhadzong.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/punakhadzong.jpg"
+                                loading="lazy"
+                                alt="Punakha Dzong"
+                            />
+                            <span class="caption">Punakha Dzong</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/chorten.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/chorten.jpg"
+                                loading="lazy"
+                                alt="Dochu La chortens"
+                            />
+                            <span class="caption">Dochu La chortens</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/bhutan/gate.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/gate.jpg"
+                                loading="lazy"
+                                alt="The gate to Thimphu"
+                            />
+                            <span class="caption">leaving Thimphu</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/buddhapark.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/buddhapark.jpg"
+                                loading="lazy"
+                                alt="Buddha park"
+                            />
+                            <span class="caption">Buddha park</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/thimphu.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/thimphu.jpg"
+                                loading="lazy"
+                                alt="A view of Thimphu"
+                            />
+                            <span class="caption">Thimphu</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/bhutan/momo.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/momo.jpg"
+                                loading="lazy"
+                                alt="Momo dumplings"
+                            />
+                            <span class="caption">momo</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/riceandcurry.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/riceandcurry.jpg"
+                                loading="lazy"
+                                alt="Rice, curry, and papad"
+                            />
+                            <span class="caption">rice, curry, and papad</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/bhutan/soup.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/soup.jpg"
+                                loading="lazy"
+                                alt="Noodle soup"
+                            />
+                            <span class="caption">noodle soup</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/buddhadordenma.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/buddhadordenma.jpg"
+                                loading="lazy"
+                                alt="Buddha Dordenma statue"
+                            />
+                            <span class="caption">Buddha Dordenma</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/choeshaylayrim.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/choeshaylayrim.jpg"
+                                loading="lazy"
+                                alt="Choeshay layrim"
+                            />
+                            <span class="caption">choeshay layrim</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/prayerwheel.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/prayerwheel.jpg"
+                                loading="lazy"
+                                alt="A prayer wheel"
+                            />
+                            <span class="caption">prayer wheel</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/prayerflag.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/prayerflag.jpg"
+                                loading="lazy"
+                                alt="Prayer flags"
+                            />
+                            <span class="caption">prayer flags</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/bhutan/dochulapass.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/dochulapass.jpg"
+                                loading="lazy"
+                                alt="Dochu La"
+                            />
+                            <span class="caption">Dochu La</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/bhutan/stream.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/stream.jpg"
+                                loading="lazy"
+                                alt="Me crossing a stream"
+                            />
+                            <span class="caption">stream crossing</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/bhutan/india.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/india.jpg"
+                                loading="lazy"
+                                alt="India/Bhutan border marker"
+                            />
+                            <span class="caption">visiting India!</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/bhutan/takin.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/takin.jpg"
+                                loading="lazy"
+                                alt="A takin"
+                            />
+                            <span class="caption">a takin</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/bhutan/gho.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/gho.jpg"
+                                loading="lazy"
+                                alt="Me wearing a gho"
+                            />
+                            <span class="caption">wearing a gho!</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/bhutan/tea.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/bhutan/tea.jpg"
+                                loading="lazy"
+                                alt="Tea with a view of Paro Taktsang"
+                            />
+                            <span class="caption">tea</span>
+                        </div>
+                    </a>
+                </div>
+            </details>
+            <hr />
+            <details>
+                <summary>Tunisia</summary>
+                <div class="gallery">
+                    <a
+                        href="../files/images/tunisia/sidibousaid.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/tunisia/sidibousaid.jpg"
+                                loading="lazy"
+                                alt="Sidi Bou Said"
+                            />
+                            <span class="caption">Sidi Bou Said</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/tunisia/ruins.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/tunisia/ruins.jpg"
+                                loading="lazy"
+                                alt="Roman ruins"
+                            />
+                            <span class="caption">Roman ruins</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/tunisia/medina.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/tunisia/medina.jpg"
+                                loading="lazy"
+                                alt="The Medina of Tunis"
+                            />
+                            <span class="caption">the Medina of Tunis</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/tunisia/shop.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/tunisia/shop.jpg"
+                                loading="lazy"
+                                alt="A shop in in the Medina"
+                            />
+                            <span class="caption">a shop in the Medina</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/tunisia/sciencecity.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/tunisia/sciencecity.jpg"
+                                loading="lazy"
+                                alt="The Tunis Science City"
+                            />
+                            <span class="caption">Tunis Science City</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/tunisia/outside.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/tunisia/outside.jpg"
+                                loading="lazy"
+                                alt="The view from my room"
+                            />
+                            <span class="caption">the view from my room</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/tunisia/pastries.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/tunisia/pastries.jpg"
+                                loading="lazy"
+                                alt="Tunisian pastries"
+                            />
+                            <span class="caption">Tunisian pastries</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/tunisia/dininghall.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/tunisia/dininghall.jpg"
+                                loading="lazy"
+                                alt="Dining hall food"
+                            />
+                            <span class="caption">dining hall food</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/tunisia/restaurant.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/tunisia/restaurant.jpg"
+                                loading="lazy"
+                                alt="restaurant food"
+                            />
+                            <span class="caption">restaurant food</span>
+                        </div>
+                    </a>
+                </div>
+            </details>
+            <hr />
+            <details>
+                <summary>Ghana</summary>
+                <div class="gallery">
+                    <a
+                        href="../files/images/ghana/crocodile.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/crocodile.jpg"
+                                loading="lazy"
+                                alt="Me petting a crocodile"
+                            />
+                            <span class="caption">crocodile petting</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/ghana/adomibridge.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/adomibridge.jpg"
+                                loading="lazy"
+                                alt="Adomi bridge"
+                            />
+                            <span class="caption">Adomi bridge</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/ghana/canopy.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/canopy.jpg"
+                                loading="lazy"
+                                alt="Canopy walk"
+                            />
+                            <span class="caption">canopy walk</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/ghana/banku.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/banku.jpg"
+                                loading="lazy"
+                                alt="Banku"
+                            />
+                            <span class="caption">banku</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/ghana/menu.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/menu.jpg"
+                                loading="lazy"
+                                alt="A restaurant menu"
+                            />
+                            <span class="caption">a restaurant menu</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/ghana/jollofrice.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/jollofrice.jpg"
+                                loading="lazy"
+                                alt="Jollof rice"
+                            />
+                            <span class="caption">jollof rice</span>
+                        </div>
+                    </a>
+
+                    <a
+                        href="../files/images/ghana/highropes.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/highropes.jpg"
+                                loading="lazy"
+                                alt="A high ropes course"
+                            />
+                            <span class="caption">ropes course</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/ghana/outside.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/outside.jpg"
+                                loading="lazy"
+                                alt="The view from my room"
+                            />
+                            <span class="caption">the view from my room</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/ghana/treeoflife.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/treeoflife.jpg"
+                                loading="lazy"
+                                alt="The Tree of Life"
+                            />
+                            <span class="caption">the Tree of Life</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/ghana/teaching.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/teaching.jpg"
+                                loading="lazy"
+                                alt="Me teaching students"
+                            />
+                            <span class="caption">teaching students</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/ghana/capecoastcastle.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/ghana/capecoastcastle.jpg"
+                                loading="lazy"
+                                alt="Cape Coast castle"
+                            />
+                            <span class="caption">Cape Coast slave castle</span>
+                        </div>
+                    </a>
+                </div>
+            </details>
+            <hr />
+            <details>
+                <summary>hiking</summary>
+                <div class="gallery">
+                    <a
+                        href="../files/images/hiking/bearfencemountain.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/hiking/bearfencemountain.jpg"
+                                loading="lazy"
+                                alt="Me sitting on a rock"
+                            />
+                            <span class="caption"
+                                >Bearfence Mountain, Shenandoah National
+                                Park</span
+                            >
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/hiking/angelslanding.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/hiking/angelslanding.jpg"
+                                loading="lazy"
+                                alt="Me in a rock hole"
+                            />
+                            <span class="caption"
+                                >Angels Landing hike, Zion National Park</span
+                            >
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/hiking/shelfcanyon.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/hiking/shelfcanyon.jpg"
+                                loading="lazy"
+                                alt="Shelf Canyon, Zion National Park"
+                            />
+                            <span class="caption"
+                                >Shelf Canyon, Zion National Park</span
+                            >
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/hiking/mountida.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/hiking/mountida.jpg"
+                                loading="lazy"
+                                alt="Mount Ida, Rocky Mountains National Park"
+                            />
+                            <span class="caption"
+                                >Mount Ida, Rocky Mountains National Park</span
+                            >
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/hiking/landsend.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/hiking/landsend.jpg"
+                                loading="lazy"
+                                alt="Lands End, San Francisco"
+                            />
+                            <span class="caption"
+                                >Lands End, San Francisco</span
+                            >
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/hiking/scenicpoint.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/hiking/scenicpoint.jpg"
+                                loading="lazy"
+                                alt="Scenic Point, Glacier National Park"
+                            />
+                            <span class="caption"
+                                >Scenic Point, Glacier National Park</span
+                            >
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/hiking/number4mountain.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/hiking/number4mountain.jpg"
+                                loading="lazy"
+                                alt="Number 4 Mountain fire tower"
+                            />
+                            <span class="caption"
+                                >Number 4 Mountain fire tower, Maine</span
+                            >
+                        </div>
+                    </a>
+                </div>
+            </details>
+            <hr />
+            <details>
+                <summary>concert</summary>
+                <div class="gallery">
+                    <a href="../files/images/concert/bow.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/concert/bow.jpg"
+                                loading="lazy"
+                                alt="Me and Ketih Lockhart bowing"
+                            />
+                            <span class="caption">with Keith Lockhart!</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/concert/stage.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/concert/stage.jpg"
+                                loading="lazy"
+                                alt="Me on stage"
+                            />
+                            <span class="caption">on stage</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/concert/piano.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/concert/piano.jpg"
+                                loading="lazy"
+                                alt="Me playing at Tech Night"
+                            />
+                            <span class="caption">playing at Tech Night</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/concert/hall.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/concert/hall.jpg"
+                                loading="lazy"
+                                alt="Symphony Hall"
+                            />
+                            <span class="caption">Symphony Hall</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/concert/preconcert.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/concert/preconcert.jpg"
+                                loading="lazy"
+                                alt="A pre-concert picture"
+                            />
+                            <span class="caption">pre-concert picture</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/concert/kresge.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/concert/kresge.jpg"
+                                loading="lazy"
+                                alt="MITSO concert"
+                            />
+                            <span class="caption">MITSO concert</span>
+                        </div>
+                    </a>
+                    <a href="../files/images/concert/score.jpg" target="_blank">
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/concert/score.jpg"
+                                loading="lazy"
+                                alt="Keith Lockhart's signature on my score"
+                            />
+                            <span class="caption">signed score!</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/concert/shrine.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/concert/shrine.jpg"
+                                loading="lazy"
+                                alt="A Rachmaninoff Shrine"
+                            />
+                            <span class="caption">a Rachmaninoff shrine</span>
+                        </div>
+                    </a>
+                    <a
+                        href="../files/images/concert/trashcan.jpg"
+                        target="_blank"
+                    >
+                        <div class="photo">
+                            <img
+                                src="../files/images/compressed/concert/trashcan.jpg"
+                                loading="lazy"
+                                alt="Me next to a trash can with a picture of Keith Lockhart"
+                            />
+                            <span class="caption">posing with Keith</span>
+                        </div>
+                    </a>
+                </div>
+            </details>
+        </main>
+    </body>
+
+    <script>
+
+        // Caption toggle functionality
+        const photos = document.querySelectorAll(".photo");
+        photos.forEach((photo) => {
+            photo.addEventListener("click", (e) => {
+                const caption = photo.querySelector(".caption");
+                if (caption) {
+                    caption.style.opacity =
+                        caption.style.opacity === "1" ? "0" : "1";
+                    caption.style.visibility =
+                        caption.style.visibility === "visible"
+                            ? "hidden"
+                            : "visible";
+                }
+                e.preventDefault(); // Prevent the default anchor action
+            });
+        });
+    </script>
+</html>

@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="../../files/images/turtleicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <header id="site-header"></header>
+
+    <main>
+      <p class="post-breadcrumb" id="post-breadcrumb"></p>
+      <article>
+        <h1>Bootstrapping</h1>
+
+        <p>
+          Once a ciphertext reaches level&nbsp;$0$, no further
+          multiplications using it are possible.
+          <em>Bootstrapping</em>
+          is the operation that "refreshes" a level-$0$
+          ciphertext, returning a level-$17$ ciphertext
+          encrypting the same vector. The level increase also
+          means that the computation carried out during
+          bootstrapping itself happens at approximately $15$
+          bits more precision than computations normally do
+          (see the <a href="#scale-factor-seam">remark below</a>).
+        </p>
+
+        <p>
+          Bootstrapping consists of four steps:
+        </p>
+        <ol>
+          <li>
+            <strong>Mod-raise.</strong> Key-switch the
+            level-$0$ ciphertext from $s$ to a sparse secret
+            $s'$, reinterpret it as a ciphertext at level $30$,
+            then key-switch back to $s$. The
+            underlying plaintext polynomial picks up a multiple
+            of $q_0$ between $-16 q_0$ and $16 q_0$ in each
+            coefficient.
+          </li>
+          <li>
+            <strong>Coefficients-to-slots.</strong> Use
+            <span class="lie" data-truth="only one transform is actually evaluated; the other's output is recovered from it via a single conjugation.">a pair</span>
+            of homomorphic linear transforms to package the
+            $65536$ coefficients of the (now corrupted)
+            plaintext polynomial into the $32768$ slots
+            of two ciphertexts.
+          </li>
+          <li>
+            <strong>Mod-eval.</strong> Evaluate a polynomial
+            approximation of
+            <span class="lie" data-truth="the polynomial actually approximates x mod 1, not x mod q_0. After coefficients-to-slots folds a factor of 1/q_0 into its output, the slot values look like (integer) + (small fractional part); mod 1 then strips the integer. The end-to-end effect is the same as mod q_0 on the original polynomial coefficients, just at a different scale.">$x \bmod q_0$</span>
+            slot-wise to strip off the multiple of $q_0$
+            introduced in step&nbsp;1.
+          </li>
+          <li>
+            <strong>Slots-to-coefficients.</strong> Reverse the
+            packing of step&nbsp;2:
+            <span class="lie" data-truth="the two input ciphertexts are first combined into one via an i-multiplication and addition, after which a single linear transform recovers the plaintext polynomial.">a pair</span>
+            of homomorphic linear transforms turns the two
+            slot-packed ciphertexts back into a single
+            ciphertext whose plaintext polynomial holds the
+            recovered coefficients.
+          </li>
+        </ol>
+
+        <p>
+          Before any of this can happen, the modulus chain needs
+          to be extended with new primes (to give the bootstrap
+          room to operate), and the key set needs to be
+          augmented with two new key-switching keys built
+          around an additional secret key. We'll set these up
+          first, then walk through each of the four steps.
+        </p>
+
+        <h2 id="extending-the-modulus-chain">Extending the modulus chain</h2>
+
+        <p>
+          The bootstrap consumes $13$ levels in total, so the
+          modulus chain is extended with $13$ distinct primes
+          $q_{18}, q_{19}, \ldots, q_{30}$, each approximately
+          $q_0 \approx 2^{55}$ and congruent to $1$ modulo
+          $2^{17}$. Each new level has a scale factor around
+          $2^{55}$ given by the recurrence
+        </p>
+        $$
+          \Delta_{30} = 2^{55}, \qquad
+          \Delta_{\ell - 1} = \frac{\Delta_\ell^{\,2}}{q_\ell}
+          \quad\text{for } \ell \in \{19, \ldots, 30\}.
+        $$
+        <p>
+          The $13$ new levels are budgeted as $3$ levels for
+          coefficients-to-slots, $7$ levels for mod-eval, and
+          $3$ levels for slots-to-coefficients.
+        </p>
+        <p id="scale-factor-seam">
+          <b>Remark.</b> The recurrence holds within each piece
+          of the chain &mdash; $\ell \in \{19, \ldots, 30\}$
+          and $\ell \in \{1, \ldots, 17\}$ &mdash; but it
+          <em>breaks</em> at the seam between them. If the
+          recurrence were extended to $\ell = 18$, it would
+          predict $\Delta_{17}^{\,\text{predicted}} \approx
+          \Delta_{18}^{\,2} / q_{18} \approx 2^{55}$, but the
+          chain actually has $\Delta_{17}^{\,\text{actual}} =
+          2^{40}$ from
+          <a href="encryption.html#encoding-vectors">Section&nbsp;3.2</a>. The
+          consequence is that a multiplication that takes a
+          level-$18$ ciphertext down to level $17$ picks up an
+          extra scaling factor of
+        </p>
+        $$
+          \frac{\Delta_{17}^{\,\text{actual}}}{\Delta_{17}^{\,\text{predicted}}}
+            \;\approx\; 2^{-15}.
+        $$
+        <p>
+          <b>Remark.</b> The choice of $\Delta \approx 2^{55}$
+          at the bootstrap levels (rather than the standard
+          $\Delta_0 = 2^{40}$) is essential for precision. The
+          matrix transforms in coefficients-to-slots and
+          slots-to-coefficients, and the polynomial
+          approximation in mod-eval, all introduce noise; at
+          the lower scale $\Delta_0 = 2^{40}$ this noise would
+          accumulate to overwhelm the small $m_k/q_0$ signal
+          mod-eval must extract, and the bootstrap would fail
+          to recover the coefficients of $m$.
+        </p>
+
+        <h2 id="sparse-secret-encapsulation">Sparse secret encapsulation</h2>
+
+        <p>
+          Alongside the regular keys, generate:
+        </p>
+        <ol>
+          <li>
+            an <em>ephemeral sparse secret</em>
+            $s' \in R_\infty$ with coefficients in
+            $\{-1, 0, 1\}$ and exactly $h' = 32$ nonzero
+            coefficients, chosen uniformly at random from all
+            such polynomials;
+          </li>
+          <li>
+            a public key-switching key
+            $\mathrm{ksk}_{s \to s'}$, generated at level $0$
+            only;
+          </li>
+          <li>
+            a public key-switching key
+            $\mathrm{ksk}_{s' \to s}$, generated at level $30$,
+            in similar fashion.
+          </li>
+        </ol>
+        <p>
+          Both key-switching keys follow the same blueprint as
+          the key-switching key in
+          <a href="fundamental.html#key-switching">Section&nbsp;3.3</a>:
+          $\mathrm{ksk}_{s \to s'}$ is the analogue of
+          $\mathrm{ksk}_s$ from that section but with the
+          encrypting key $s$ replaced by $s'$ and only the
+          level-$0$ block populated, while
+          $\mathrm{ksk}_{s' \to s}$ is exactly $\mathrm{ksk}_{s'}$
+          from that section (with the encrypting key $s$ as
+          usual), constructed at the full level $30$.
+        </p>
+        <p>
+          Once both $\mathrm{ksk}_{s \to s'}$ and
+          $\mathrm{ksk}_{s' \to s}$ are built, the polynomial
+          $s'$ itself can be discarded.
+        </p>
+
+        <div class="exercise-body">
+          <b>Exercise:</b> why is using $s'$ as the main secret
+          key a bad idea?
+        </div>
+
+        <h2 id="mod-raise">Mod-raise</h2>
+
+        <p>
+          The mod-raise step takes a level-$0$ ciphertext
+          $(c_0, c_1) \in R_0 \times R_0$ encrypting a
+          plaintext polynomial $m \in R_0$ and returns a
+          level-$30$ ciphertext encrypting $m + q_0\, t$ for
+          some integer polynomial $t \in R_\infty$ with
+          coefficients at most $16$ in magnitude. Internally,
+          it does this in three sub-steps:
+        </p>
+        <ol>
+          <li>
+            Apply $\mathrm{ksk}_{s \to s'}$ to $(c_0, c_1)$ to
+            obtain a level-$0$ ciphertext
+            $(c_0', c_1') \in R_0 \times R_0$ satisfying
+            $c_0' + c_1'\, s' = m$.
+          </li>
+          <li>
+            Apply modulus raising to $c_0'$ and $c_1'$ with
+            target level $30$ to get
+            $$
+              c_0'' \;=\; \underset{q_0 \,\to\, q_0 \cdots q_{30}}{\mathrm{modraise}}(c_0'),
+              \qquad
+              c_1'' \;=\; \underset{q_0 \,\to\, q_0 \cdots q_{30}}{\mathrm{modraise}}(c_1').
+            $$
+            Now, $c_0'' + c_1''\, s' = m + q_0\, t$ for
+            some $t \in R_\infty$.
+          </li>
+          <li>
+            Apply $\mathrm{ksk}_{s' \to s}$ to
+            $(c_0'', c_1'')$ to obtain a level-$30$ ciphertext
+            encrypting $m + q_0\, t$.
+          </li>
+        </ol>
+
+        <p>
+          Now, let's show that every coefficient of $t$ has
+          magnitude at most $16$. As polynomials in
+          $\mathbb{Z}[X]$, each of $c_0''$, $c_1''$, and $m$
+          has coefficients bounded in magnitude by $q_0/2$.
+          Since $s'$ has $h' = 32$ nonzero $\pm 1$
+          coefficients, every coefficient of
+          $c_0'' + c_1''\, s' - m = q_0\, t$ is a signed sum of
+          $h' + 2 = 34$ such values, so every coefficient of
+          $t$ has magnitude less than $17$.
+        </p>
+
+        <h2 id="coefficients-to-slots">Coefficients-to-slots</h2>
+
+        <p>
+          At this point, the mod-raise has produced a
+          level-$30$ ciphertext under $s$ whose plaintext
+          polynomial is
+        </p>
+        $$
+          m^\star \;=\; m + q_0\, t,
+        $$
+        <p>
+          with $t$ having integer coefficients of magnitude at
+          most $16$. We'd like to strip off the $q_0\, t$ term,
+          but the only operation CKKS gives us that acts
+          non-linearly on the underlying plaintext is
+          <em>slot-wise</em> polynomial evaluation. So we first
+          need to move the $65536$ coefficients of
+          $m^\star$ into the slots of some ciphertexts.
+        </p>
+
+        <p>
+          As is, the level-$30$ ciphertext encrypts some
+          (garbage) vector $\mathbf{v}^\star \in \mathbb{C}^{32768}$
+          determined by the coefficients
+          $m^\star_0, m^\star_1, \ldots, m^\star_{65535}$ of
+          $m^\star = \sum_{i=0}^{65535} m^\star_i\, X^i$ via the
+          slot-decoding matrix identity
+        </p>
+        $$
+          \begin{pmatrix}
+            v^\star_0 \\
+            v^\star_1 \\
+            v^\star_2 \\
+            \vdots \\
+            v^\star_{32767}
+          \end{pmatrix}
+          \;=\;
+          \frac{1}{\Delta_{30}}
+          \begin{pmatrix}
+            1 & \zeta & \zeta^{2} & \cdots & \zeta^{65535} \\
+            1 & \zeta^{5} & \zeta^{2 \cdot 5} & \cdots & \zeta^{65535 \cdot 5} \\
+            1 & \zeta^{5^2} & \zeta^{2 \cdot 5^2} & \cdots & \zeta^{65535 \cdot 5^2} \\
+            \vdots & \vdots & \vdots & \ddots & \vdots \\
+            1 & \zeta^{5^{32767}} & \zeta^{2 \cdot 5^{32767}} & \cdots & \zeta^{65535 \cdot 5^{32767}}
+          \end{pmatrix}
+          \begin{pmatrix}
+            m^\star_0 \\
+            m^\star_1 \\
+            m^\star_2 \\
+            \vdots \\
+            m^\star_{65535}
+          \end{pmatrix},
+        $$
+        <p>
+          where $\zeta = e^{2\pi i / 131072}$ is a primitive
+          $131072$-th root of unity. Call the $32768 \times
+          65536$ matrix above $\Sigma$.
+        </p>
+
+        <h3 id="motivation">Motivation</h3>
+
+        <p>
+          We'd like to invert this identity to recover the
+          $m^\star_i$ from the $v^\star_j$, but $\Sigma$ isn't
+          square. The missing equations come from complex
+          conjugation, since the coefficients of $m^\star$ are
+          integers and hence real. Let
+        </p>
+        $$
+          E \;=\;
+          \begin{pmatrix}
+            1 & \zeta & \zeta^{2} & \cdots & \zeta^{32767} \\
+            1 & \zeta^{5} & \zeta^{2 \cdot 5} & \cdots & \zeta^{32767 \cdot 5} \\
+            1 & \zeta^{5^2} & \zeta^{2 \cdot 5^2} & \cdots & \zeta^{32767 \cdot 5^2} \\
+            \vdots & \vdots & \vdots & \ddots & \vdots \\
+            1 & \zeta^{5^{32767}} & \zeta^{2 \cdot 5^{32767}} & \cdots & \zeta^{32767 \cdot 5^{32767}}
+          \end{pmatrix}
+        $$
+        <p>
+          be the left $32768 \times 32768$ half of $\Sigma$.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> show that the right half of $\Sigma$
+          equals $i$ times $E$.
+        </div>
+        <p>
+          Using the exercise, the identity $\Sigma\,
+          \mathbf{m}^\star = \Delta_{30}\, \mathbf{v}^\star$
+          can be rewritten as
+        </p>
+        $$
+          E\!\left[
+          \begin{pmatrix}
+            m^\star_0 \\
+            \vdots \\
+            m^\star_{32767}
+          \end{pmatrix}
+          \,+\, i
+          \begin{pmatrix}
+            m^\star_{32768} \\
+            \vdots \\
+            m^\star_{65535}
+          \end{pmatrix}
+          \right]
+          \;=\; \Delta_{30}\, \mathbf{v}^\star,
+        $$
+        <p>
+          and taking real and imaginary parts gives
+        </p>
+        $$
+          \begin{pmatrix}
+            m^\star_0 \\
+            m^\star_1 \\
+            \vdots \\
+            m^\star_{32767}
+          \end{pmatrix}
+          \;=\; \Delta_{30}\, \mathrm{Re}(E^{-1}\, \mathbf{v}^\star)
+          \;=\; \frac{\Delta_{30}}{2}\bigl(E^{-1}\, \mathbf{v}^\star \,+\, \overline{E^{-1}\, \mathbf{v}^\star}\bigr),
+        $$
+        $$
+          \begin{pmatrix}
+            m^\star_{32768} \\
+            m^\star_{32769} \\
+            \vdots \\
+            m^\star_{65535}
+          \end{pmatrix}
+          \;=\; \Delta_{30}\, \mathrm{Im}(E^{-1}\, \mathbf{v}^\star)
+          \;=\; \frac{\Delta_{30}}{2i}\bigl(E^{-1}\, \mathbf{v}^\star \,-\, \overline{E^{-1}\, \mathbf{v}^\star}\bigr).
+        $$
+        <p>
+          Hence in principle, producing two
+          ciphertexts whose slots together hold all $65536$
+          coefficients of $m^\star$ amounts to a single
+          $32768 \times 32768$ homomorphic matrix
+          multiplication by $E^{-1}$, with the real and
+          imaginary parts of the output giving the two
+          ciphertexts. However in practice, a $32768 \times
+          32768$ homomorphic matrix multiplication is
+          prohibitively expensive. The next two subsections
+          show how to factor $E^{-1}$ into a product of three
+          sparser matrices that produces the same two
+          ciphertexts within the three levels budgeted for
+          coefficients-to-slots.
+        </p>
+
+        <h3 id="factoring-the-matrix">Factoring the matrix</h3>
+
+        <p>
+          $E^{-1}$ doesn't factor diagonal-sparsely, but miraculously,
+          a column reordering of $E$ does. Define
+        </p>
+        $$
+          \widetilde E \;=\;
+          \begin{pmatrix}
+            1 & \zeta^{\mathrm{rev}_{15}(1)} & \zeta^{\mathrm{rev}_{15}(2)} & \cdots & \zeta^{\mathrm{rev}_{15}(32767)} \\
+            1 & \zeta^{\mathrm{rev}_{15}(1) \cdot 5} & \zeta^{\mathrm{rev}_{15}(2) \cdot 5} & \cdots & \zeta^{\mathrm{rev}_{15}(32767) \cdot 5} \\
+            1 & \zeta^{\mathrm{rev}_{15}(1) \cdot 5^2} & \zeta^{\mathrm{rev}_{15}(2) \cdot 5^2} & \cdots & \zeta^{\mathrm{rev}_{15}(32767) \cdot 5^2} \\
+            \vdots & \vdots & \vdots & \ddots & \vdots \\
+            1 & \zeta^{\mathrm{rev}_{15}(1) \cdot 5^{32767}} & \zeta^{\mathrm{rev}_{15}(2) \cdot 5^{32767}} & \cdots & \zeta^{\mathrm{rev}_{15}(32767) \cdot 5^{32767}}
+          \end{pmatrix},
+        $$
+        <p>
+          where $\mathrm{rev}_{15}(x)$ is the integer whose
+          $15$-bit binary representation is the reverse of
+          $x$'s. With this reordering, the recovery equations
+          from the previous subsection become
+        </p>
+        $$
+          \begin{pmatrix}
+            m^\star_{\mathrm{rev}_{15}(0)} \\
+            m^\star_{\mathrm{rev}_{15}(1)} \\
+            \vdots \\
+            m^\star_{\mathrm{rev}_{15}(32767)}
+          \end{pmatrix}
+          \;=\; \Delta_{30}\, \mathrm{Re}(\widetilde E^{-1}\, \mathbf{v}^\star)
+          \;=\; \frac{\Delta_{30}}{2}\bigl(\widetilde E^{-1}\, \mathbf{v}^\star \,+\, \overline{\widetilde E^{-1}\, \mathbf{v}^\star}\bigr),
+        $$
+        $$
+          \begin{pmatrix}
+            m^\star_{\mathrm{rev}_{15}(0) + 32768} \\
+            m^\star_{\mathrm{rev}_{15}(1) + 32768} \\
+            \vdots \\
+            m^\star_{\mathrm{rev}_{15}(32767) + 32768}
+          \end{pmatrix}
+          \;=\; \Delta_{30}\, \mathrm{Im}(\widetilde E^{-1}\, \mathbf{v}^\star)
+          \;=\; \frac{\Delta_{30}}{2i}\bigl(\widetilde E^{-1}\, \mathbf{v}^\star \,-\, \overline{\widetilde E^{-1}\, \mathbf{v}^\star}\bigr).
+        $$
+        <p>
+          Reordering the columns of $E$ only permutes the
+          coefficient vector it multiplies, so $\widetilde E$
+          yields the same slot values as $E$ while delivering
+          the recovered coefficients in bit-reversed order;
+          this is harmless, since slots-to-coefficients applies
+          the same reordering in reverse at the end.
+        </p>
+        <p>
+          Now, $\widetilde E$ admits a sparse factorization
+          into $15$ factors:
+        </p>
+        $$
+          \widetilde E \;=\; F_{14}\, F_{13} \cdots F_1\, F_0,
+        $$
+        <p>
+          where each $F_l$ has nonzero entries only on <span class="lie" data-truth="this is three diagonals for every F_l except F_14: there the +2^14 and -2^14 offsets coincide modulo 32768, so F_14 has only two distinct diagonals">three</span>
+          diagonals: the main diagonal and the two diagonals
+          at offsets $+2^l$ and $-2^l$. Specifically, for each $i
+          \in \{0, 1, \ldots, 32767\}$ with $\lfloor i / 2^l
+          \rfloor$ even, the $2 \times 2$ submatrix of $F_l$
+          at rows and columns $\{i, i + 2^l\}$ is
+        </p>
+        $$
+          \begin{pmatrix}
+            1 & \zeta^{5^i \cdot 2^{14 - l}} \\
+            1 & \zeta^{5^{i + 2^l} \cdot 2^{14 - l}}
+          \end{pmatrix},
+        $$
+        <p>
+          and all other entries of $F_l$ are zero.
+        </p>
+        <div class="example-body">
+          <b>Example.</b> For $N = 16$, the three factors are
+          $$
+            F_2 \;=\;
+            \begin{pmatrix}
+              1 & & & & \zeta & & & \\
+               & 1 & & & & \zeta^{5} & & \\
+               & & 1 & & & & \zeta^{25} & \\
+               & & & 1 & & & & \zeta^{29} \\
+              1 & & & & \zeta^{17} & & & \\
+               & 1 & & & & \zeta^{21} & & \\
+               & & 1 & & & & \zeta^{9} & \\
+               & & & 1 & & & & \zeta^{13}
+            \end{pmatrix},
+          $$
+          $$
+            F_1 \;=\;
+            \begin{pmatrix}
+              1 & & \zeta^{2} & & & & & \\
+               & 1 & & \zeta^{10} & & & & \\
+              1 & & \zeta^{18} & & & & & \\
+               & 1 & & \zeta^{26} & & & & \\
+               & & & & 1 & & \zeta^{2} & \\
+               & & & & & 1 & & \zeta^{10} \\
+               & & & & 1 & & \zeta^{18} & \\
+               & & & & & 1 & & \zeta^{26}
+            \end{pmatrix},
+          $$
+          $$
+            F_0 \;=\;
+            \begin{pmatrix}
+              1 & \zeta^{4} & & & & & & \\
+              1 & \zeta^{20} & & & & & & \\
+               & & 1 & \zeta^{4} & & & & \\
+               & & 1 & \zeta^{20} & & & & \\
+               & & & & 1 & \zeta^{4} & & \\
+               & & & & 1 & \zeta^{20} & & \\
+               & & & & & & 1 & \zeta^{4} \\
+               & & & & & & 1 & \zeta^{20}
+            \end{pmatrix},
+          $$
+          and
+          $$
+            \widetilde E \;=\; F_2\, F_1\, F_0 \;=\;
+            \begin{pmatrix}
+              1 & \zeta^{4} & \zeta^{2} & \zeta^{6} & \zeta & \zeta^{5} & \zeta^{3} & \zeta^{7} \\
+              1 & \zeta^{20} & \zeta^{10} & \zeta^{30} & \zeta^{5} & \zeta^{25} & \zeta^{15} & \zeta^{3} \\
+              1 & \zeta^{4} & \zeta^{18} & \zeta^{22} & \zeta^{25} & \zeta^{29} & \zeta^{11} & \zeta^{15} \\
+              1 & \zeta^{20} & \zeta^{26} & \zeta^{14} & \zeta^{29} & \zeta^{17} & \zeta^{23} & \zeta^{11} \\
+              1 & \zeta^{4} & \zeta^{2} & \zeta^{6} & \zeta^{17} & \zeta^{21} & \zeta^{19} & \zeta^{23} \\
+              1 & \zeta^{20} & \zeta^{10} & \zeta^{30} & \zeta^{21} & \zeta^{9} & \zeta^{31} & \zeta^{19} \\
+              1 & \zeta^{4} & \zeta^{18} & \zeta^{22} & \zeta^{9} & \zeta^{13} & \zeta^{27} & \zeta^{31} \\
+              1 & \zeta^{20} & \zeta^{26} & \zeta^{14} & \zeta^{13} & \zeta & \zeta^{7} & \zeta^{27}
+            \end{pmatrix}.
+          $$
+        </div>
+        <div class="exercise-body">
+          <b>Exercise:</b> verify that $F_{14} \cdots F_0 =
+          \widetilde E$ for $N = 65536$.
+        </div>
+        <p>
+          The butterfly factorization gives
+        </p>
+        $$
+          \widetilde E^{-1} \;=\; F_0^{-1}\, F_1^{-1} \cdots F_{14}^{-1},
+        $$
+        <p>
+          and each $F_l^{-1}$ has the same sparsity pattern as
+          $F_l$, since $F_l$ is block-diagonal with invertible
+          $2 \times 2$ blocks in the butterfly basis.
+          Explicitly, $F_l^{-1}$ has, for each $i \in \{0, 1,
+          \ldots, 32767\}$ with $\lfloor i / 2^l \rfloor$
+          even, the $2 \times 2$ submatrix at rows and columns
+          $\{i, i + 2^l\}$ equal to
+        </p>
+        $$
+          \frac{1}{2}
+          \begin{pmatrix}
+            1 & 1 \\
+            \zeta^{-5^i \cdot 2^{14 - l}} & -\zeta^{-5^i \cdot 2^{14 - l}}
+          \end{pmatrix},
+        $$
+        <p>
+          and all other entries zero.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> verify that $F_l^{-1}$ is the
+          matrix described above.
+        </div>
+        <p>
+          <b>Remark.</b> This is not the same as the standard
+          FFT butterfly decomposition. In the standard FFT, the
+          rows of the matrix being factored are indexed by
+          integers in the natural order; here, the row
+          exponents instead are powers of $5$ modulo $131072$.
+        </p>
+
+        <h3 id="grouping-factors">Grouping factors</h3>
+
+        <p>
+          To apply $\widetilde E^{-1}$ within the $3$-level
+          coefficients-to-slots budget, we combine the $15$
+          factors in groups of $5$ and apply each group as a
+          single sparse matrix via baby-step giant-step.
+          Define
+        </p>
+        $$
+          \begin{aligned}
+            G_0 &\;=\; F_0^{-1}\, F_1^{-1}\, F_2^{-1}\, F_3^{-1}\, F_4^{-1}, \\
+            G_1 &\;=\; F_5^{-1}\, F_6^{-1}\, F_7^{-1}\, F_8^{-1}\, F_9^{-1}, \\
+            G_2 &\;=\; F_{10}^{-1}\, F_{11}^{-1}\, F_{12}^{-1}\, F_{13}^{-1}\, F_{14}^{-1},
+          \end{aligned}
+        $$
+        <p>
+          so that $\widetilde E^{-1} = G_0\, G_1\, G_2$. The
+          nonzero diagonals of $G_0$, $G_1$, and $G_2$ are:
+        </p>
+        <ul>
+          <li>
+            <b>$G_0$:</b> every integer in $\{-31, -30, \ldots,
+            30, 31\}$ ($63$ diagonals).
+          </li>
+          <li>
+            <b>$G_1$:</b> every multiple of $32$ in $\{-992,
+            -960, \ldots, 960, 992\}$ ($63$ diagonals).
+          </li>
+          <li>
+            <b>$G_2$:</b> every multiple of $1024$ modulo
+            $32768$, i.e. $\{-15360, -14336, \ldots, 15360,
+            16384\}$ ($32$ diagonals).
+          </li>
+        </ul>
+        <p>
+          Each of $G_0$, $G_1$, and $G_2$ can be applied to a
+          ciphertext using baby-step giant-step:
+        </p>
+        <ul>
+          <li>
+            <b>$G_0$:</b>
+            baby steps $\{0, 1, 2, 3$, $4, 5, 6, 7\}$;
+            giant steps $\{-32, -24, -16, -8$, $0, 8, 16, 24\}$.
+          </li>
+          <li>
+            <b>$G_1$:</b>
+            baby steps $\{0, 32, 64, 96$, $128, 160, 192, 224\}$;
+            giant steps $\{-1024, -768, -512, -256$, $0, 256, 512, 768\}$.
+          </li>
+          <li>
+            <b>$G_2$:</b>
+            baby steps $\{0, 1024, 2048, 3072$, $4096, 5120, 6144, 7168\}$;
+            giant steps $\{-16384, -8192$, $0, 8192\}$.
+          </li>
+        </ul>
+        <p>
+          Applying $\sqrt[3]{\tfrac{\Delta_{30}}{2 q_0}}\, G_2$,
+          then $\sqrt[3]{\tfrac{\Delta_{30}}{2 q_0}}\, G_1$,
+          then $\sqrt[3]{\tfrac{\Delta_{30}}{2 q_0}}\, G_0$ to
+          $\mathbf{v}^\star$ via the homomorphic matrix
+          multiplication procedure of
+          <a href="composite.html#matrix-multiplication">Section&nbsp;3.4</a>
+          produces a ciphertext encrypting
+          $\tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\,
+          \mathbf{v}^\star$ in $3$ levels of multiplicative
+          depth. Plugging into the recovery equations gives
+        </p>
+        $$
+          m^\star_L \;=\;
+          \frac{1}{q_0}
+          \begin{pmatrix}
+            m^\star_{\mathrm{rev}_{15}(0)} \\
+            m^\star_{\mathrm{rev}_{15}(1)} \\
+            \vdots \\
+            m^\star_{\mathrm{rev}_{15}(32767)}
+          \end{pmatrix}
+          \;=\; \tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\, \mathbf{v}^\star \,+\, \overline{\tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\, \mathbf{v}^\star},
+        $$
+        $$
+          m^\star_H \;=\;
+          \frac{1}{q_0}
+          \begin{pmatrix}
+            m^\star_{\mathrm{rev}_{15}(0) + 32768} \\
+            m^\star_{\mathrm{rev}_{15}(1) + 32768} \\
+            \vdots \\
+            m^\star_{\mathrm{rev}_{15}(32767) + 32768}
+          \end{pmatrix}
+          \;=\; -i\bigl(\tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\, \mathbf{v}^\star \,-\, \overline{\tfrac{\Delta_{30}}{2 q_0}\, \widetilde E^{-1}\, \mathbf{v}^\star}\bigr).
+        $$
+        <div class="exercise-body">
+          <b>Exercise:</b> why does multiplication by $-i$ on
+          a ciphertext not consume a level?
+        </div>
+        <h2 id="mod-eval">Mod-eval</h2>
+
+        <p>
+          After coefficients-to-slots, the two slot-packed
+          ciphertexts $m^\star_L$ and $m^\star_H$ sit at level
+          $27$ and have slot values of the form
+        </p>
+        $$
+          \frac{m^\star_k}{q_0} \;=\; \frac{m_k}{q_0} \,+\, t_k,
+        $$
+        <p>
+          The integer part of each slot is $t_k \in \{-16,
+          \ldots, 16\}$; the fractional part is $m_k/q_0$, the
+          "useful" content. Applying the function
+        </p>
+        $$
+          x \;\longmapsto\; \bigl((x + \tfrac{1}{2}) \bmod 1\bigr) - \tfrac{1}{2}
+        $$
+        <p>
+          slot-wise would strip off the $t_k$ and leave
+          $m_k/q_0$ behind, which is exactly the coefficient we
+          want back. Implementing this homomorphically requires
+          a polynomial approximation.
+        </p>
+
+        <h3 id="where-the-approximation-needs-to-be-accurate">Where the approximation needs to be accurate</h3>
+
+        <p>
+          This function isn't a polynomial, so it
+          has to be replaced by a polynomial approximation. We
+          know that $t_k \in \{-16, -15, \ldots, 16\}$ and that
+          $m_k / q_0$ always lies between $-\delta$ and
+          $\delta$, where $\delta = \max_k |m_k| / q_0$. So the
+          polynomial doesn't need to approximate it
+          everywhere on $[-16, 16]$ &mdash; only on the union
+          of small neighborhoods
+        </p>
+        $$
+          I \;=\; \bigcup_{k=-16}^{16} \bigl[k - \delta,\, k + \delta\bigr]
+        $$
+        <p>
+          around the integers.
+        </p>
+
+        <h3 id="the-polynomial">The polynomial</h3>
+
+        <p>
+          For our parameters, a degree-$127$ Remez polynomial on
+          $I$ recovers each $m_k/q_0$ to about $13$ bits past
+          the binary point, the precision a single bootstrap
+          delivers. The polynomial can be
+          <span class="lie" data-truth="the input actually needs to be scaled to [-2, 2] first. Naively this takes a level to do the scaling, but this rescaling factor can be absorbed into the matrix multiplications from the previous step.">evaluated</span>
+          using the method from
+          <a href="composite.html#high-degree-evaluation">Section&nbsp;3.4</a>,
+          consuming $\lceil \log_2(127 + 1) \rceil = 7$ levels.
+        </p>
+        <p>
+          Applying this polynomial slot-wise to $m^\star_L$
+          and $m^\star_H$ produces two level-$20$ ciphertexts
+          encrypting
+        </p>
+        $$
+          m_L \;=\; \frac{1}{q_0}
+          \begin{pmatrix}
+            m_{\mathrm{rev}_{15}(0)} \\
+            m_{\mathrm{rev}_{15}(1)} \\
+            \vdots \\
+            m_{\mathrm{rev}_{15}(32767)}
+          \end{pmatrix}
+          \qquad \text{and} \qquad
+          m_H \;=\; \frac{1}{q_0}
+          \begin{pmatrix}
+            m_{\mathrm{rev}_{15}(0) + 32768} \\
+            m_{\mathrm{rev}_{15}(1) + 32768} \\
+            \vdots \\
+            m_{\mathrm{rev}_{15}(32767) + 32768}
+          \end{pmatrix},
+        $$
+        <p>
+          respectively.
+        </p>
+
+        <h2 id="slots-to-coefficients">Slots-to-coefficients</h2>
+
+        <p>
+          Slots-to-coefficients inverts coefficients-to-slots,
+          packaging $m_L$ and $m_H$ back into a single
+          ciphertext whose plaintext polynomial is $m$. To do
+          this, first combine them into $m_L + i\, m_H$ via
+          one $i$-multiplication and one addition. The linear
+          transform we then need to apply is $\widetilde E =
+          G_2^{-1}\, G_1^{-1}\, G_0^{-1}$.
+        </p>
+        <div class="exercise-body">
+          <b>Exercise:</b> why do $G_0^{-1}$, $G_1^{-1}$,
+          $G_2^{-1}$ have the same baby steps and giant steps
+          as $G_0$, $G_1$, $G_2$ from coefficients-to-slots?
+        </div>
+        <p>
+          Applying $\sqrt[3]{q_0/\Delta_{17}^{\,\text{predicted}}}\, G_0^{-1}$,
+          then $\sqrt[3]{q_0/\Delta_{17}^{\,\text{predicted}}}\, G_1^{-1}$,
+          then $\sqrt[3]{q_0/\Delta_{17}^{\,\text{predicted}}}\, G_2^{-1}$
+          to $m_L + i\, m_H$ via the homomorphic matrix
+          multiplication procedure of
+          <a href="composite.html#matrix-multiplication">Section&nbsp;3.4</a>
+          produces, in $3$ levels of multiplicative depth, a
+          level-$17$ ciphertext encrypting the vector
+        </p>
+        $$
+          \text{output} \;=\; \frac{\Delta_{17}^{\,\text{predicted}}}{\Delta_{17}^{\,\text{actual}}}
+          \cdot \frac{q_0}{\Delta_{17}^{\,\text{predicted}}}\, \widetilde E\, (m_L + i\, m_H)
+          \;=\; \frac{1}{\Delta_{17}^{\,\text{actual}}}\, \Sigma
+          \begin{pmatrix}
+            m_0 \\
+            m_1 \\
+            \vdots \\
+            m_{65535}
+          \end{pmatrix}.
+        $$
+        <p>
+          (The leading factor
+          $\Delta_{17}^{\,\text{predicted}} /
+          \Delta_{17}^{\,\text{actual}} \approx 2^{15}$ is
+          provided for free by the level-$18$-to-$17$
+          scale-factor jump.) In other words, the output is a
+          ciphertext encrypting the plaintext $m$, as desired.
+        </p>
+
+      </article>
+      <nav class="post-nav" id="post-nav"></nav>
+    </main>
+
+    <script>window.PAGE = { kind: 'post', section: 'internals', slug: 'bootstrapping' };</script>
+    <script src="../posts.js"></script>
+    <script src="../layout.js"></script>
+  </body>
+</html>
