@@ -155,24 +155,12 @@
     </head>
     <body>
         <header>
-            <div class="top-left-name">
-                <img
-                    src="../files/images/turtleicon.png"
-                    alt="Turtle icon"
-                    class="name-icon"
-                />
-                <div style="display: inline-block">
-                    <div class="hide-name">
-                        <a class="namebtn" href="../index.html">Holden Mui</a>
-                    </div>
-                </div>
-            </div>
-            <nav>
-                <div class="dropdown">
-                    <div id="backButton" style="display: none">
-                        <a class="dropbtn" href="musicguesser.html">Back</a>
-                    </div>
-                </div>
+            <a class="site-name" href="../index.html" aria-label="Holden Mui home">
+                <img src="../files/images/turtleicon.png" alt="" />
+                <span>Holden Mui</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a class="nav-link" id="backButton" href="musicguesser.html" style="display: none">Back</a>
             </nav>
         </header>
 
@@ -181,37 +169,37 @@
             <div id="playlistSelector">
                 <p>Select a playlist below.</p>
                 <h2>Pop</h2>
-                <button onclick="loadGame('swift')">Taylor Swift</button>
-                <button onclick="loadGame('grande')">Ariana Grande</button>
-                <button onclick="loadGame('beatles')">Beatles</button>
-                <button onclick="loadGame('abba')">ABBA</button>
-                <button onclick="loadGame('mendes')">Shawn Mendes</button>
-                <button onclick="loadGame('kahan')">Noah Kahan</button>
-                <button onclick="loadGame('marx')">Richard Marx</button>
+                <button data-playlist="swift">Taylor Swift</button>
+                <button data-playlist="grande">Ariana Grande</button>
+                <button data-playlist="beatles">Beatles</button>
+                <button data-playlist="abba">ABBA</button>
+                <button data-playlist="mendes">Shawn Mendes</button>
+                <button data-playlist="kahan">Noah Kahan</button>
+                <button data-playlist="marx">Richard Marx</button>
                 <h2>Rock</h2>
-                <button onclick="loadGame('queen')">Queen</button>
-                <button onclick="loadGame('redhotchilipeppers')">
+                <button data-playlist="queen">Queen</button>
+                <button data-playlist="redhotchilipeppers">
                     Red Hot Chili Peppers
                 </button>
                 <h2>Soundtrack</h2>
-                <button onclick="loadGame('greatestshowman')">
+                <button data-playlist="greatestshowman">
                     The Greatest Showman
                 </button>
-                <button onclick="loadGame('hamilton')">Hamilton</button>
-                <button onclick="loadGame('frozen')">Frozen</button>
-                <button onclick="loadGame('wicked')">Wicked</button>
+                <button data-playlist="hamilton">Hamilton</button>
+                <button data-playlist="frozen">Frozen</button>
+                <button data-playlist="wicked">Wicked</button>
                 <h2>Classical</h2>
-                <button onclick="loadGame('ravel')">Maurice Ravel</button>
-                <button onclick="loadGame('rachmaninoff')">
+                <button data-playlist="ravel">Maurice Ravel</button>
+                <button data-playlist="rachmaninoff">
                     Rachmaninoff piano concerti
                 </button>
-                <button onclick="loadGame('chopinetudes')">
+                <button data-playlist="chopinetudes">
                     Chopin etudes
                 </button>
-                <button onclick="loadGame('paganinicaprices')">
+                <button data-playlist="paganinicaprices">
                     Paganini caprices
                 </button>
-                <button onclick="loadGame('bachcello')">
+                <button data-playlist="bachcello">
                     Bach cello suites
                 </button>
                 <br />
@@ -229,14 +217,14 @@
                 </p>
                 <p>Score: <span id="score"></span></p>
                 <audio id="songA">
-                    <source id="audioSourceA" src="" type="audio/mpeg" />
+                    <source src="" type="audio/mpeg" />
                     Your browser does not support the audio element.
                 </audio>
                 <audio id="songB">
-                    <source id="audioSourceB" src="" type="audio/mpeg" />
+                    <source src="" type="audio/mpeg" />
                 </audio>
-                <button id="startButton" onclick="startGame()">Start</button>
-                <button id="skipButton" onclick="skipSong()" disabled>
+                <button id="startButton">Start</button>
+                <button id="skipButton" disabled>
                     Skip
                 </button>
                 <br />
@@ -256,12 +244,10 @@
                 <div id="scoreShare" style="display: none">
                     <button
                         id="scoreShareButton"
-                        onclick="copyReportToClipboard()"
                     >
                         Share your score!
                     </button>
                 </div>
-                <p id="copyStatus"></p>
                 <div class="portrait">
                     <div class="left-portrait">
                         <img id="leftPortrait" src="" alt="Left Portrait" />
@@ -273,29 +259,9 @@
                     </div>
                 </div>
             </div>
+            <script src="playlists.js" defer></script>
             <script src="musicguesser.js" defer></script>
         </main>
     </body>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const dropdowns = document.querySelectorAll(".dropdown");
-
-            dropdowns.forEach((dropdown) => {
-                const button = dropdown.querySelector(".dropbtn");
-                button.addEventListener("click", () => {
-                    dropdown.classList.toggle("active");
-                });
-            });
-
-            // Optional: Close dropdown if clicking outside
-            document.addEventListener("click", (e) => {
-                dropdowns.forEach((dropdown) => {
-                    if (!dropdown.contains(e.target)) {
-                        dropdown.classList.remove("active");
-                    }
-                });
-            });
-        });
-    </script>
 </html>

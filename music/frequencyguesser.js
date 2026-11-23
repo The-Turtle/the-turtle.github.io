@@ -1,6 +1,12 @@
-/* ======================================================
-   Constants
-   ====================================================== */
+const guessInput = document.getElementById("guessInput");
+const playButton = document.getElementById("toggleBtn");
+const submitButton = document.getElementById("submitBtn");
+const nextButton = document.getElementById("nextBtn");
+const feedback = document.getElementById("feedback");
+const referenceA = document.getElementById("refA");
+const canvas = document.getElementById("graph");
+
+// Constants
 const MIN_FREQ = 10 / 60; // 10 BPM in Hz  (~0.167 Hz)
 const MAX_FREQ = 10000; // 10 kHz
 
@@ -13,9 +19,7 @@ const MAX_FREQ = 10000; // 10 kHz
 const SIGMA = 5e-4;
 const FADE_TIME = 0.03; // 30 ms fade-in / fade-out to avoid clicks
 
-/* ======================================================
-   State
-   ====================================================== */
+// State
 let currentFreq = null;
 let audioCtx = null;
 let gainNode = null;
@@ -155,7 +159,6 @@ async function playTone() {
     currentSrc.loop = true;
     currentSrc.connect(gainNode);
 
-    /* Fade in */
     const now = audioCtx.currentTime;
     gainNode.gain.cancelScheduledValues(now);
     gainNode.gain.setValueAtTime(0, now);
@@ -196,27 +199,19 @@ async function toggleTone() {
 }
 
 function updateToggleBtn() {
-    const btn = document.getElementById("toggleBtn");
-    if (!btn) return;
-    btn.textContent = currentSrc ? "⏹ Stop" : "▶ Play";
+    playButton.textContent = currentSrc ? "⏹ Stop" : "▶ Play";
 }
 
-/* ======================================================
-   Frequency sampling – log-uniform
-   ====================================================== */
+// Frequency sampling – log-uniform
 function sampleFreq() {
     const lo = Math.log2(MIN_FREQ);
     const hi = Math.log2(MAX_FREQ);
     return Math.pow(2, Math.random() * (hi - lo) + lo);
 }
 
-/* ======================================================
-   Input parsing – three formats
-   ====================================================== */
+// Input parsing – three formats
 function getRefA() {
-    return (
-        parseFloat(document.getElementById("refA").value) || 440
-    );
+    return parseFloat(referenceA.value) || 440;
 }
 
 function parseGuess(raw) {
@@ -329,22 +324,19 @@ function formatCorrectAnswer(freq, format) {
     return `${formatSignificant(freq)} Hz`;
 }
 
-/* ======================================================
-   Game logic
-   ====================================================== */
+// Game logic
 async function nextRound() {
     currentFreq = sampleFreq();
 
-    const inp = document.getElementById("guessInput");
-    inp.disabled = false;
-    inp.value = "";
-    inp.focus();
+    guessInput.disabled = false;
+    guessInput.value = "";
+    guessInput.focus();
 
-    document.getElementById("submitBtn").disabled = false;
-    document.getElementById("submitBtn").style.display = "";
-    document.getElementById("nextBtn").style.display = "none";
-    document.getElementById("toggleBtn").disabled = false;
-    document.getElementById("feedback").textContent = "";
+    submitButton.disabled = false;
+    submitButton.style.display = "";
+    nextButton.style.display = "none";
+    playButton.disabled = false;
+    feedback.textContent = "";
 
     roundActive = true;
     if (audioCtx) await playTone();
@@ -353,18 +345,17 @@ async function nextRound() {
 function submitGuess() {
     if (!roundActive) return;
 
-    const inp = document.getElementById("guessInput");
-    const rawGuess = inp.value.trim();
+    const rawGuess = guessInput.value.trim();
     const guess = parseGuess(rawGuess);
     if (guess == null) {
-        document.getElementById("feedback").innerHTML =
+        feedback.innerHTML =
             '<span style="color:#c62828">Invalid input. Try: 440 Hz, 120 BPM, or C#4+25c</span>';
         return;
     }
 
     roundActive = false;
     stopTone(true);  // fade out on submit
-    document.getElementById("toggleBtn").disabled = true;
+    playButton.disabled = true;
 
     /* Error in octaves (log₂ ratio) */
     const err = Math.log2(guess.hz / currentFreq);
@@ -374,16 +365,15 @@ function submitGuess() {
         error: err,
     });
 
-    document.getElementById("feedback").textContent =
+    feedback.textContent =
         `Correct answer: ${formatCorrectAnswer(currentFreq, guess.format)}`;
 
     drawGraph();
 
-    /* Disable guess controls, show Next button */
-    inp.disabled = true;
-    document.getElementById("submitBtn").style.display = "none";
-    document.getElementById("nextBtn").style.display = "";
-    document.getElementById("nextBtn").focus();
+    guessInput.disabled = true;
+    submitButton.style.display = "none";
+    nextButton.style.display = "";
+    nextButton.focus();
 }
 
 /* ======================================================
@@ -392,7 +382,6 @@ function submitGuess() {
    Y = error in octaves
    ====================================================== */
 function drawGraph() {
-    const canvas = document.getElementById("graph");
     const ctx = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
 
@@ -531,47 +520,36 @@ function drawGraph() {
     ctx.restore();
 }
 
-/* ======================================================
-   Initialisation & event wiring
-   ====================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-    document
-        .getElementById("toggleBtn")
-        .addEventListener("click", toggleTone);
-    document
-        .getElementById("submitBtn")
-        .addEventListener("click", submitGuess);
-    document
-        .getElementById("nextBtn")
-        .addEventListener("click", nextRound);
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            if (roundActive) submitGuess();
-            else if (document.getElementById("nextBtn").style.display !== "none") nextRound();
-        }
+// Initialisation & event wiring
+playButton.addEventListener("click", toggleTone);
+submitButton.addEventListener("click", submitGuess);
+nextButton.addEventListener("click", nextRound);
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.target.closest("button, summary, a")) {
+        e.preventDefault();
+        if (roundActive) submitGuess();
+        else if (nextButton.style.display !== "none") nextRound();
+    }
+});
+
+/* Volume hint: show on first hover, hide after 2s, never again */
+const hint = document.getElementById("volumeHint");
+function showHintOnce() {
+    hint.classList.add("show");
+    setTimeout(() => hint.classList.remove("show"), 2000);
+    playButton.removeEventListener("mouseenter", showHintOnce);
+    playButton.removeEventListener("click", showHintOnce);
+}
+playButton.addEventListener("mouseenter", showHintOnce);
+playButton.addEventListener("click", showHintOnce);
+
+/* Mobile-friendly tooltip toggle */
+document
+    .getElementById("helpIcon")
+    .addEventListener("click", function () {
+        this.classList.toggle("show-tooltip");
     });
 
-    /* Volume hint: show on first hover, hide after 2s, never again */
-    const hint = document.getElementById("volumeHint");
-    const toggleBtn = document.getElementById("toggleBtn");
-    function showHintOnce() {
-        hint.classList.add("show");
-        setTimeout(() => hint.classList.remove("show"), 2000);
-        toggleBtn.removeEventListener("mouseenter", showHintOnce);
-        toggleBtn.removeEventListener("click", showHintOnce);
-    }
-    toggleBtn.addEventListener("mouseenter", showHintOnce);
-    toggleBtn.addEventListener("click", showHintOnce);
-
-    /* Mobile-friendly tooltip toggle */
-    document
-        .getElementById("helpIcon")
-        .addEventListener("click", function () {
-            this.classList.toggle("show-tooltip");
-        });
-
-    nextRound();
-    drawGraph();
-    window.addEventListener("resize", drawGraph);
-});
+nextRound();
+drawGraph();
+window.addEventListener("resize", drawGraph);
