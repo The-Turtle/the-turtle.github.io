@@ -42,3 +42,30 @@
 #volumeHint.show {
     opacity: 1;
 }
+
+.game-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+    gap: 1.25rem;
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+.game-picker .game-btn {
+    display: block;
+    margin: 0;
+    padding: 0.85rem 1rem;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+}
+
+.game-picker .game-btn:focus-visible {
+    outline: 3px solid var(--turtle-green);
+    outline-offset: 3px;
+}
+
+.game-picker p {
+    margin: 0.65rem 0 0;
+}
