@@ -13,10 +13,10 @@ let playlist;
 let folderPath;
 let songs;
 
-let totalTime = 60;
-let penaltyTime = 3;
-let feedbackTime = 2;
-let lockedTime = 0.1;
+const totalTime = 60;
+const penaltyTime = 3;
+const feedbackTime = 2;
+const lockedTime = 0.1;
 let score = 0;
 let skippedCounter = 0;
 let currentSong;
@@ -110,31 +110,29 @@ function startGame() {
 }
 
 function loadSong(audioSourceId, songId) {
-  let song = randomSong();
+  const song = randomSong();
   const audioSource = document.getElementById(audioSourceId);
   audioSource.src = folderPath + song.file;
   const audio = document.getElementById(songId);
-  audio.load();
-  audio.addEventListener("loadedmetadata", function () {
+  audio.onloadedmetadata = () => {
     audio.currentTime = Math.random() * audio.duration;
     audio.play();
-  });
-  audio.addEventListener("ended", function () {
+  };
+  audio.onended = () => {
     audio.currentTime = 0;
     audio.play();
-  });
+  };
   audio.muted = true;
+  audio.load();
   return song;
 }
 
 function loadSongA() {
-  let x = loadSong("audioSourceA", "songA");
-  return x;
+  return loadSong("audioSourceA", "songA");
 }
 
 function loadSongB() {
-  let x = loadSong("audioSourceB", "songB");
-  return x;
+  return loadSong("audioSourceB", "songB");
 }
 
 function playSong(id) {
@@ -183,7 +181,7 @@ function playNextSong() {
 }
 
 function questionTimeElapsed() {
-  let seconds = (Date.now() - questionTimeStart) / 1000;
+  const seconds = (Date.now() - questionTimeStart) / 1000;
   return seconds.toFixed(1);
 }
 
@@ -233,9 +231,9 @@ function resetGuessLockTimer() {
 function checkGuess(incorrectFeedback = false) {
   if (locked) return;
   const userGuess = guessInput.value;
-  const correctAnswers = currentSong.answers;
-  if (match(userGuess, correctAnswers)) {
-    feedback.innerHTML = `<em>${match(userGuess, correctAnswers)}</em> is correct!`;
+  const answer = match(userGuess, currentSong.answers);
+  if (answer) {
+    feedback.innerHTML = `<em>${answer}</em> is correct!`;
     feedback.style.color = "white";
     outputString +=
       "✅ (" + questionTimeElapsed() + "s) " + correctAnswer() + "\n";
@@ -325,9 +323,9 @@ function getSuggestions(input) {
   matchingAnswers.forEach((answer) => {
     nonContiguousAnswers.delete(answer);
   });
-  let priorityAnswersSorted = [...priorityAnswers].sort();
-  let matchingAnswersSorted = [...matchingAnswers].sort();
-  let nonContiguousAnswersSorted = [...nonContiguousAnswers].sort();
+  const priorityAnswersSorted = [...priorityAnswers].sort();
+  const matchingAnswersSorted = [...matchingAnswers].sort();
+  const nonContiguousAnswersSorted = [...nonContiguousAnswers].sort();
   return [
     ...priorityAnswersSorted,
     ...matchingAnswersSorted,
@@ -337,7 +335,7 @@ function getSuggestions(input) {
 
 function updateSuggestions() {
   suggestionsList.innerHTML = "";
-  let suggestions = getSuggestions(guessInput.value);
+  const suggestions = getSuggestions(guessInput.value);
   suggestions.forEach((suggestion) => {
     const suggestionElement = document.createElement("li");
     suggestionElement.textContent = suggestion;
@@ -362,7 +360,7 @@ function endGame() {
   scoreShare.style.display = "block";
   scoreShareButton.textContent = "Share your score!";
   scoreShareButton.disabled = false;
-  let spaceIfNeeded = outputString.endsWith("\n") ? "" : " ";
+  const spaceIfNeeded = outputString.endsWith("\n") ? "" : " ";
   if (!penaltyActive) {
     outputString +=
       spaceIfNeeded +
@@ -385,8 +383,7 @@ function changeScoreShareText(text) {
   clearTimeout(copyReportTimer);
   scoreShareButton.disabled = true;
   copyReportTimer = setTimeout(() => {
-    scoreShareButton.textContent =
-      "Share your score!";
+    scoreShareButton.textContent = "Share your score!";
     scoreShareButton.disabled = false;
   }, 2000);
 }
@@ -397,7 +394,7 @@ function copyReportToClipboard() {
     .then(() => {
       changeScoreShareText("Score copied to clipboard");
     })
-    .catch((err) => {
+    .catch(() => {
       changeScoreShareText("error: could not copy score");
     });
 }

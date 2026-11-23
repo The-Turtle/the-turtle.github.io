@@ -462,7 +462,7 @@ function generateChordNotes() {
 function generateNotesRandom() {
     var maxAttempts = 300;
     for (var a = 0; a < maxAttempts; a++) {
-        /* Step 1: pick random MIDI notes from the range */
+        /* Pick random MIDI notes from the range. */
         var notes = [];
         var seen = new Set();
         var usedPC = new Set();
@@ -478,9 +478,9 @@ function generateNotesRandom() {
         }
         if (notes.length < settings.difficulty) continue;
 
-            notes.sort(function (x, y) { return x - y; });
+        notes.sort(function (x, y) { return x - y; });
 
-        /* Step 3: if small gaps, reduce consecutive intervals > 12
+        /* If small gaps, reduce consecutive intervals > 12
            then uniformly translate into range */
         if (settings.smallGaps) {
             var reduced = false;

@@ -211,9 +211,7 @@ function sampleFreq() {
 
 // Input parsing – three formats
 function getRefA() {
-    return (
-        parseFloat(referenceA.value) || 440
-    );
+    return parseFloat(referenceA.value) || 440;
 }
 
 function parseGuess(raw) {
